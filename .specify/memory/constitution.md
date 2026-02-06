@@ -117,7 +117,7 @@ Target journals: NEJM, Lancet, JAMA, JACC, Nature — formatted correctly for th
 2. **Task Master** manages task breakdown and progress tracking.
 3. **Claude Code Tasks** coordinates across parallel terminal sessions via shared task list.
 4. **Ralph Wiggum principle**: Small tasks, fresh context per session, git as memory, tests as backpressure.
-5. **Frontend Design Skill (Opus)**: All UI design and frontend work uses Anthropic's Frontend Design Skill.
+5. **Frontend Design Skill (Opus) — MANDATORY**: ALL frontend work — every page, component, layout, screen, modal, and navigation element — MUST be designed using Anthropic's Frontend Design Skill with the Opus model. No exceptions. Generate the design first with Frontend Design Skill + Opus, then implement with shadcn/ui + Tailwind CSS.
 6. **Playwright**: E2E tests gate every feature. Nothing ships without passing tests.
 
 ---

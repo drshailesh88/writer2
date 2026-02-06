@@ -54,8 +54,13 @@ Check what others are working on with `task-master list` before starting.
 - Git as memory (commit after each completed task)
 - Tests as backpressure (Playwright must pass before marking done)
 
-### Frontend Design
-Use Anthropic Frontend Design Skill (Opus) for all UI work. Clean, non-overwhelming, Google Docs simplicity.
+### Frontend Design (MANDATORY)
+**ALL frontend work MUST use Anthropic's Frontend Design Skill with Opus model.** This is non-negotiable.
+- Any page, layout, component, or screen that touches UI → use Frontend Design Skill + Opus
+- This includes: landing page, dashboard, search UI, editor, results panels, modals, navigation, mobile layouts, pricing page — everything visual
+- Design philosophy: Clean, non-overwhelming, Google Docs simplicity, professional academic feel
+- After generating UI with Frontend Design Skill, implement using shadcn/ui + Tailwind CSS
+- Mobile responsive from day one (test on 375px and 1280px viewports)
 
 ## Git Workflow
 

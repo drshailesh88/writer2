@@ -1,6 +1,6 @@
 ---
 name: ui-designer
-description: Designs and implements UI components using Anthropic Frontend Design Skill. Use for all frontend visual work — pages, layouts, components.
+description: MANDATORY for ALL frontend work. Designs and implements UI using Anthropic Frontend Design Skill + Opus. Must be used for every page, component, layout, modal, and screen. No frontend code without this agent.
 tools: Read, Write, Edit, Glob, Grep, Bash
 model: opus
 ---
