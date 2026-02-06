@@ -1,0 +1,20 @@
+{
+  "env": {
+    "CLAUDE_CODE_TASK_LIST_ID": "v1-drafts"
+  },
+  "allowedTools": [
+    "Edit",
+    "Write",
+    "Read",
+    "Glob",
+    "Grep",
+    "Bash(task-master *)",
+    "Bash(git *)",
+    "Bash(npm *)",
+    "Bash(npx *)",
+    "Bash(node *)",
+    "Bash(specify *)",
+    "Bash(pnpm *)",
+    "Bash(npx playwright *)"
+  ]
+}

@@ -1,0 +1,1098 @@
+# V1 Drafts - Product Requirements Document (PRD)
+# Version: 1.0
+# Date: February 6, 2026
+# Author: Product Manager (Shailesh Singh, MD) + AI Engineer (Claude)
+
+---
+
+## 1. EXECUTIVE SUMMARY
+
+### 1.1 Product Name
+V1 Drafts
+
+### 1.2 One-Line Description
+An AI-powered web application that teaches medical students and researchers how to write research papers while providing all the tools they need to do it -- under one roof.
+
+### 1.3 Positioning
+"KhanMigo meets SciSpace" -- the educational hand-holding of Khan Academy's Writing Coach combined with the research power of SciSpace, purpose-built for medical and academic researchers.
+
+### 1.4 Tagline
+"All research needs met under one single roof."
+
+### 1.5 Problem Statement
+A 3rd-year MD student in India needs to write a thesis and publish papers. Today, he must juggle 5-6 different tools:
+- PubMed for finding papers
+- Perplexity/Gemini for deep research
+- ChatGPT/Google Docs for drafting
+- Mendeley/EndNote/Paperpile for bibliography
+- Turnitin/Copyleaks for plagiarism checking
+- Various tools for AI detection
+
+He is a busy doctor with limited time for research. He has never written a thesis before. No single tool teaches him HOW to write while also helping him DO the writing. V1 Drafts solves this by combining education and productivity in one platform.
+
+### 1.6 Solution
+V1 Drafts offers two distinct modes:
+- LEARN MODE: A KhanMigo-inspired AI writing coach that teaches researchers how to write papers using Socratic questioning, examples, sentence starters, and structured guidance through IMRAD format.
+- DRAFT MODE: A SciSpace-inspired agentic AI that finds papers, proposes outlines, fetches evidence, and writes complete first drafts with citations.
+
+Both modes are powered by the same research infrastructure: paper search across 200M+ academic papers, a personal library, bibliography generation, plagiarism checking, and AI detection.
+
+---
+
+## 2. TARGET AUDIENCE
+
+### 2.1 Primary User Avatar
+- **Who**: 3rd-year MD (postgraduate) medical student in India
+- **Age**: 26-32 years old
+- **Context**: Working in a medical college, busy with clinical duties (hospital rounds, OPDs, surgeries)
+- **Need**: Must submit a thesis and publish papers for degree completion
+- **Pain**: Has never written a research paper or thesis before. No formal training in academic writing. Limited time. Currently asks seniors for guidance.
+- **Budget**: Can afford ~INR 1,000/month (~$12 USD)
+- **Tech comfort**: Uses smartphone heavily, comfortable with Google Docs, familiar with ChatGPT
+- **Language**: English (academic writing)
+
+### 2.2 Secondary Audiences (Expansion)
+- Medical super-specialization students (DM/MCh)
+- PhD researchers across all disciplines
+- Early-career researchers publishing their first papers
+- University students writing dissertations
+- Global researchers (same pain, different geography)
+
+### 2.3 Day-One Market
+- Medical postgraduate students in India
+- Distribution: YouTube, Twitter, cardiology conferences (founder's existing network), Meta/Google ads
+- Founder's unique advantage: "Made by a doctor, for doctors" -- personal credibility from having published 2 theses and multiple papers
+
+---
+
+## 3. PRODUCT VISION AND POSITIONING
+
+### 3.1 Core Philosophy
+V1 Drafts operates on two principles:
+1. TEACH people to become better researchers (Learn Mode)
+2. HELP people produce research faster (Draft Mode)
+
+No other tool in the market does both. SciSpace is pure productivity. KhanMigo is pure education (and only for school students). V1 Drafts is the first platform to combine research education with research productivity for medical and academic professionals.
+
+### 3.2 Competitive Landscape
+
+| Competitor | What they do | What they don't do |
+|---|---|---|
+| SciSpace | Literature search, AI writing, formatting, 150+ agents | Does not teach how to write |
+| Paperpal | Grammar, editing, paraphrasing, submission checks | Does not help with research/discovery |
+| Elicit | Research assistant, paper analysis | Limited writing capabilities |
+| Semantic Scholar | Paper search and recommendations | No writing or education features |
+| NotebookLM | Talk to documents, organize research | No writing, no paper search |
+| ChatGPT | General-purpose AI writing | No paper search, no citations, no structure |
+| Mendeley/EndNote/Paperpile | Reference management, bibliography | No writing, no research, no education |
+| KhanMigo | AI writing coach for school students | Not for researchers, no paper search |
+| Jenny.ai | AI writing assistant | Limited research integration |
+| OpenAI Prism | LaTeX-native scientific writing | No research, no education mode |
+
+### 3.3 V1 Drafts Differentiators
+1. TWO MODES: Learn (educational) + Draft (productivity) in one app
+2. ONE ROOF: Paper search + research + writing + citations + plagiarism + AI detection -- all in one place
+3. MEDICAL FOCUS: Built by a doctor who has published theses and papers
+4. AGENTIC: Multi-step AI workflow with human-in-the-loop at every stage
+5. AFFORDABLE: INR 1,000/month -- accessible for Indian medical students
+6. TEACH, NOT CHEAT: Learn Mode produces better researchers, not just better papers
+
+---
+
+## 4. FEATURES -- DETAILED SPECIFICATIONS
+
+### 4.1 LEARN MODE (KhanMigo-Inspired Writing Coach)
+
+#### 4.1.1 Overview
+Learn Mode is an AI-powered writing coach that teaches medical students and researchers how to write research papers. It uses Socratic questioning, examples from published papers, and structured guidance. It NEVER writes complete sentences or paragraphs for the student.
+
+#### 4.1.2 Pedagogical Approach
+- SOCRATIC METHOD: The AI asks probing questions rather than giving direct answers. Example: "What is the primary gap in the literature that your study addresses?" instead of "Here is a gap in the literature."
+- GUIDED PROCESS: Enforces a sequential writing process. Students progress through stages in order.
+- EXAMPLES-BASED: Shows examples of good writing from published papers (methodology sections, discussion structures, etc.)
+- SENTENCE STARTERS: Suggests how to begin sentences but NEVER completes them. Example: "You could start with: 'The primary objective of this study was...'" -- the student completes the rest.
+- TEMPLATES ON REQUEST: If the student explicitly asks for a template (e.g., "Show me a Discussion section template"), the agent provides one. Templates are not pushed unsolicited.
+- FEEDBACK: Provides structured feedback one category at a time, one suggestion at a time.
+
+#### 4.1.3 Default Structure: IMRAD
+The default writing structure in Learn Mode is IMRAD (Introduction, Methods, Results, and Discussion). However:
+- The agent proposes IMRAD as the default
+- The agent asks the student if they have a different structure in mind
+- If the student is writing for a specific journal, the agent asks for that journal's guidelines
+- The agent adapts to the student's chosen structure
+
+#### 4.1.4 Learn Mode Sequential Stages
+
+STAGE 1: UNDERSTAND THE RESEARCH TOPIC
+- Student enters their research topic/question
+- AI asks clarifying questions to ensure the student understands their research question
+- AI helps the student define the scope of their paper
+- AI asks about the target journal (if known) to adapt structure/guidelines
+- Student cannot proceed until they've articulated their research question clearly
+
+STAGE 2: LITERATURE EXPLORATION (Integrated with Paper Search)
+- AI guides the student on HOW to search for relevant literature
+- AI asks: "What keywords would you use to search for papers on this topic?"
+- Student uses the integrated paper search (PubMed, Semantic Scholar, OpenAlex)
+- AI helps the student evaluate papers: "Is this study relevant to your question? Why or why not?"
+- AI teaches the student to identify gaps in the literature
+- Student saves relevant papers to their library
+
+STAGE 3: OUTLINE DEVELOPMENT
+- AI proposes an IMRAD outline (or alternative based on journal guidelines)
+- Each section has subsections proposed by the AI
+- Student reviews, modifies, and approves the outline
+- AI asks questions about each section: "What will you cover in your Methods section?"
+- AI provides examples of good outlines from published papers
+- Student maps their saved papers to relevant sections
+
+STAGE 4: DRAFTING (Student Writes)
+- Student writes each section themselves in the Tiptap editor
+- AI provides sentence starters when the student is stuck
+- AI shows examples of how similar sections are written in published papers
+- AI asks guiding questions: "Have you mentioned your inclusion/exclusion criteria?"
+- AI NEVER writes complete sentences or paragraphs
+- Student can reference their saved papers and insert citations while writing
+
+STAGE 5: FEEDBACK AND REVISION
+- AI provides structured feedback in categories:
+  1. Thesis & Focus (clarity of research question, overall cohesion)
+  2. Evidence & Reasoning (proper use of citations, logical argumentation)
+  3. Methodology Rigor (completeness, reproducibility)
+  4. Structure & Organization (IMRAD adherence, logical flow)
+  5. Language & Academic Tone (clarity, formality, grammar)
+- Feedback is delivered ONE CATEGORY at a time
+- Within each category, ONE SUGGESTION at a time
+- Student addresses each suggestion, then moves to the next
+- Student can ask the AI clarifying questions about any feedback
+- Student can request examples of how to improve a specific aspect
+
+#### 4.1.5 Learn Mode Flexibility Rules
+- ALLOWED: Suggest sentence starters
+- ALLOWED: Show examples from published papers
+- ALLOWED: Provide templates when explicitly asked
+- ALLOWED: Explain concepts, structures, and conventions
+- ALLOWED: Give feedback on student's writing
+- NOT ALLOWED: Write complete sentences for the student
+- NOT ALLOWED: Complete sentences the student has started
+- NOT ALLOWED: Generate paragraphs or sections
+- NOT ALLOWED: Rewrite the student's text (that's Draft Mode territory)
+
+---
+
+### 4.2 DRAFT MODE (SciSpace-Inspired Agentic Writing)
+
+#### 4.2.1 Overview
+Draft Mode is an AI-powered agentic writing assistant that helps experienced researchers produce first drafts quickly. It finds papers, proposes outlines, and writes complete drafts with citations. Available in Guided (human-in-the-loop) and Hands-off (fully autonomous) sub-modes.
+
+#### 4.2.2 Guided Sub-Mode (Human-in-the-Loop)
+
+STEP 1: TOPIC INPUT
+- Student enters their research topic/question
+- Example: "Comparison of laparoscopic vs open appendectomy outcomes in pediatric patients"
+
+STEP 2: OUTLINE GENERATION
+- Agent proposes a complete outline with sections and subsections
+- Default structure: IMRAD (flexible based on journal guidelines)
+- Agent suggests what each section should cover
+- PAUSE: Student reviews, modifies, and approves the outline
+
+STEP 3: PAPER FETCHING
+- Agent searches PubMed, Semantic Scholar, and OpenAlex for relevant papers
+- Papers are fetched for EACH section and subsection
+- Agent presents papers grouped by section with metadata (title, authors, year, journal, abstract)
+- PAUSE: Student reviews papers per section
+  - Removes irrelevant papers
+  - Removes papers that are too old
+  - Removes animal studies (if clinical paper)
+  - Approves final paper selection per section
+
+STEP 4: DRAFT WRITING
+- Agent writes the first draft section by section
+- Each section is written using ONLY the approved papers as sources
+- Inline citations are included as the agent writes
+- PAUSE: Student reviews each section as it's generated
+
+STEP 5: COMPLETE DRAFT
+- All sections combined into a complete first draft
+- Bibliography auto-generated from cited papers
+- Student can edit, revise, and refine in the writing editor
+- Export available as DOCX or PDF
+
+#### 4.2.3 Hands-Off Sub-Mode (Fully Autonomous)
+- Same workflow as Guided, but ALL pause points are skipped
+- Agent runs through Steps 1-5 autonomously
+- Student receives a complete first draft with citations at the end
+- Clear disclaimer displayed before and after:
+
+DISCLAIMER TEXT:
+"V1 Drafts provides AI-assisted research and writing tools to accelerate your academic workflow. The hands-off mode generates a complete first draft autonomously. This draft is a starting point and MUST be reviewed, verified, and edited by you before submission. V1 Drafts is not responsible for the accuracy, originality, or academic integrity of content submitted to journals or universities. You are solely responsible for your submissions. Use of hands-off mode for direct submission without review is not recommended."
+
+---
+
+### 4.3 SMART PAPER SEARCH
+
+#### 4.3.1 Overview
+A unified search interface that queries PubMed, Semantic Scholar, and OpenAlex simultaneously. Designed to feel familiar to medical students who are accustomed to PubMed.
+
+#### 4.3.2 Data Sources (All Free APIs)
+- PubMed E-utilities API (NCBI): 36M+ biomedical citations. Primary source for medical literature.
+- Semantic Scholar API (Allen AI): 200M+ papers across all disciplines. Provides AI-generated abstracts, citation graphs, and SPECTER2 embeddings.
+- OpenAlex API: 240M+ works. Open-source alternative to proprietary databases.
+
+#### 4.3.3 Search Features
+- Single search bar (PubMed-like familiar interface)
+- Results aggregated from all three sources, deduplicated
+- Filters: Year range, study type, journal, open access only, human studies only
+- Sort by: Relevance, date (newest first), citation count
+- Each result shows: Title, authors, journal, year, abstract preview, open access badge
+- Quick actions: Save to library, view full abstract, find related papers
+
+#### 4.3.4 Related Papers Discovery
+- For any paper, find related papers using Semantic Scholar's recommendation API
+- "More like this" button on each search result and library item
+- Useful for expanding literature review in both Learn and Draft modes
+
+---
+
+### 4.4 DEEP RESEARCH
+
+#### 4.4.1 Overview
+A "Deep Research" button that launches an autonomous research agent. The agent takes a topic, iteratively searches for papers, evaluates results, refines queries, and produces a comprehensive research summary with citations.
+
+#### 4.4.2 Implementation
+- Powered by GPT Researcher (open-source, Apache 2.0, 25,200+ GitHub stars)
+- Runs as a Python microservice alongside the main Next.js application
+- GPT Researcher already includes a Next.js frontend that we customize
+- Supports 100+ LLMs via litellm for cost flexibility
+
+#### 4.4.3 User Experience
+- Student enters a research topic/question
+- Clicks "Deep Research" button
+- Agent runs for 2-5 minutes (progress shown in real-time)
+- Produces a structured research report with:
+  - Executive summary
+  - Key findings organized by theme
+  - Identified gaps in the literature
+  - Cited sources with links
+- Student can save the report and use it as a starting point for their paper
+- Papers cited in the report can be added to the student's library
+
+---
+
+### 4.5 PAPER LIBRARY
+
+#### 4.5.1 Overview
+A personal library where students save, organize, and manage their research papers and PDFs.
+
+#### 4.5.2 Features
+- Save papers from search results with one click
+- Upload own PDFs (stored in Convex file storage / Google Cloud)
+- Organize papers into collections/folders (e.g., "Thesis Chapter 1", "Methodology Papers")
+- View paper metadata: title, authors, journal, year, abstract, DOI
+- Quick actions: Open original (external link), download (if open access), view in app
+- Sort by: Date added, date published, alphabetical, journal
+- Search within library
+
+#### 4.5.3 PDF Handling
+- Open access papers: Download and store in the app, viewable in-app
+- Copyrighted papers: Link to external source (PubMed, journal website)
+- Uploaded PDFs: Stored in cloud storage, viewable in-app
+- Basic PDF viewer for stored/uploaded PDFs
+
+---
+
+### 4.6 WRITING EDITOR
+
+#### 4.6.1 Overview
+A clean, Google Docs-like writing editor built with Tiptap (open-source, MIT license). Designed to feel familiar and non-overwhelming.
+
+#### 4.6.2 Features
+- Rich text formatting: Bold, italic, underline, headings (H1-H6), lists, block quotes
+- IMRAD section templates (pre-structured document with section headers)
+- Auto-save to Convex database (drafts never lost)
+- Multiple drafts per user (dashboard shows all drafts)
+- Insert citations from library while writing (inline citation insertion)
+- Word count display
+- Full-screen / distraction-free writing mode
+- Undo/redo
+- Mobile responsive (works on phones and tablets)
+
+#### 4.6.3 AI Integration in Editor
+- In Learn Mode: AI panel on the side with Socratic questions, sentence starters, examples
+- In Draft Mode: AI writes directly into the editor, section by section
+- Inline AI suggestions (non-intrusive, dismiss-able)
+
+---
+
+### 4.7 BIBLIOGRAPHY GENERATOR
+
+#### 4.7.1 Overview
+Automatically generates formatted bibliography/reference lists from papers cited in the document. Powered by Citation.js (open-source, MIT license), which uses Citation Style Language (CSL) -- the same engine behind Zotero and Mendeley.
+
+#### 4.7.2 Supported Styles (V1)
+- Vancouver (most common in medical journals)
+- APA (American Psychological Association)
+- AMA (American Medical Association)
+- Chicago
+
+#### 4.7.3 Features
+- Auto-generate bibliography from all cited papers in one click
+- Switch between citation styles instantly
+- In-text citation formatting (numbered for Vancouver, author-year for APA)
+- Bibliography updates automatically as citations are added/removed
+- Export bibliography separately if needed
+- Targets major medical journals: NEJM, Lancet, JAMA, JACC, Nature -- formatted correctly
+
+#### 4.7.4 Future Expansion
+- Additional styles added on demand (10,000+ CSL styles available)
+- Journal-specific formatting (auto-detect from journal name)
+
+---
+
+### 4.8 PLAGIARISM CHECK
+
+#### 4.8.1 Overview
+Built-in plagiarism detection as a separate feature/button within the app. Powered by Copyleaks API with official Node.js SDK. White-labeled -- users see V1 Drafts branding, not Copyleaks.
+
+#### 4.8.2 What It Checks Against
+- 60+ trillion web pages
+- 16,000+ academic journals (Elsevier, Wiley, Frontiers, etc.)
+- Open access repositories
+- Cross-user content repository
+
+#### 4.8.3 User Experience
+- "Check Plagiarism" button in the writing editor toolbar
+- Results displayed in a side panel:
+  - Overall similarity score (percentage)
+  - Source-by-source breakdown
+  - Highlighted matching text in the document
+  - Links to matching sources
+- Student can review each flagged section and decide to revise or keep
+
+#### 4.8.4 Usage Limits (Tiered)
+
+| Tier | Plagiarism Checks | Requirements |
+|---|---|---|
+| No signup | 1 check (limited to 1,000 words) | None -- acquisition funnel |
+| Free account | 2 checks/month | Email signup required |
+| Paid subscriber (Basic) | 5 checks/month | INR 1,000/month subscription |
+| Paid subscriber (Pro - future) | 20 checks/month | INR 2,000/month subscription |
+
+#### 4.8.5 Quality Standard
+The plagiarism check must be robust enough that a student preparing a paper for Nature, JAMA, Lancet, or NEJM can trust the results. While not Turnitin-level (which is prohibitively expensive), Copyleaks checks against 16,000+ journals and 60T+ web pages, which is sufficient for first-pass screening. Students submitting to top-tier journals should be advised to also check with their institution's tools.
+
+---
+
+### 4.9 AI DETECTION
+
+#### 4.9.1 Overview
+A separate feature/button (NOT integrated into plagiarism check) that detects AI-generated content in the document. Powered by Copyleaks API (same SDK as plagiarism, different endpoint). Designed as an advisory tool, not an enforcement mechanism.
+
+#### 4.9.2 User Experience
+- "AI Detection" button (separate from plagiarism check) in the writing editor toolbar
+- Results displayed in a dedicated panel:
+  - Overall AI probability score (0-100%)
+  - Visual progress bar (color-coded: green = low risk, yellow = medium, red = high)
+  - Sentence-level highlighting showing which sentences are flagged
+  - Explanation of what each flag means
+
+#### 4.9.3 Important Disclaimer (Always Displayed)
+"AI detection provides an estimate, not a definitive conclusion. Scientific and medical writing may show elevated scores due to standardized structure and specialized vocabulary. Non-native English writers may also see higher scores. These results should not be used as sole evidence of AI use. V1 Drafts recommends using AI detection as one of several tools for ensuring academic integrity."
+
+#### 4.9.4 Usage Limits (Tiered)
+
+| Tier | AI Detection Checks | Requirements |
+|---|---|---|
+| No signup | None | N/A |
+| Free account | 2 checks/month | Email signup required |
+| Paid subscriber (Basic) | 10 checks/month | INR 1,000/month subscription |
+| Paid subscriber (Pro - future) | Unlimited | INR 2,000/month subscription |
+
+#### 4.9.5 Why Separate from Plagiarism
+- Different use case: plagiarism checks for originality, AI detection checks for integrity
+- Different mental model for the user
+- Competitors (Paperpal, SciSpace) offer them as separate features
+- Allows independent tiering and pricing
+
+---
+
+### 4.10 EXPORT
+
+#### 4.10.1 Supported Formats (V1)
+- DOCX (Microsoft Word) -- primary format for university thesis submission
+- PDF -- primary format for journal submission
+
+#### 4.10.2 What Gets Exported
+- Complete document with formatting preserved
+- Inline citations formatted per selected style
+- Bibliography/reference list appended at the end
+- Section headers and structure intact
+
+#### 4.10.3 Implementation
+- DOCX: Generated using the `docx` npm library (MIT license)
+- PDF: Generated using `jspdf` npm library (MIT license)
+
+#### 4.10.4 Future Expansion
+- LaTeX export (following OpenAI Prism's approach)
+
+---
+
+### 4.11 USER ACCOUNTS AND AUTHENTICATION
+
+#### 4.11.1 Provider
+Clerk (managed authentication microservice)
+
+#### 4.11.2 Auth Methods
+- Google login ("Sign in with Google") -- primary, one-click
+- Email + password -- traditional alternative
+
+#### 4.11.3 User Profile
+- Name, email, institution (optional), specialization (optional)
+- Subscription status (free / paid)
+- Usage dashboard (plagiarism checks remaining, AI detection checks remaining)
+
+#### 4.11.4 Account Tiers
+
+FREE ACCOUNT:
+- Email signup required
+- Paper search: Unlimited
+- Paper library: Limited (50 papers)
+- Learn Mode: Limited sessions (3/month)
+- Draft Mode: Not available
+- Deep Research: Not available
+- Plagiarism: 2 checks/month
+- AI Detection: 2 checks/month
+- Export: Not available (view only)
+
+PAID ACCOUNT (V1 Drafts Basic -- INR 1,000/month):
+- Everything in Free
+- Paper library: Unlimited
+- Learn Mode: Unlimited
+- Draft Mode: Unlimited (Guided + Hands-off)
+- Deep Research: 5 reports/month
+- Plagiarism: 5 checks/month
+- AI Detection: 10 checks/month
+- Export: Unlimited (DOCX + PDF)
+- Bibliography generation: Unlimited
+
+PAID ACCOUNT (V1 Drafts Pro -- INR 2,000/month, FUTURE):
+- Everything in Basic
+- Plagiarism: 20 checks/month
+- AI Detection: Unlimited
+- Deep Research: 15 reports/month
+- Priority AI processing
+- Multi-LLM model selection
+
+#### 4.11.5 Free Funnel (No Signup Required)
+- 1 plagiarism check (up to 1,000 words) without any signup
+- Purpose: Customer acquisition through organic search ("free plagiarism checker")
+- After check: Prompt to sign up for free account to get more features
+
+---
+
+### 4.12 PAYMENTS
+
+#### 4.12.1 Provider
+Razorpay (India-focused, supports UPI, cards, net banking)
+
+#### 4.12.2 Subscription Model
+- Monthly subscription: INR 1,000/month
+- Annual subscription (future): INR 10,000/year (save ~17%)
+- Payment methods: UPI, debit/credit cards, net banking
+- Auto-renewal with option to cancel anytime
+
+#### 4.12.3 Implementation
+- Razorpay Subscriptions API for recurring payments
+- Webhook integration for payment status updates
+- Grace period: 3 days for failed payments before access suspension
+- Receipts: Automated email receipts for each payment
+
+---
+
+### 4.13 MOBILE RESPONSIVE DESIGN
+
+#### 4.13.1 Requirements
+- Full functionality on mobile browsers (Chrome, Safari)
+- Responsive layout using Tailwind CSS breakpoints
+- Touch-friendly UI elements (minimum 44px touch targets)
+- Paper search and library fully usable on mobile
+- Writing editor functional on mobile (though laptop recommended for long writing sessions)
+- Plagiarism and AI detection results viewable on mobile
+
+#### 4.13.2 NOT a Native App
+- V1 is a mobile-responsive web app, not a native iOS/Android app
+- Progressive Web App (PWA) capabilities can be added later
+
+---
+
+## 5. TECHNICAL ARCHITECTURE
+
+### 5.1 System Architecture Overview
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    V1 Drafts (Next.js)                   │
+│                    Hosted on Vercel                       │
+├─────────────────────────────────────────────────────────┤
+│                                                          │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌─────────┐ │
+│  │  Clerk   │  │  Tiptap  │  │ Razorpay │  │shadcn/ui│ │
+│  │  Auth    │  │  Editor  │  │ Payments │  │Tailwind │ │
+│  └──────────┘  └──────────┘  └──────────┘  └─────────┘ │
+│                                                          │
+│  ┌─────────────────────────────────────────────────┐    │
+│  │              Mastra (Agent Framework)            │    │
+│  │                                                  │    │
+│  │  Agent: Learn Mode Coach (Socratic, IMRAD)      │    │
+│  │  Agent: Draft Mode Writer (Outline + Write)     │    │
+│  │  Agent: Paper Finder (Search + Recommend)       │    │
+│  │                                                  │    │
+│  │  Workflow: Learn Mode Pipeline                   │    │
+│  │    Stage 1: Understand Topic    [SUSPEND]       │    │
+│  │    Stage 2: Literature Explore  [SUSPEND]       │    │
+│  │    Stage 3: Outline Development [SUSPEND]       │    │
+│  │    Stage 4: Guided Drafting     [SUSPEND]       │    │
+│  │    Stage 5: Feedback & Revision [SUSPEND]       │    │
+│  │                                                  │    │
+│  │  Workflow: Draft Mode Pipeline                   │    │
+│  │    Step 1: Topic -> Outline     [SUSPEND]       │    │
+│  │    Step 2: Fetch Papers         [SUSPEND]       │    │
+│  │    Step 3: Approve Papers       [SUSPEND]       │    │
+│  │    Step 4: Write Draft          [SUSPEND]       │    │
+│  │    Step 5: Complete + Cite                      │    │
+│  │                                                  │    │
+│  │  Workflow: Hands-Off Pipeline                    │    │
+│  │    (Same steps, no SUSPEND points + disclaimer) │    │
+│  └──────────────┬──────────────────────────────────┘    │
+│                 │                                        │
+├─────────────────┼────────────────────────────────────────┤
+│  External APIs: │                                        │
+│  ┌──────────────▼───────────┐                           │
+│  │  GLM-4.7 (Zhipu AI)     │  LLM Brain (V1)          │
+│  │  $0.07/1M in, $0.40/1M  │                           │
+│  └──────────────────────────┘                           │
+│  ┌──────────────────────────┐                           │
+│  │  PubMed E-utilities API  │  Paper Search (Free)     │
+│  │  Semantic Scholar API    │                           │
+│  │  OpenAlex API            │                           │
+│  └──────────────────────────┘                           │
+│  ┌──────────────────────────┐                           │
+│  │  Copyleaks API           │  Plagiarism + AI Detect  │
+│  │  (Node.js SDK)           │                           │
+│  └──────────────────────────┘                           │
+│  ┌──────────────────────────┐                           │
+│  │  Citation.js (CSL)       │  Bibliography (Local)    │
+│  └──────────────────────────┘                           │
+│  ┌──────────────────────────┐                           │
+│  │  Razorpay API            │  Payments                │
+│  └──────────────────────────┘                           │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│  Python Microservice (Google Cloud):                     │
+│  ┌──────────────────────────┐                           │
+│  │  GPT Researcher          │  Deep Research            │
+│  │  (Docker container)      │                           │
+│  └──────────────────────────┘                           │
+│                                                          │
+├──────────────────────────────────────────────────────────┤
+│  Database & Storage:                                     │
+│  ┌──────────────────────────┐                           │
+│  │  Convex                  │  Database + File Storage  │
+│  │  - User data             │                           │
+│  │  - Drafts & documents    │                           │
+│  │  - Paper library         │                           │
+│  │  - Session history       │                           │
+│  │  - File storage (PDFs)   │                           │
+│  └──────────────────────────┘                           │
+└──────────────────────────────────────────────────────────┘
+```
+
+### 5.2 Tech Stack (Complete)
+
+| Layer | Technology | License | Purpose | Cost |
+|---|---|---|---|---|
+| Frontend Framework | Next.js 14+ (App Router) | MIT | Web application framework | Free |
+| UI Components | shadcn/ui | MIT | Pre-built, accessible components | Free |
+| Styling | Tailwind CSS | MIT | Responsive design, utility-first CSS | Free |
+| Frontend Design | Anthropic Frontend Design Skill | N/A | High-quality UI design with Opus | Built-in |
+| Database | Convex | Proprietary (free tier) | All app data, real-time sync | Free -> ~$25/mo |
+| Authentication | Clerk | Proprietary (free tier) | User signup, login, session management | Free up to 10K users |
+| Agent Framework | Mastra | Apache 2.0 | AI agents, workflows, human-in-the-loop | Free |
+| AI SDK | Vercel AI SDK (via Mastra) | Apache 2.0 | LLM provider abstraction, streaming | Free |
+| LLM (V1) | GLM-4.7 (Zhipu AI) | Open-source model | AI brain for writing + research | $0.07/1M in, $0.40/1M out |
+| Paper Search | PubMed E-utilities API | Public | 36M+ biomedical citations | Free |
+| Paper Search | Semantic Scholar API | Public | 200M+ papers, recommendations | Free |
+| Paper Search | OpenAlex API | Public | 240M+ works | Free |
+| Deep Research | GPT Researcher | Apache 2.0 | Autonomous research agent | Free (self-hosted) |
+| Text Editor | Tiptap | MIT | Rich text editing | Free |
+| Citations | Citation.js | MIT | Bibliography generation (CSL) | Free |
+| Plagiarism | Copyleaks API | Commercial | Plagiarism detection | ~$17-50/mo |
+| AI Detection | Copyleaks API | Commercial | AI content detection | Bundled with plagiarism |
+| DOCX Export | docx (npm) | MIT | Word document generation | Free |
+| PDF Export | jspdf (npm) | MIT | PDF generation | Free |
+| PDF Viewing | PDF.js | Apache 2.0 | In-app PDF viewer | Free |
+| Payments | Razorpay | Commercial | UPI, cards, subscriptions | 2% per transaction |
+| Hosting (Frontend) | Vercel | Commercial (free tier) | Next.js deployment, CDN | Free -> ~$20/mo |
+| Hosting (Python) | Google Cloud Run | Commercial | GPT Researcher service | ~$10-30/mo |
+| Domain | Custom domain | N/A | v1drafts.com or similar | ~$12/year |
+
+### 5.3 Estimated Monthly Infrastructure Costs
+
+AT LAUNCH (0-100 users):
+- Vercel: Free tier ($0)
+- Convex: Free tier ($0)
+- Clerk: Free tier ($0)
+- GLM-4.7 API: ~$5-20/month (depending on usage)
+- Copyleaks: ~$17-50/month
+- Google Cloud (GPT Researcher): ~$10-30/month
+- Domain: ~$1/month
+- TOTAL: ~$33-101/month (INR 2,800-8,500/month)
+
+AT 100 PAYING USERS:
+- Revenue: INR 100,000/month (~$1,200/month)
+- Infrastructure: ~$150-300/month
+- Margin: ~75-88%
+
+AT 1,000 PAYING USERS:
+- Revenue: INR 1,000,000/month (~$12,000/month)
+- Infrastructure: ~$500-1,500/month (negotiate volume pricing)
+- Margin: ~88-96%
+
+---
+
+## 6. DATA MODEL (Convex Schema)
+
+### 6.1 Core Entities
+
+USERS
+- id (auto)
+- clerkId (string, from Clerk)
+- email (string)
+- name (string)
+- institution (string, optional)
+- specialization (string, optional)
+- subscriptionStatus (enum: free, basic, pro)
+- subscriptionExpiry (datetime, optional)
+- razorpayCustomerId (string, optional)
+- plagiarismChecksUsed (number)
+- aiDetectionChecksUsed (number)
+- deepResearchUsed (number)
+- createdAt (datetime)
+- updatedAt (datetime)
+
+DOCUMENTS (Drafts/Papers)
+- id (auto)
+- userId (reference to Users)
+- title (string)
+- content (JSON, Tiptap document format)
+- mode (enum: learn, draft_guided, draft_handsoff)
+- currentStage (string, tracks progress through workflow)
+- outlineData (JSON, approved outline)
+- approvedPapers (JSON, papers approved per section)
+- citationStyle (enum: vancouver, apa, ama, chicago)
+- wordCount (number)
+- status (enum: in_progress, completed, archived)
+- createdAt (datetime)
+- updatedAt (datetime)
+
+PAPERS (Saved to Library)
+- id (auto)
+- userId (reference to Users)
+- collectionId (reference to Collections, optional)
+- externalId (string, PubMed ID / Semantic Scholar ID / DOI)
+- source (enum: pubmed, semantic_scholar, openalex, uploaded)
+- title (string)
+- authors (string array)
+- journal (string)
+- year (number)
+- abstract (string)
+- doi (string, optional)
+- url (string, external link)
+- pdfFileId (string, Convex file ID, if stored)
+- isOpenAccess (boolean)
+- metadata (JSON, additional metadata)
+- createdAt (datetime)
+
+COLLECTIONS (Library Folders)
+- id (auto)
+- userId (reference to Users)
+- name (string)
+- description (string, optional)
+- createdAt (datetime)
+
+CITATIONS (In-Document Citations)
+- id (auto)
+- documentId (reference to Documents)
+- paperId (reference to Papers)
+- sectionName (string, which section the citation is in)
+- position (number, position in document)
+- citationText (string, formatted citation text)
+
+PLAGIARISM_CHECKS
+- id (auto)
+- userId (reference to Users, optional for no-signup checks)
+- documentId (reference to Documents, optional)
+- inputText (string, the text checked)
+- wordCount (number)
+- overallSimilarity (number, percentage)
+- sources (JSON, array of matching sources)
+- copyleaksScanId (string)
+- status (enum: pending, completed, failed)
+- createdAt (datetime)
+
+AI_DETECTION_CHECKS
+- id (auto)
+- userId (reference to Users)
+- documentId (reference to Documents, optional)
+- inputText (string)
+- wordCount (number)
+- overallAiScore (number, percentage)
+- sentenceResults (JSON, per-sentence scores)
+- copyleaksScanId (string)
+- status (enum: pending, completed, failed)
+- createdAt (datetime)
+
+DEEP_RESEARCH_REPORTS
+- id (auto)
+- userId (reference to Users)
+- topic (string)
+- report (string, markdown content)
+- citedPapers (JSON, array of cited papers)
+- status (enum: pending, in_progress, completed, failed)
+- createdAt (datetime)
+
+LEARN_MODE_SESSIONS
+- id (auto)
+- userId (reference to Users)
+- documentId (reference to Documents)
+- currentStage (enum: understand, literature, outline, drafting, feedback)
+- conversationHistory (JSON, array of messages between student and AI)
+- feedbackGiven (JSON, structured feedback data)
+- createdAt (datetime)
+- updatedAt (datetime)
+
+SUBSCRIPTIONS
+- id (auto)
+- userId (reference to Users)
+- razorpaySubscriptionId (string)
+- planType (enum: basic, pro)
+- status (enum: active, paused, cancelled, expired)
+- currentPeriodStart (datetime)
+- currentPeriodEnd (datetime)
+- createdAt (datetime)
+
+---
+
+## 7. USER INTERFACE SPECIFICATIONS
+
+### 7.1 Design Philosophy
+- Clean, non-overwhelming, familiar
+- Google Docs simplicity meets PubMed functionality
+- No unnecessary visual complexity
+- Mobile responsive from day one
+- Built using Anthropic Frontend Design Skill with Opus for high-quality UI
+
+### 7.2 Key Screens
+
+SCREEN 1: LANDING PAGE
+- Hero section: Product name, tagline, key value proposition
+- "Made by a doctor, for doctors" messaging
+- Feature highlights (Learn Mode, Draft Mode, Paper Search, Bibliography, Plagiarism, AI Detection)
+- Free plagiarism check CTA (acquisition funnel)
+- Pricing section
+- Testimonials (once available)
+- Sign up / Login buttons
+
+SCREEN 2: DASHBOARD (Post-Login)
+- Welcome message with user's name
+- Quick actions: "Start New Paper", "Search Papers", "Continue Draft"
+- Recent drafts list with status
+- Usage stats (checks remaining, sessions this month)
+- Mode selection: Learn Mode vs Draft Mode for new papers
+
+SCREEN 3: PAPER SEARCH
+- PubMed-like clean search interface
+- Search bar with filters below
+- Results list with paper cards
+- Quick actions per result: Save to Library, View Abstract, Find Related
+- Side panel for detailed paper view
+
+SCREEN 4: PAPER LIBRARY
+- Collections/folders in left sidebar
+- Paper list in main area
+- Upload PDF button
+- Sort and filter options
+- Paper detail view with metadata
+
+SCREEN 5: WRITING EDITOR (Learn Mode)
+- Left panel: Document editor (Tiptap)
+- Right panel: AI Coach conversation
+  - Socratic questions
+  - Sentence starters
+  - Examples from published papers
+  - Stage progress indicator (Stage 1-5)
+  - Feedback panel (during revision stage)
+- Top bar: Mode indicator (LEARN), section navigation, word count
+- Bottom bar: Citation insertion, save status
+
+SCREEN 6: WRITING EDITOR (Draft Mode)
+- Left panel: Document editor (Tiptap) -- AI writes here
+- Right panel: Agent workflow status
+  - Current step indicator (Step 1-5)
+  - Outline review and approval interface
+  - Paper review and approval interface (per section)
+  - Progress of draft generation
+- Top bar: Mode indicator (DRAFT), section navigation, word count
+- Bottom bar: Citation insertion, save status
+
+SCREEN 7: PLAGIARISM CHECK RESULTS
+- Overall similarity score (large, prominent)
+- Source-by-source breakdown list
+- Document view with highlighted matching text
+- Side panel with source details for each match
+- "Revise" action to jump to matched text in editor
+
+SCREEN 8: AI DETECTION RESULTS
+- Overall AI probability score (0-100%) with color-coded bar
+- Sentence-level view with highlighting
+- Disclaimer always visible
+- Side panel with per-sentence details
+
+SCREEN 9: DEEP RESEARCH
+- Topic input field
+- "Start Deep Research" button
+- Real-time progress view (what the agent is searching, evaluating)
+- Final report displayed as formatted markdown
+- "Add to Library" buttons for cited papers
+- "Use for Paper" button to import into writing editor
+
+SCREEN 10: EXPORT
+- Preview of final document
+- Citation style selector (Vancouver, APA, AMA, Chicago)
+- Format selector (DOCX, PDF)
+- Download button
+- Bibliography preview
+
+SCREEN 11: ACCOUNT / SETTINGS
+- Profile information (name, email, institution)
+- Subscription status and management
+- Usage dashboard (checks used/remaining)
+- Payment history
+- Sign out
+
+SCREEN 12: PRICING PAGE
+- Free tier details
+- Basic plan (INR 1,000/month) details
+- Pro plan (future, INR 2,000/month) details
+- Feature comparison table
+- Razorpay payment integration
+- FAQ section
+
+---
+
+## 8. BUILD TIMELINE
+
+### Phase 1: Foundation (Month 1-2)
+- Project setup (Next.js + Convex + Clerk + Vercel + Mastra)
+- Authentication system (Google login, email/password via Clerk)
+- Database schema implementation in Convex
+- Basic UI shell (navigation, layout, responsive design) using Anthropic Frontend Design Skill
+- Landing page
+- Dashboard (post-login)
+- User profile and settings
+
+### Phase 2: Paper Search and Library (Month 2-3)
+- PubMed API integration
+- Semantic Scholar API integration
+- OpenAlex API integration
+- Unified search interface with deduplication
+- Search filters (year, type, relevance, etc.)
+- Related papers feature (Semantic Scholar recommendations)
+- Paper library (save, organize, collections)
+- PDF upload and storage (Convex)
+- Basic PDF viewer
+
+### Phase 3: Writing Editor and Citations (Month 3-4)
+- Tiptap editor setup with full formatting
+- IMRAD section templates
+- Auto-save to Convex
+- Draft management (create, list, archive)
+- Citation.js integration
+- Vancouver, APA, AMA, Chicago styles
+- Inline citation insertion from library
+- Auto-bibliography generation
+- DOCX export
+- PDF export
+
+### Phase 4: Draft Mode -- Agentic Writing Engine (Month 4-5)
+- GLM-4.7 API integration via Mastra Zhipu provider
+- Mastra workflow: Draft Mode Guided Pipeline
+  - Step 1: Topic input and outline generation
+  - Step 2: Outline review/approval (SUSPEND/RESUME)
+  - Step 3: Paper fetching per section
+  - Step 4: Paper review/approval per section (SUSPEND/RESUME)
+  - Step 5: Section-by-section draft writing
+- Mastra workflow: Hands-Off Pipeline (no suspends + disclaimer)
+- Draft appears in Tiptap editor with inline citations
+- Deep Research integration (GPT Researcher Python service on Google Cloud)
+
+### Phase 5: Learn Mode -- Writing Coach (Month 5-6)
+- Mastra workflow: Learn Mode Pipeline
+  - Stage 1: Understand Topic (Socratic questioning agent)
+  - Stage 2: Literature Exploration (guided search)
+  - Stage 3: Outline Development (guided, never writes for student)
+  - Stage 4: Guided Drafting (sentence starters, examples)
+  - Stage 5: Feedback and Revision (structured, one-at-a-time)
+- AI Coach panel in editor (conversation UI)
+- Sentence starter generation
+- Published paper example retrieval
+- Template generation (on request)
+- Stage progress tracking
+- IMRAD enforcement (flexible)
+
+### Phase 6: Plagiarism, AI Detection, Payments, and Launch (Month 6-7)
+- Copyleaks API integration (Node.js SDK)
+  - Plagiarism check feature
+  - AI detection feature (separate panel)
+  - Results display UI
+  - Usage tracking and limits
+- Razorpay integration
+  - Subscription creation and management
+  - UPI and card payments
+  - Webhook handling for payment status
+  - Usage limit enforcement based on subscription tier
+- Free funnel (1 plagiarism check without signup)
+- Mobile responsive polish
+- Performance optimization
+- Beta testing with medical students (founder's network)
+- Bug fixes from beta feedback
+- LAUNCH
+
+### Phase 7: Post-Launch Iteration (Month 7+)
+- User feedback incorporation
+- Performance monitoring and optimization
+- Additional citation styles
+- Additional LLM providers
+- Chat with PDF feature
+- Paraphrasing tool
+- LaTeX export
+- Supervisor visibility dashboard
+- Pro plan launch (INR 2,000/month)
+- Chrome extension
+
+---
+
+## 9. OPEN-SOURCE COMPONENTS
+
+All pre-built, licensable components from GitHub that we will incorporate to minimize custom code:
+
+| Component | GitHub | License | What it replaces |
+|---|---|---|---|
+| Next.js | vercel/next.js | MIT | Custom web framework |
+| Tiptap | ueberdosis/tiptap | MIT | Custom text editor |
+| Citation.js | citation-js/citation-js | MIT | Custom citation engine |
+| GPT Researcher | assafelovic/gpt-researcher | Apache 2.0 | Custom research agent |
+| shadcn/ui | shadcn/ui | MIT | Custom UI components |
+| Tailwind CSS | tailwindlabs/tailwindcss | MIT | Custom CSS |
+| PDF.js | nicolo-ribaudo/nicolo-ribaudo.github.io (Mozilla) | Apache 2.0 | Custom PDF viewer |
+| docx | dolanmiu/docx | MIT | Custom DOCX generation |
+| jspdf | parallax/jsPDF | MIT | Custom PDF generation |
+| Mastra | mastra-ai/mastra | Apache 2.0 | Custom agent framework |
+
+---
+
+## 10. API KEYS AND ACCOUNTS REQUIRED
+
+The founder needs to create the following accounts and obtain API keys:
+
+| Service | Account URL | What for | Cost |
+|---|---|---|---|
+| Vercel | vercel.com | Hosting | Free tier |
+| Convex | convex.dev | Database | Free tier |
+| Clerk | clerk.com | Authentication | Free tier |
+| Zhipu AI / Z.AI | z.ai or bigmodel.cn | GLM-4.7 API key | Pay per token |
+| Copyleaks | copyleaks.com | Plagiarism + AI detection | ~$17/mo |
+| Razorpay | razorpay.com | Payment processing | 2% per transaction |
+| Google Cloud | cloud.google.com | GPT Researcher hosting | ~$10-30/mo |
+| PubMed (NCBI) | ncbi.nlm.nih.gov/account | E-utilities API key | Free |
+| Semantic Scholar | api.semanticscholar.org | Paper search API key | Free |
+| Domain registrar | Any (Namecheap, GoDaddy, etc.) | Custom domain | ~$12/year |
+
+Note: OpenAlex API does not require an API key (polite pool with email header).
+
+---
+
+## 11. RISK ASSESSMENT
+
+### 11.1 Technical Risks
+- RISK: GLM-4.7 quality may not be sufficient for high-quality academic writing
+  MITIGATION: Mastra supports 53+ LLM providers. Can switch to Claude or GPT-4o if needed.
+- RISK: GPT Researcher Python service adds deployment complexity
+  MITIGATION: Docker containerization, Google Cloud Run for managed deployment.
+- RISK: Copyleaks API rate limits or downtime
+  MITIGATION: Implement retry logic, graceful degradation (show "service temporarily unavailable").
+
+### 11.2 Business Risks
+- RISK: Low conversion from free funnel to paid subscribers
+  MITIGATION: Ensure free plagiarism check delivers high-quality results that demonstrate app value.
+- RISK: Copyleaks costs eat into margins at scale
+  MITIGATION: Tiered check limits, negotiate volume pricing as user base grows.
+- RISK: Competition from well-funded SciSpace/Paperpal
+  MITIGATION: "Made by a doctor, for doctors" positioning + Learn Mode differentiator + India-first focus.
+- RISK: Medical students may prefer free ChatGPT over paid tool
+  MITIGATION: V1 Drafts offers what ChatGPT cannot: paper search, citations, bibliography, plagiarism check, structured guidance -- all in one place.
+
+### 11.3 Legal Risks
+- RISK: Copyright issues with displaying copyrighted paper content
+  MITIGATION: Only display titles, authors, abstracts (fair use). Full text linked externally. Open access papers stored. Uploaded PDFs are user's responsibility.
+- RISK: Liability for AI-generated content in published papers
+  MITIGATION: Clear disclaimers on all AI-generated content. Hands-off mode disclaimer prominently displayed.
+
+---
+
+## 12. SUCCESS METRICS
+
+### 12.1 Launch Metrics (First 3 Months Post-Launch)
+- 500+ free account signups
+- 50+ paid subscribers
+- 1,000+ free plagiarism checks performed (funnel metric)
+- <5% churn rate on paid subscribers
+
+### 12.2 Growth Metrics (6-12 Months Post-Launch)
+- 500+ paid subscribers
+- INR 500,000+/month revenue
+- 30+ papers published by users citing V1 Drafts as a tool
+- 4.0+ average rating if listed on any review platform
+- <3% monthly churn
+
+### 12.3 Product Metrics
+- Average time to first draft: <2 hours (Draft Mode)
+- Learn Mode completion rate: >40% of students complete all 5 stages
+- Paper search satisfaction: >80% of searches result in at least one saved paper
+- Plagiarism check accuracy: Zero user complaints about missed plagiarism in first 6 months
+
+---
+
+## 13. GLOSSARY
+
+- IMRAD: Introduction, Methods, Results, and Discussion -- standard structure for medical research papers
+- CSL: Citation Style Language -- open standard for formatting citations, used by Zotero and Mendeley
+- PubMed: Free search engine for biomedical and life sciences literature, maintained by NCBI
+- Semantic Scholar: AI-powered research tool by Allen Institute for AI, covering 200M+ papers
+- OpenAlex: Open catalog of scholarly papers, authors, institutions, and more
+- Tiptap: Open-source headless rich text editor framework for the web
+- Mastra: TypeScript-first AI agent framework built on Vercel AI SDK
+- GLM-4.7: Large language model by Zhipu AI, affordable and capable
+- Convex: Reactive database platform with built-in file storage
+- Clerk: Authentication and user management platform
+- Copyleaks: Commercial plagiarism and AI detection API provider
+- Razorpay: Indian payment gateway supporting UPI, cards, and subscriptions
+- GPT Researcher: Open-source autonomous research agent
+
+---
+
+## END OF PRD
+## Document Version: 1.0
+## Last Updated: February 6, 2026
+## Next Step: Parse this PRD with Task Master to generate build tasks
