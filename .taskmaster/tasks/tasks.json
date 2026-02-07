@@ -479,8 +479,77 @@
         "dependencies": [
           "6"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Install Citation.js and create bibliography service with CSL-JSON conversion",
+            "description": "Install @citation-js/core and @citation-js/plugin-csl packages, then create lib/bibliography.ts service to convert paper metadata from Convex papers table to CSL-JSON format and generate formatted bibliography entries for Vancouver, APA, AMA, and Chicago styles.",
+            "dependencies": [],
+            "details": "1. Run: npm install @citation-js/core @citation-js/plugin-csl\n2. Create lib/bibliography.ts with:\n   - Type definitions for CitationStyle ('vancouver' | 'apa' | 'ama' | 'chicago')\n   - convertPaperToCSL(paper) function: maps Convex papers schema (title, authors[], journal, year, doi, url) to CSL-JSON format (title, author: [{family, given}], issued: {date-parts}, container-title, DOI, URL)\n   - generateBibliography(citations, style) function: takes Citation[] with paperId references, fetches paper metadata, converts to CSL-JSON array, uses Citation.js Cite() to format according to style parameter, returns string[] of formatted entries\n   - Handle edge cases: single author, 7+ authors (et al. truncation), missing DOI, missing journal\n3. Fetch CSL style files from Zotero style repository (vancouver.csl, apa.csl, american-medical-association.csl, chicago-author-date.csl) and store in public/csl-styles/\n4. Configure Citation.js to load custom CSL styles from local files\n5. Export utility functions for use in editor components",
+            "status": "done",
+            "testStrategy": "Unit tests: (1) Test convertPaperToCSL with sample paper containing all fields, verify CSL-JSON structure. (2) Test convertPaperToCSL with missing fields (no DOI, no journal), verify graceful handling. (3) Generate Vancouver bibliography from 3 sample papers, verify numbered format [1], [2], [3]. (4) Generate APA bibliography, verify author-year format with proper et al. truncation for 7+ authors. (5) Test edge case with 1 author, verify no 'et al.' appears.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T08:21:51.798Z"
+          },
+          {
+            "id": 2,
+            "title": "Implement bibliography rendering component with auto-update on citation changes",
+            "description": "Create BibliographySection component that queries citations from Convex, generates formatted bibliography using the bibliography service, and auto-inserts a 'References' heading at the end of the document. Component should re-render when citations are added/removed.",
+            "dependencies": [
+              1
+            ],
+            "details": "1. Create components/editor/bibliography-section.tsx:\n   - Accept documentId and citationStyle as props\n   - Use Convex useQuery to fetch citations.listByDocument(documentId)\n   - Use Convex useQuery to fetch paper metadata for each citation's paperId\n   - Call generateBibliography(citations, citationStyle) from lib/bibliography.ts\n   - Render 'References' H2 heading (styled with prose classes)\n   - Render bibliography entries as ordered list (Vancouver/AMA) or unordered with hanging indent (APA/Chicago)\n   - Handle loading state while citations/papers fetch\n   - Handle empty state (no citations)\n2. Integrate BibliographySection into TiptapEditor component (components/editor/tiptap-editor.tsx):\n   - Add BibliographySection below EditorContent, inside flex-1 overflow-y-auto div\n   - Pass documentId and citationStyle props\n   - Ensure bibliography scrolls with document content\n3. Auto-update mechanism:\n   - Convex useQuery automatically re-fetches when citations table changes\n   - Bibliography re-renders reactively when citation data changes\n4. Style bibliography section to match editor prose styling (max-w-3xl, px-6 py-4)",
+            "status": "done",
+            "testStrategy": "Playwright E2E: (1) Open document with 0 citations, verify no bibliography section appears. (2) Insert citation via citation modal, verify bibliography section appears with 'References' heading and 1 entry. (3) Insert 2nd citation, verify bibliography updates to show 2 entries in correct order. (4) Delete citation, verify bibliography updates to show 1 entry. (5) Verify bibliography entries match selected citation style (Vancouver vs APA format).",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T08:23:42.712Z"
+          },
+          {
+            "id": 3,
+            "title": "Build citation style switcher dropdown in editor toolbar with real-time re-formatting",
+            "description": "Add citation style dropdown to EditorToolbar component that allows switching between Vancouver, APA, AMA, and Chicago styles. On change, update document.citationStyle in Convex and trigger re-render of all in-text citations and bibliography.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "1. Update components/editor/editor-toolbar.tsx:\n   - Add citationStyle prop ('vancouver' | 'apa' | 'ama' | 'chicago')\n   - Add onStyleChange callback prop\n   - Import shadcn/ui Select component\n   - Add style switcher dropdown after citation insert button:\n     * Label: 'Citation Style'\n     * Options: Vancouver (default), APA, AMA, Chicago\n     * Display current style as selected\n   - On selection change, call onStyleChange(newStyle)\n2. Update components/editor/tiptap-editor.tsx:\n   - Accept citationStyle prop (currently defaults to 'vancouver')\n   - Pass citationStyle to EditorToolbar\n   - Implement handleStyleChange callback:\n     * Update local state\n     * Call Convex mutation documents.updateCitationStyle(documentId, newStyle)\n     * Force re-render of citation nodes by updating editor attributes or using editor.commands.setMeta()\n   - Pass updated citationStyle to BibliographySection\n3. Create Convex mutation convex/documents.ts:\n   - updateCitationStyle(documentId, citationStyle): Updates document.citationStyle field\n   - Verify user owns document before updating\n4. Update citation-extension.tsx to react to style changes:\n   - CitationView component already reads style from node.attrs.style\n   - On style change, all citation nodes must update their display format\n   - Use editor.chain().updateAttributes() to propagate new style to all citation nodes",
+            "status": "done",
+            "testStrategy": "Playwright E2E: (1) Open document with 3 citations in Vancouver style, verify [1], [2], [3] format. (2) Switch style to APA via dropdown, verify citations change to (Author, Year) format. (3) Verify bibliography also updates to APA format (author-year, no numbering). (4) Switch to Chicago, verify both in-text citations and bibliography update correctly. (5) Reload page, verify citationStyle persists (loaded from Convex document.citationStyle field).",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T08:25:49.272Z"
+          },
+          {
+            "id": 4,
+            "title": "Implement bibliography export functionality with download as .txt file",
+            "description": "Add 'Export Bibliography' button to editor interface that generates a standalone .txt file containing only the formatted bibliography entries for the current citation style, ready for copy-paste into journal submission systems.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "1. Create lib/bibliography-export.ts utility:\n   - exportBibliographyAsTxt(entries: string[], style: CitationStyle): void\n   - Format entries with proper spacing (double line breaks between entries for readability)\n   - Add header: 'References (Style: Vancouver)' or similar\n   - Generate Blob with type 'text/plain;charset=utf-8'\n   - Create download link and trigger browser download as 'bibliography-[style]-[timestamp].txt'\n2. Update components/editor/bibliography-section.tsx:\n   - Add 'Export Bibliography' button above references list\n   - Use lucide-react Download icon\n   - On click, call exportBibliographyAsTxt(bibliographyEntries, citationStyle)\n   - Disable button if no citations exist\n   - Style as secondary button (outline variant)\n3. Add visual feedback:\n   - Show toast/notification on successful export (optional, could use simple alert)\n   - Button hover state shows tooltip: 'Download references as .txt file'\n4. Handle edge cases:\n   - Empty bibliography (no citations) → button disabled with tooltip explaining why\n   - Browser download blocked → show error message\n5. Consider adding format options in future (currently .txt only, but structure allows .bib or .ris later)",
+            "status": "done",
+            "testStrategy": "Playwright E2E: (1) Open document with 0 citations, verify export button is disabled. (2) Add 3 citations, click export button, verify download triggered with correct filename format. (3) Open downloaded .txt file, verify contains 3 formatted bibliography entries matching current citation style. (4) Switch citation style to APA, export again, verify new .txt file has APA formatting. (5) Test with 1 citation and 10 citations to verify formatting scales correctly.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T08:26:45.617Z"
+          },
+          {
+            "id": 5,
+            "title": "Validate journal-specific formatting requirements with comprehensive test suite",
+            "description": "Create unit tests with sample citations to validate that generated bibliographies comply with major medical journal formatting guidelines (NEJM, Lancet, JAMA, JACC, Nature). Focus on Vancouver style compliance (most common) and edge cases like 6+ author truncation.",
+            "dependencies": [
+              1,
+              2,
+              3
+            ],
+            "details": "1. Create tests/unit/bibliography.test.ts:\n   - Import sample paper data representing different edge cases\n   - Test NEJM compliance (Vancouver numbered, et al. for >6 authors, DOI required)\n   - Test Lancet compliance (Vancouver numbered, journal abbreviations)\n   - Test JAMA compliance (AMA style variant, author caps)\n   - Test JACC compliance (Vancouver with volume/issue/pages format)\n   - Test Nature compliance (Vancouver with specific DOI format)\n2. Sample test cases:\n   - 1 author paper → verify no et al.\n   - 7 author paper → verify 'Author1, Author2, Author3, et al.' truncation\n   - Paper with no DOI → verify graceful handling (URL fallback or omission)\n   - Paper with no journal name → verify 'Preprint' or 'Unpublished' label\n   - Paper with incomplete date (year only) → verify year-only format\n   - Special characters in title (Greek letters, subscripts) → verify proper rendering\n3. Create tests/fixtures/sample-papers.ts:\n   - Define 10 realistic medical research papers with varying metadata completeness\n   - Include papers from different sources (PubMed, Semantic Scholar, OpenAlex)\n4. Run tests: npm test tests/unit/bibliography.test.ts\n5. Document formatting rules in lib/bibliography.ts comments for future reference\n6. If tests fail, adjust CSL styles or conversion logic to match journal requirements",
+            "status": "done",
+            "testStrategy": "Unit tests: (1) NEJM: Generate Vancouver bibliography with 10-author paper, verify 6th+ authors truncated to 'et al.', verify DOI present. (2) Lancet: Verify journal name abbreviated (e.g., 'Lancet' not 'The Lancet'). (3) JAMA: Verify AMA style with author last names in ALL CAPS. (4) Edge case: Paper with 1 author + no DOI → verify format is 'Author A. Title. Journal. Year;Vol(Issue):Pages. Available from: URL'. (5) Edge case: 7 authors → verify 'Author1, Author2, Author3, et al.' format. (6) Run full suite with: npm test tests/unit/bibliography.test.ts",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T08:30:29.383Z"
+          }
+        ],
+        "updatedAt": "2026-02-07T08:30:29.383Z"
       },
       {
         "id": "8",
@@ -657,9 +726,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T07:51:30.221Z",
+      "lastModified": "2026-02-07T08:30:29.384Z",
       "taskCount": 10,
-      "completedCount": 8,
+      "completedCount": 9,
       "tags": [
         "master"
       ]

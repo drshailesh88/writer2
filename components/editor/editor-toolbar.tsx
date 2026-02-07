@@ -10,6 +10,13 @@ import {
 } from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Bold,
   Italic,
   Underline,
@@ -21,6 +28,15 @@ import {
   Quote,
   BookOpen,
 } from "lucide-react";
+
+type CitationStyle = "vancouver" | "apa" | "ama" | "chicago";
+
+const STYLE_LABELS: Record<CitationStyle, string> = {
+  vancouver: "Vancouver",
+  apa: "APA",
+  ama: "AMA",
+  chicago: "Chicago",
+};
 
 interface ToolbarButtonProps {
   onClick: () => void;
@@ -65,9 +81,16 @@ function ToolbarButton({
 interface EditorToolbarProps {
   editor: Editor | null;
   onInsertCitation?: () => void;
+  citationStyle?: CitationStyle;
+  onStyleChange?: (style: CitationStyle) => void;
 }
 
-export function EditorToolbar({ editor, onInsertCitation }: EditorToolbarProps) {
+export function EditorToolbar({
+  editor,
+  onInsertCitation,
+  citationStyle,
+  onStyleChange,
+}: EditorToolbarProps) {
   if (!editor) return null;
 
   return (
@@ -176,6 +199,36 @@ export function EditorToolbar({ editor, onInsertCitation }: EditorToolbarProps) 
               </TooltipTrigger>
               <TooltipContent>Insert citation from library</TooltipContent>
             </Tooltip>
+
+            {citationStyle && onStyleChange && (
+              <Select
+                value={citationStyle}
+                onValueChange={(value) =>
+                  onStyleChange(value as CitationStyle)
+                }
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <SelectTrigger
+                      size="sm"
+                      className="min-h-[44px] sm:min-h-[32px] w-auto text-xs font-medium"
+                      aria-label="Citation style"
+                    >
+                      <SelectValue>
+                        {STYLE_LABELS[citationStyle]}
+                      </SelectValue>
+                    </SelectTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Citation style</TooltipContent>
+                </Tooltip>
+                <SelectContent>
+                  <SelectItem value="vancouver">Vancouver</SelectItem>
+                  <SelectItem value="apa">APA</SelectItem>
+                  <SelectItem value="ama">AMA</SelectItem>
+                  <SelectItem value="chicago">Chicago</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
           </>
         )}
       </div>

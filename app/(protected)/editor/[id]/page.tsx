@@ -110,6 +110,16 @@ export default function EditorPage() {
     return editorRef.current?.getText() ?? "";
   }, []);
 
+  const handleStyleChange = useCallback(
+    async (style: "vancouver" | "apa" | "ama" | "chicago") => {
+      await updateDocument({
+        documentId: documentId as Id<"documents">,
+        citationStyle: style,
+      });
+    },
+    [documentId, updateDocument]
+  );
+
   const sidebarContent = isLearnMode ? (
     <LearnModePanel
       documentId={documentId}
@@ -157,6 +167,7 @@ export default function EditorPage() {
           citationStyle={document.citationStyle}
           onSave={handleSave}
           onInsertCitation={() => setCitationModalOpen(true)}
+          onStyleChange={handleStyleChange}
           draftSelector={
             <div className="flex items-center gap-1">
               <DraftSelector currentDocumentId={documentId} />

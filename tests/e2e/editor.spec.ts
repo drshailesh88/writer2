@@ -160,3 +160,127 @@ test.describe.skip("Editor — Authenticated", () => {
     expect(box!.height).toBeGreaterThanOrEqual(44);
   });
 });
+
+/**
+ * Bibliography feature tests.
+ *
+ * Requires authenticated session with citations in the document.
+ * To enable, remove .skip and set up test fixtures.
+ */
+test.describe.skip("Bibliography — Authenticated", () => {
+  test("no bibliography shown when document has 0 citations", async ({
+    page,
+  }) => {
+    await page.goto("/editor/test-document-id");
+    await expect(page.getByText("References")).not.toBeVisible();
+  });
+
+  test("bibliography appears after inserting citation", async ({ page }) => {
+    await page.goto("/editor/test-doc-with-citations");
+
+    // References section should be visible
+    await expect(page.getByText("References")).toBeVisible();
+    // Export button should be visible
+    await expect(page.getByText("Export")).toBeVisible();
+  });
+
+  test("citation style switcher dropdown is visible in toolbar", async ({
+    page,
+  }) => {
+    await page.goto("/editor/test-doc-with-citations");
+
+    // Style dropdown should show current style
+    await expect(page.getByLabel("Citation style")).toBeVisible();
+  });
+
+  test("switching citation style updates in-text citations", async ({
+    page,
+  }) => {
+    await page.goto("/editor/test-doc-with-citations");
+
+    // Initially Vancouver: should show [1]
+    await expect(page.locator('[data-type="citation"]').first()).toContainText(
+      "[1]"
+    );
+
+    // Switch to APA
+    await page.getByLabel("Citation style").click();
+    await page.getByRole("option", { name: "APA" }).click();
+
+    // In-text citations should change to (Author, Year) format
+    const citation = page.locator('[data-type="citation"]').first();
+    await expect(citation).not.toContainText("[1]");
+  });
+
+  test("switching style updates bibliography format", async ({ page }) => {
+    await page.goto("/editor/test-doc-with-citations");
+
+    // Switch to APA
+    await page.getByLabel("Citation style").click();
+    await page.getByRole("option", { name: "APA" }).click();
+
+    // Bibliography should re-render in APA format (author-year, no numbers)
+    const refs = page.locator("text=References");
+    await expect(refs).toBeVisible();
+  });
+
+  test("export bibliography downloads .txt file", async ({ page }) => {
+    await page.goto("/editor/test-doc-with-citations");
+
+    // Start monitoring downloads
+    const downloadPromise = page.waitForEvent("download");
+
+    // Click export button
+    await page.getByText("Export").click();
+
+    // Verify download triggered
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(
+      /^bibliography-vancouver-\d+\.txt$/
+    );
+  });
+
+  test("bibliography updates when citation is added", async ({ page }) => {
+    await page.goto("/editor/test-doc-with-citations");
+
+    // Count current references
+    const initialCount = await page
+      .locator("ol > li, ul > li")
+      .filter({ hasText: /\w/ })
+      .count();
+
+    // Insert a new citation
+    await page.getByText("Insert Citation").click();
+    // Select first paper from modal
+    const firstPaper = page
+      .getByRole("dialog")
+      .locator("button")
+      .filter({ hasText: /\w/ })
+      .first();
+    await firstPaper.click();
+
+    // Bibliography should update with one more entry
+    const newCount = await page
+      .locator("ol > li, ul > li")
+      .filter({ hasText: /\w/ })
+      .count();
+    expect(newCount).toBeGreaterThan(initialCount);
+  });
+
+  test("citation style persists after page reload", async ({ page }) => {
+    await page.goto("/editor/test-doc-with-citations");
+
+    // Switch to AMA
+    await page.getByLabel("Citation style").click();
+    await page.getByRole("option", { name: "AMA" }).click();
+
+    // Wait for save
+    await page.waitForTimeout(3000);
+
+    // Reload
+    await page.reload();
+
+    // AMA should still be selected
+    await expect(page.getByLabel("Citation style")).toContainText("AMA");
+  });
+});

@@ -148,3 +148,45 @@ export const remove = mutation({
     await ctx.db.delete(args.citationId);
   },
 });
+
+// Fetch citations with full paper data for bibliography generation
+export const listWithPapers = query({
+  args: { documentId: v.id("documents") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) {
+      return [];
+    }
+
+    const doc = await ctx.db.get(args.documentId);
+    if (!doc || doc.userId !== user._id) {
+      return [];
+    }
+
+    const citations = await ctx.db
+      .query("citations")
+      .withIndex("by_document_id", (q) => q.eq("documentId", args.documentId))
+      .collect();
+
+    const sorted = citations.sort((a, b) => a.position - b.position);
+
+    // Resolve paper data for each citation
+    const withPapers = await Promise.all(
+      sorted.map(async (citation) => {
+        const paper = await ctx.db.get(citation.paperId);
+        return { ...citation, paper };
+      })
+    );
+
+    return withPapers.filter((c) => c.paper !== null);
+  },
+});

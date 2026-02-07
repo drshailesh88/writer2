@@ -9,6 +9,7 @@ import { useState, useCallback, useEffect, useRef, forwardRef, useImperativeHand
 import { EditorToolbar } from "./editor-toolbar";
 import { EditorHeader } from "./editor-header";
 import { CitationExtension } from "./citation-extension";
+import { BibliographySection } from "./bibliography-section";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 type DocumentMode = "learn" | "draft_guided" | "draft_handsoff";
@@ -59,30 +60,35 @@ export interface TiptapEditorHandle {
   getText: () => string;
 }
 
+type CitationStyle = "vancouver" | "apa" | "ama" | "chicago";
+
 interface TiptapEditorProps {
   documentId: string;
   initialContent?: Record<string, unknown>;
   initialTitle: string;
   mode: DocumentMode;
-  citationStyle?: "vancouver" | "apa" | "ama" | "chicago";
+  citationStyle?: CitationStyle;
   onSave: (data: {
     content: Record<string, unknown>;
     wordCount: number;
     title?: string;
   }) => Promise<void>;
   onInsertCitation?: () => void;
+  onStyleChange?: (style: CitationStyle) => void;
   draftSelector?: React.ReactNode;
 }
 
 export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
   function TiptapEditor(
     {
+      documentId,
       initialContent,
       initialTitle,
       mode,
       citationStyle = "vancouver",
       onSave,
       onInsertCitation,
+      onStyleChange,
       draftSelector,
     },
     ref
@@ -165,6 +171,31 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
       setIsFullscreen((prev) => !prev);
     }, []);
 
+    // Update all citation nodes when style changes
+    const handleStyleChange = useCallback(
+      (newStyle: CitationStyle) => {
+        if (!editor || !onStyleChange) return;
+
+        // Walk through document and update all citation node styles
+        editor.state.doc.descendants((node, pos) => {
+          if (node.type.name === "citation") {
+            editor
+              .chain()
+              .setNodeSelection(pos)
+              .updateAttributes("citation", { style: newStyle })
+              .run();
+          }
+        });
+
+        // Restore cursor to end
+        editor.commands.focus("end");
+
+        // Notify parent to persist the change
+        onStyleChange(newStyle);
+      },
+      [editor, onStyleChange]
+    );
+
     // Cleanup timer on unmount
     useEffect(() => {
       return () => {
@@ -237,12 +268,21 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
           draftSelector={draftSelector}
         />
 
-        <EditorToolbar editor={editor} onInsertCitation={onInsertCitation} />
+        <EditorToolbar
+          editor={editor}
+          onInsertCitation={onInsertCitation}
+          citationStyle={citationStyle}
+          onStyleChange={onStyleChange ? handleStyleChange : undefined}
+        />
 
         <div className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-3xl">
             <EditorContent editor={editor} />
           </div>
+          <BibliographySection
+            documentId={documentId}
+            citationStyle={citationStyle}
+          />
         </div>
 
         <div className="flex items-center justify-between border-t bg-muted/20 px-4 py-1.5 text-xs text-muted-foreground">
