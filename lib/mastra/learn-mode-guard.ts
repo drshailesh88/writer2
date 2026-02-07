@@ -11,10 +11,12 @@ export function validateCoachResponse(response: string): {
 } {
   // Check for paragraph-length responses (>5 sentences that look like drafted text)
   const sentences = response.split(/[.!?]+/).filter((s) => s.trim().length > 10);
+  const questionCount = (response.match(/\?/g) || []).length;
+  const wordCount = response.split(/\s+/).length;
+
+  // Rule 1: Many declarative sentences with no questions = drafted text
   const looksLikeDraftedText =
-    sentences.length > 5 &&
-    !response.includes("?") &&
-    !response.includes("...");
+    sentences.length > 5 && questionCount === 0;
 
   if (looksLikeDraftedText) {
     return {
@@ -23,16 +25,19 @@ export function validateCoachResponse(response: string): {
     };
   }
 
-  // Check if response appears to be completing student's sentence
-  // (long text with no questions, no sentence starters pattern)
-  const hasQuestions = (response.match(/\?/g) || []).length > 0;
-  const hasSentenceStarters = response.includes("...");
-  const wordCount = response.split(/\s+/).length;
-
-  // If response is very long (>150 words) with no questions, likely a violation
-  if (wordCount > 150 && !hasQuestions && !hasSentenceStarters) {
+  // Rule 2: Very long response (>150 words) with no questions = likely violation
+  if (wordCount > 150 && questionCount === 0) {
     return {
       text: "I notice I was about to give too much away! Let me ask you a question instead — what are the key points you want to make in this section?",
+      wasViolation: true,
+    };
+  }
+
+  // Rule 3: Long response (>200 words) even with questions — ratio check
+  // Must have at least 1 question per 80 words to be coaching, not lecturing
+  if (wordCount > 200 && questionCount < Math.floor(wordCount / 80)) {
+    return {
+      text: "I was getting a bit lecture-y there! Let me focus on guiding you with questions. What aspect of this section do you want to work on first?",
       wasViolation: true,
     };
   }

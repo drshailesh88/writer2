@@ -55,9 +55,11 @@ export function DraftSelector({ currentDocumentId }: DraftSelectorProps) {
     "vancouver" | "apa" | "ama" | "chicago"
   >("vancouver");
   const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const handleCreateDraft = async () => {
     setCreating(true);
+    setCreateError(null);
     try {
       const id = await createDocument({
         title: newTitle.trim() || "Untitled Document",
@@ -67,6 +69,13 @@ export function DraftSelector({ currentDocumentId }: DraftSelectorProps) {
       setNewDraftOpen(false);
       setNewTitle("Untitled Document");
       router.push(`/editor/${id}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to create document";
+      if (message.includes("limit") || message.includes("upgrade")) {
+        setCreateError("You've reached your plan limit. Please upgrade to create more documents.");
+      } else {
+        setCreateError(message);
+      }
     } finally {
       setCreating(false);
     }
@@ -201,10 +210,14 @@ export function DraftSelector({ currentDocumentId }: DraftSelectorProps) {
             </div>
           </div>
 
+          {createError && (
+            <p className="text-sm text-red-600 dark:text-red-400">{createError}</p>
+          )}
+
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setNewDraftOpen(false)}
+              onClick={() => { setNewDraftOpen(false); setCreateError(null); }}
               disabled={creating}
             >
               Cancel

@@ -90,7 +90,7 @@ export function DraftModePanel({
   };
 
   const handleApproveOutline = () => {
-    workflow.resumeWorkflow({ approved: true });
+    workflow.resumeWorkflow({ approved: true, editedOutline: workflow.outline });
   };
 
   const handleApprovePapers = () => {
@@ -98,7 +98,7 @@ export function DraftModePanel({
   };
 
   const handleApproveDraft = () => {
-    workflow.resumeWorkflow({ approved: true });
+    workflow.resumeWorkflow({ approved: true, editedDrafts: workflow.sectionDrafts });
   };
 
   const toggleSection = (title: string) => {
