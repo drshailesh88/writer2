@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useLearnMode } from "@/lib/hooks/use-learn-mode";
+import Link from "next/link";
 import { FEEDBACK_CATEGORIES } from "@/lib/mastra/types";
 import type { ConversationMessage } from "@/lib/mastra/types";
 import {
@@ -38,6 +39,9 @@ interface LearnModePanelProps {
   topic: string;
   currentStage?: string;
   editorContent?: string;
+  tier?: string;
+  learnModeUsed?: number;
+  learnModeLimit?: number;
 }
 
 export function LearnModePanel({
@@ -45,6 +49,9 @@ export function LearnModePanel({
   topic,
   currentStage: initialStage = "understand",
   editorContent = "",
+  tier = "free",
+  learnModeUsed = 0,
+  learnModeLimit = 3,
 }: LearnModePanelProps) {
   const [input, setInput] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -104,12 +111,22 @@ export function LearnModePanel({
           <span className="text-sm font-semibold tracking-tight">
             Writing Coach
           </span>
-          <Badge
-            variant="secondary"
-            className="ml-auto bg-amber-100/80 text-amber-800 text-[10px] dark:bg-amber-900/30 dark:text-amber-300"
-          >
-            Learn Mode
-          </Badge>
+          <div className="ml-auto flex items-center gap-1.5">
+            {learnModeLimit > 0 && (
+              <Badge
+                variant="secondary"
+                className="text-[10px] bg-muted"
+              >
+                {learnModeUsed}/{learnModeLimit} used
+              </Badge>
+            )}
+            <Badge
+              variant="secondary"
+              className="bg-amber-100/80 text-amber-800 text-[10px] dark:bg-amber-900/30 dark:text-amber-300"
+            >
+              Learn Mode
+            </Badge>
+          </div>
         </div>
         <p className="mt-1 text-[11px] text-muted-foreground pl-8">
           I&apos;ll guide you — I won&apos;t write for you
@@ -198,6 +215,16 @@ export function LearnModePanel({
               <p className="text-xs text-red-700 dark:text-red-400">
                 {learnMode.error}
               </p>
+              {(learnMode.error.toLowerCase().includes("limit") ||
+                learnMode.error.toLowerCase().includes("upgrade")) && (
+                <Link
+                  href="/pricing"
+                  className="mt-2 inline-flex items-center gap-1 rounded-md bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 transition-colors"
+                >
+                  Upgrade Plan
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              )}
             </div>
           )}
 

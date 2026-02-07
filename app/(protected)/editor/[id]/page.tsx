@@ -336,6 +336,9 @@ export default function EditorPage() {
       topic={document.title || ""}
       currentStage={document.currentStage || "understand"}
       editorContent={getEditorText()}
+      tier={usage?.tier ?? "free"}
+      learnModeUsed={usage?.learnModeUsed ?? 0}
+      learnModeLimit={usage?.learnModeLimit ?? 3}
     />
   ) : isDraftMode ? (
     <DraftModePanel
