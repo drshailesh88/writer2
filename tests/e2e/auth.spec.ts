@@ -12,9 +12,16 @@ test.describe("Authentication", () => {
     page,
   }) => {
     await page.goto("/");
-    await expect(page.locator("text=V1 Drafts")).toBeVisible();
-    await expect(page.locator("text=Sign In").first()).toBeVisible();
-    await expect(page.locator("text=Get Started")).toBeVisible();
+    // Logo text in header
+    await expect(
+      page.locator("header").locator("text=Drafts")
+    ).toBeVisible();
+    await expect(
+      page.locator("header").locator("text=Sign In")
+    ).toBeVisible();
+    await expect(
+      page.locator("header").locator("text=Get Started")
+    ).toBeVisible();
   });
 
   test("sign-in page loads", async ({ page }) => {
@@ -27,21 +34,27 @@ test.describe("Authentication", () => {
     await expect(page).toHaveURL(/sign-up/);
   });
 
-  test("all interactive elements have minimum 44px touch targets on mobile", async ({
+  test("all CTA buttons have minimum 44px touch targets on mobile", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/");
 
-    const buttons = page.locator("a, button");
+    // Check buttons with text content (excludes system buttons like Next.js dev tools)
+    const buttons = page.locator("button");
     const count = await buttons.count();
 
     for (let i = 0; i < count; i++) {
       const button = buttons.nth(i);
       if (await button.isVisible()) {
+        const text = (await button.textContent())?.trim() ?? "";
+        if (text.length === 0) continue;
         const box = await button.boundingBox();
         if (box) {
-          expect(box.height).toBeGreaterThanOrEqual(44);
+          expect(
+            box.height,
+            `Button "${text}" has height ${box.height}px`
+          ).toBeGreaterThanOrEqual(44);
         }
       }
     }

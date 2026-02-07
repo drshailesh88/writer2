@@ -228,12 +228,13 @@
               4
             ],
             "details": "Create Playwright test file `tests/e2e/landing-and-dashboard.spec.ts`. (1) Landing page tests: Test 'Landing page loads and displays all sections' - navigate to '/', expect hero section with tagline visible, expect 6 feature cards present (check for text 'Learn Mode', 'Draft Mode', 'Paper Search', 'Bibliography', 'Plagiarism Check', 'AI Detection'), expect credibility section with 'Made by a doctor, for doctors', expect pricing table with 3 plans (Free, Basic, Pro), expect pricing shows 'INR 1,000' for Basic, expect 'Recommended' badge on Basic plan, expect free plagiarism CTA section. Test 'Landing page CTAs navigate correctly' - click 'Start Writing for Free' button, expect URL to be /sign-up, go back, click 'Sign In' button, expect URL to be /sign-in. Test 'Landing page is mobile responsive' - set viewport to 375x667, navigate to '/', verify all sections visible, verify touch targets ≥44px (check button heights). (2) Dashboard tests: Test 'Dashboard loads and shows user data' - sign in programmatically (use Playwright Clerk helpers or test user tokens), navigate to /dashboard, expect welcome message to contain user's name, expect quick action cards present (3 cards). Test 'Mode selection dialog works' - click 'Start New Paper' button, expect dialog to be visible, expect 2 options (Learn Mode, Draft Mode), select Learn Mode, fill in title 'E2E Test Paper', submit, expect URL to match /editor/*, expect document created in Convex (verify via API query). Test 'Recent drafts display correctly' - create test document via Convex mutation, refresh dashboard, expect recent drafts section to show 1 document, expect document title 'E2E Test Paper', expect mode badge 'Learn', expect status badge 'In Progress', expect last updated timestamp. Test 'Usage stats widget displays correctly' - expect usage stats card visible, expect subscription tier badge (e.g., 'Free'), expect usage text for plagiarism checks (e.g., '0/2'), expect usage text for AI detection (e.g., '0/2'), expect 'Upgrade' button if Free tier. Test 'Dashboard is mobile responsive' - set viewport to 375x667, navigate to /dashboard, verify layout stacks (single column), verify all sections visible and readable. (3) Add test utilities: Helper functions for creating test users, test documents, cleaning up test data. Use Playwright's `test.beforeEach` and `test.afterEach` for setup/teardown.",
-            "status": "pending",
+            "status": "in-progress",
             "testStrategy": "Run `npx playwright test tests/e2e/landing-and-dashboard.spec.ts`. All tests must pass. Verify tests cover: (1) Landing page sections visibility (hero, features, credibility, pricing, CTA). (2) Landing page CTAs navigation (sign-up, sign-in). (3) Landing page mobile responsiveness (375px viewport). (4) Dashboard loads with user data (welcome, quick actions, usage stats). (5) Mode selection dialog opens and creates document. (6) Recent drafts list displays created document with correct badges. (7) Usage stats widget shows correct subscription tier and usage counts. (8) Dashboard mobile responsiveness (375px viewport, stacked layout). All tests should use proper assertions (expect statements) and wait for elements to be visible/stable before interacting. Tests should clean up created data (documents) after completion.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T04:04:21.905Z"
           }
         ],
-        "updatedAt": "2026-02-07T04:02:11.054Z"
+        "updatedAt": "2026-02-07T04:04:21.905Z"
       },
       {
         "id": "4",
@@ -333,7 +334,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T04:02:11.055Z",
+      "lastModified": "2026-02-07T04:04:21.906Z",
       "taskCount": 10,
       "completedCount": 2,
       "tags": [
