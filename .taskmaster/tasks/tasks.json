@@ -607,9 +607,10 @@
               2
             ],
             "details": "Create app/learn/page.tsx:\n\nLayout:\n- Left panel: Reuse TiptapEditor component from components/editor/tiptap-editor.tsx\n- Right panel: Chat interface with:\n  - Stage progress indicator showing 1/5, 2/5, etc. (use STAGES array from learn-mode-panel.tsx)\n  - Message history (agent questions + student responses)\n  - Input field for student to respond\n  - 'Ask for help' button (triggers agent to provide sentence starter or example)\n  - Feedback panel in Stage 5: Category selector (5 categories), one suggestion at a time, 'Next Suggestion' button (disabled until student edits)\n\nState management:\n- Use Convex query/mutation for learnModeSessions (create, get, update)\n- Track conversationHistory, currentStage, feedbackGiven\n- Auto-save student's text to documents table\n\nUI components: Reuse Button, Input, Badge, Separator from shadcn/ui. Follow LearnModePanel structure but make functional.\n\nMobile responsive: Stack editor on top, chat on bottom for < 768px.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Navigate to /learn, verify editor on left, chat on right. (2) Type in editor, verify auto-save triggered. (3) Send message to coach, verify response appears in chat. (4) Click 'Ask for help', verify agent provides sentence starter only. (5) Stage 5: Verify one feedback suggestion shown, 'Next' disabled until edit.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T07:46:40.406Z"
           },
           {
             "id": 4,
@@ -635,7 +636,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-02-07T07:42:52.069Z"
+        "updatedAt": "2026-02-07T07:46:40.406Z"
       },
       {
         "id": "10",
@@ -654,7 +655,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T07:42:52.070Z",
+      "lastModified": "2026-02-07T07:46:40.408Z",
       "taskCount": 10,
       "completedCount": 7,
       "tags": [

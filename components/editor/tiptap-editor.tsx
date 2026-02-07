@@ -56,6 +56,7 @@ export interface TiptapEditorHandle {
     authorYear: string
   ) => void;
   setContent: (markdownDraft: string) => void;
+  getText: () => string;
 }
 
 interface TiptapEditorProps {
@@ -207,6 +208,10 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
             .replace(/\n\n/g, "</p><p>")
             .replace(/^(?!<[hp]|<h[r23])(.+)/gm, "<p>$1</p>");
           editor.commands.setContent(html);
+        },
+        getText: () => {
+          if (!editor) return "";
+          return editor.getText();
         },
       }),
       [editor, citationStyle]

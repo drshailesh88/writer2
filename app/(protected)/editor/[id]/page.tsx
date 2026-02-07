@@ -106,8 +106,17 @@ export default function EditorPage() {
     []
   );
 
+  const getEditorText = useCallback(() => {
+    return editorRef.current?.getText() ?? "";
+  }, []);
+
   const sidebarContent = isLearnMode ? (
-    <LearnModePanel currentStage={document.currentStage || "understand"} />
+    <LearnModePanel
+      documentId={documentId}
+      topic={document.title || ""}
+      currentStage={document.currentStage || "understand"}
+      editorContent={getEditorText()}
+    />
   ) : isDraftMode ? (
     <DraftModePanel
       mode={document.mode as "draft_guided" | "draft_handsoff"}
