@@ -123,9 +123,10 @@
               1
             ],
             "details": "Create convex/papers.ts with:\n- Mutation createPaper: args { externalId: v.string(), source: v.string(), title: v.string(), authors: v.array(v.string()), journal: v.optional(v.string()), year: v.optional(v.number()), abstract: v.optional(v.string()), doi: v.optional(v.string()), url: v.optional(v.string()), isOpenAccess: v.boolean(), metadata: v.optional(v.any()), collectionId: v.optional(v.id('collections')) }. Gets userId from auth, checks if paper with same externalId already exists for user (to prevent duplicates), inserts paper. Enforces free tier limit (50 papers max - check count before insert).\n- Query getPaper: args { id: v.id('papers') }. Verifies ownership, returns paper.\n- Mutation updatePaper: args { id: v.id('papers'), collectionId: v.optional(v.id('collections')), pdfFileId: v.optional(v.id('_storage')) }. For moving papers to collections or attaching PDFs.\n- Mutation deletePaper: args { id: v.id('papers') }. Verifies ownership, also deletes related citations (query citations by_document_id, delete all).\n- Query listPapers: args { collectionId: v.optional(v.id('collections')), limit: v.optional(v.number()) }. Returns user's papers, optionally filtered by collection, sorted by createdAt descending.\n\nCreate convex/collections.ts with:\n- Mutation createCollection: args { name: v.string(), description: v.optional(v.string()) }. Inserts collection with userId.\n- Query listCollections: args {}. Returns all user's collections sorted by name.\n- Mutation updateCollection: args { id: v.id('collections'), name: v.optional(v.string()), description: v.optional(v.string()) }.\n- Mutation deleteCollection: args { id: v.id('collections') }. Before deleting, set collectionId=null for all papers in this collection.\n\nUse ConvexError for ownership checks and limit enforcement.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit tests: (1) createPaper adds paper, prevents duplicate externalId. (2) Free tier user with 50 papers cannot add 51st (throws limit error). (3) updatePaper moves paper to collection. (4) deletePaper also deletes related citations. (5) listPapers filters by collection correctly. (6) createCollection/listCollections/deleteCollection work. (7) Deleting collection nullifies papers' collectionId. Playwright E2E: Save paper from search, verify in library. Create collection, move paper to collection, verify appears under collection.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T03:03:43.192Z"
           },
           {
             "id": 4,
@@ -153,7 +154,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-02-07T03:02:37.590Z"
+        "updatedAt": "2026-02-07T03:03:43.192Z"
       },
       {
         "id": "3",
@@ -267,7 +268,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T03:02:37.590Z",
+      "lastModified": "2026-02-07T03:03:43.193Z",
       "taskCount": 10,
       "completedCount": 1,
       "tags": [
