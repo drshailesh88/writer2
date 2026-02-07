@@ -57,10 +57,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T015 [US1] Design the free plagiarism check page using **Frontend Design Skill + Opus model** — clean, professional layout with textarea (word counter showing X/1000), "Check for Plagiarism" button, results area, and sign-up CTA section. Mobile responsive (375px + 1280px). Use Google Docs simplicity aesthetic.
-- [ ] T016 [US1] Implement free plagiarism check page `app/plagiarism-free/page.tsx` — textarea with live word count (max 1000), "Check for Plagiarism" button, cookie-based check tracking (`v1d_free_check_used`), word limit validation with helpful error message. No Clerk auth required (public page).
-- [ ] T017 [US1] Add results display section to `app/plagiarism-free/page.tsx` — overall similarity badge (color-coded: green <10%, yellow 10-25%, red >25%), source list with title/URL/similarity%, loading skeleton during scan, "No plagiarism detected" green state for 0%.
-- [ ] T018 [US1] Add sign-up CTA section after results in `app/plagiarism-free/page.tsx` — "Sign up for 2 free checks per month + AI Detection, Paper Search, Draft Mode" with Clerk sign-up link. Display only after results are shown.
+- [x] T015 [US1] Design the free plagiarism check page using **Frontend Design Skill + Opus model** — clean, professional layout with textarea (word counter showing X/1000), "Check for Plagiarism" button, results area, and sign-up CTA section. Mobile responsive (375px + 1280px). Use Google Docs simplicity aesthetic.
+- [x] T016 [US1] Implement free plagiarism check page `app/plagiarism-free/page.tsx` — textarea with live word count (max 1000), "Check for Plagiarism" button, cookie-based check tracking (`v1d_free_check_used`), word limit validation with helpful error message. No Clerk auth required (public page).
+- [x] T017 [US1] Add results display section to `app/plagiarism-free/page.tsx` — overall similarity badge (color-coded: green <10%, yellow 10-25%, red >25%), source list with title/URL/similarity%, loading skeleton during scan, "No plagiarism detected" green state for 0%.
+- [x] T018 [US1] Add sign-up CTA section after results in `app/plagiarism-free/page.tsx` — "Sign up for 2 free checks per month + AI Detection, Paper Search, Draft Mode" with Clerk sign-up link. Display only after results are shown.
 - [ ] T019 [US1] Write Playwright E2E test `tests/e2e/free-funnel.spec.ts` — test: page loads, paste 800 words, click check, verify loading state, verify results panel shows similarity % and sources (mock API), verify CTA appears. Test: paste 1200 words, verify word limit error. Test: mobile viewport (375px).
 
 **Checkpoint**: Free plagiarism funnel is fully functional and independently testable
