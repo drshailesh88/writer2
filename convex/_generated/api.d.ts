@@ -11,6 +11,7 @@
 import type * as aiDetectionChecks from "../aiDetectionChecks.js";
 import type * as citations from "../citations.js";
 import type * as collections from "../collections.js";
+import type * as crons from "../crons.js";
 import type * as deepResearchReports from "../deepResearchReports.js";
 import type * as documents from "../documents.js";
 import type * as files from "../files.js";
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   aiDetectionChecks: typeof aiDetectionChecks;
   citations: typeof citations;
   collections: typeof collections;
+  crons: typeof crons;
   deepResearchReports: typeof deepResearchReports;
   documents: typeof documents;
   files: typeof files;

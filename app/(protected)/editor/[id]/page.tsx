@@ -4,12 +4,18 @@ import { useParams } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TiptapEditor, type TiptapEditorHandle } from "@/components/editor/tiptap-editor";
 import { CitationModal } from "@/components/editor/citation-modal";
 import { DraftSelector } from "@/components/editor/draft-selector";
 import { LearnModePanel } from "@/components/editor/learn-mode-panel";
 import { DraftModePanel } from "@/components/editor/draft-mode-panel";
+import { PlagiarismPanel } from "@/components/plagiarism/plagiarism-panel";
+import { SourceDetailModal } from "@/components/plagiarism/source-detail-modal";
+import { AiDetectionPanel } from "@/components/ai-detection/ai-detection-panel";
+import { UpgradeModal } from "@/components/modals/upgrade-modal";
+import { usePlagiarismCheck, usePlagiarismUsage } from "@/lib/hooks/use-plagiarism-check";
+import { useAiDetection } from "@/lib/hooks/use-ai-detection";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { PanelRight } from "lucide-react";
@@ -21,6 +27,28 @@ export default function EditorPage() {
   const [citationModalOpen, setCitationModalOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Plagiarism & AI Detection state
+  const [plagiarismPanelOpen, setPlagiarismPanelOpen] = useState(false);
+  const [aiDetectionPanelOpen, setAiDetectionPanelOpen] = useState(false);
+  const [selectedSource, setSelectedSource] = useState<{
+    id: string;
+    title: string;
+    url: string;
+    matchedWords: number;
+    totalWords: number;
+    similarity: number;
+    matchedText: string;
+  } | null>(null);
+  const [upgradeModal, setUpgradeModal] = useState<{
+    feature: "plagiarism" | "aiDetection";
+    open: boolean;
+  }>({ feature: "plagiarism", open: false });
+
+  // Plagiarism & AI Detection hooks
+  const plagiarism = usePlagiarismCheck();
+  const aiDetection = useAiDetection();
+  const usage = usePlagiarismUsage();
 
   const document = useQuery(api.documents.get, {
     documentId: documentId as Id<"documents">,
@@ -120,6 +148,71 @@ export default function EditorPage() {
     [documentId, updateDocument]
   );
 
+  const handleCheckPlagiarism = useCallback(() => {
+    const text = editorRef.current?.getText() ?? "";
+    if (!text.trim()) return;
+
+    // Check limit before submitting
+    if (usage && usage.plagiarismUsed >= usage.plagiarismLimit) {
+      setUpgradeModal({ feature: "plagiarism", open: true });
+      return;
+    }
+
+    // Close AI detection panel if open (panel exclusivity)
+    setAiDetectionPanelOpen(false);
+    aiDetection.reset();
+
+    setPlagiarismPanelOpen(true);
+    plagiarism.submitCheck(text, documentId);
+  }, [documentId, usage, plagiarism, aiDetection]);
+
+  const handleCheckAiDetection = useCallback(() => {
+    const text = editorRef.current?.getText() ?? "";
+    if (!text.trim()) return;
+
+    // Check limit before submitting
+    if (usage && usage.aiDetectionUsed >= usage.aiDetectionLimit) {
+      setUpgradeModal({ feature: "aiDetection", open: true });
+      return;
+    }
+
+    // Close plagiarism panel if open (panel exclusivity)
+    setPlagiarismPanelOpen(false);
+    plagiarism.reset();
+
+    setAiDetectionPanelOpen(true);
+    aiDetection.submitCheck(text, documentId);
+  }, [documentId, usage, plagiarism, aiDetection]);
+
+  // Handle limit exceeded from hooks (async API response)
+  const plagiarismLimitExceeded = plagiarism.limitExceeded;
+  const plagiarismReset = plagiarism.reset;
+  useEffect(() => {
+    if (plagiarismLimitExceeded) {
+      setUpgradeModal({ feature: "plagiarism", open: true });
+      plagiarismReset();
+    }
+  }, [plagiarismLimitExceeded, plagiarismReset]);
+
+  const aiDetectionLimitExceeded = aiDetection.limitExceeded;
+  const aiDetectionReset = aiDetection.reset;
+  useEffect(() => {
+    if (aiDetectionLimitExceeded) {
+      setUpgradeModal({ feature: "aiDetection", open: true });
+      aiDetectionReset();
+    }
+  }, [aiDetectionLimitExceeded, aiDetectionReset]);
+
+  const handleClosePlagiarismPanel = useCallback(() => {
+    setPlagiarismPanelOpen(false);
+    plagiarism.reset();
+  }, [plagiarism]);
+
+  const handleCloseAiDetectionPanel = useCallback(() => {
+    setAiDetectionPanelOpen(false);
+    aiDetection.reset();
+  }, [aiDetection]);
+
   const sidebarContent = isLearnMode ? (
     <LearnModePanel
       documentId={documentId}
@@ -168,6 +261,10 @@ export default function EditorPage() {
           onSave={handleSave}
           onInsertCitation={() => setCitationModalOpen(true)}
           onStyleChange={handleStyleChange}
+          onCheckPlagiarism={handleCheckPlagiarism}
+          isPlagiarismLoading={plagiarism.isLoading}
+          onCheckAiDetection={handleCheckAiDetection}
+          isAiDetectionLoading={aiDetection.isLoading}
           draftSelector={
             <div className="flex items-center gap-1">
               <DraftSelector currentDocumentId={documentId} />
@@ -194,12 +291,56 @@ export default function EditorPage() {
         </Sheet>
       )}
 
+      {/* Plagiarism panel (right side) */}
+      {plagiarismPanelOpen && (
+        <PlagiarismPanel
+          results={plagiarism.result}
+          isLoading={plagiarism.isLoading}
+          onSourceClick={(source) => setSelectedSource(source)}
+          onClose={handleClosePlagiarismPanel}
+        />
+      )}
+
+      {/* AI Detection panel (right side) */}
+      {aiDetectionPanelOpen && (
+        <AiDetectionPanel
+          results={aiDetection.result}
+          isLoading={aiDetection.isLoading}
+          onClose={handleCloseAiDetectionPanel}
+        />
+      )}
+
       {/* Citation modal */}
       <CitationModal
         open={citationModalOpen}
         onOpenChange={setCitationModalOpen}
         papers={papers ?? []}
         onSelect={handleCitationSelect}
+      />
+
+      {/* Source detail modal */}
+      <SourceDetailModal
+        source={selectedSource}
+        open={selectedSource !== null}
+        onClose={() => setSelectedSource(null)}
+      />
+
+      {/* Upgrade modal */}
+      <UpgradeModal
+        feature={upgradeModal.feature}
+        currentUsage={
+          upgradeModal.feature === "plagiarism"
+            ? (usage?.plagiarismUsed ?? 0)
+            : (usage?.aiDetectionUsed ?? 0)
+        }
+        limit={
+          upgradeModal.feature === "plagiarism"
+            ? (usage?.plagiarismLimit ?? 0)
+            : (usage?.aiDetectionLimit ?? 0)
+        }
+        tier={usage?.tier ?? "free"}
+        open={upgradeModal.open}
+        onClose={() => setUpgradeModal((prev) => ({ ...prev, open: false }))}
       />
     </div>
   );

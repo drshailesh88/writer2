@@ -27,6 +27,9 @@ import {
   ListOrdered,
   Quote,
   BookOpen,
+  FileCheck2,
+  ShieldCheck,
+  Loader2,
 } from "lucide-react";
 
 type CitationStyle = "vancouver" | "apa" | "ama" | "chicago";
@@ -83,6 +86,10 @@ interface EditorToolbarProps {
   onInsertCitation?: () => void;
   citationStyle?: CitationStyle;
   onStyleChange?: (style: CitationStyle) => void;
+  onCheckPlagiarism?: () => void;
+  isPlagiarismLoading?: boolean;
+  onCheckAiDetection?: () => void;
+  isAiDetectionLoading?: boolean;
 }
 
 export function EditorToolbar({
@@ -90,6 +97,10 @@ export function EditorToolbar({
   onInsertCitation,
   citationStyle,
   onStyleChange,
+  onCheckPlagiarism,
+  isPlagiarismLoading,
+  onCheckAiDetection,
+  isAiDetectionLoading,
 }: EditorToolbarProps) {
   if (!editor) return null;
 
@@ -228,6 +239,65 @@ export function EditorToolbar({
                   <SelectItem value="chicago">Chicago</SelectItem>
                 </SelectContent>
               </Select>
+            )}
+          </>
+        )}
+
+        {/* Plagiarism & AI Detection */}
+        {(onCheckPlagiarism || onCheckAiDetection) && (
+          <>
+            <Separator orientation="vertical" className="mx-1 h-6" />
+
+            {onCheckPlagiarism && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={onCheckPlagiarism}
+                    disabled={isPlagiarismLoading}
+                    className="min-h-[44px] sm:min-h-[32px] gap-1.5 text-xs font-medium"
+                    aria-label="Check Plagiarism"
+                  >
+                    {isPlagiarismLoading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <FileCheck2 className="h-3.5 w-3.5" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {isPlagiarismLoading ? "Scanning..." : "Plagiarism"}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Check for plagiarism</TooltipContent>
+              </Tooltip>
+            )}
+
+            {onCheckAiDetection && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={onCheckAiDetection}
+                    disabled={isAiDetectionLoading}
+                    className="min-h-[44px] sm:min-h-[32px] gap-1.5 text-xs font-medium"
+                    aria-label="AI Detection"
+                  >
+                    {isAiDetectionLoading ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <ShieldCheck className="h-3.5 w-3.5" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {isAiDetectionLoading ? "Scanning..." : "AI Detection"}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Check for AI-generated content</TooltipContent>
+              </Tooltip>
             )}
           </>
         )}

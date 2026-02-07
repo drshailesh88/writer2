@@ -75,6 +75,10 @@ interface TiptapEditorProps {
   }) => Promise<void>;
   onInsertCitation?: () => void;
   onStyleChange?: (style: CitationStyle) => void;
+  onCheckPlagiarism?: () => void;
+  isPlagiarismLoading?: boolean;
+  onCheckAiDetection?: () => void;
+  isAiDetectionLoading?: boolean;
   draftSelector?: React.ReactNode;
 }
 
@@ -89,6 +93,10 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
       onSave,
       onInsertCitation,
       onStyleChange,
+      onCheckPlagiarism,
+      isPlagiarismLoading,
+      onCheckAiDetection,
+      isAiDetectionLoading,
       draftSelector,
     },
     ref
@@ -273,6 +281,10 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
           onInsertCitation={onInsertCitation}
           citationStyle={citationStyle}
           onStyleChange={onStyleChange ? handleStyleChange : undefined}
+          onCheckPlagiarism={onCheckPlagiarism}
+          isPlagiarismLoading={isPlagiarismLoading}
+          onCheckAiDetection={onCheckAiDetection}
+          isAiDetectionLoading={isAiDetectionLoading}
         />
 
         <div className="flex-1 overflow-y-auto">
