@@ -82,3 +82,10 @@ Check what others are working on with `task-master list` before starting.
 
 ## Task Master AI Instructions
 @./.taskmaster/CLAUDE.md
+
+## Active Technologies
+- TypeScript 5.x (strict mode), Node.js 20+ + Next.js 14+ (App Router), Convex, @clerk/nextjs, shadcn/ui, Tailwind CSS 3.x (001-foundation-auth)
+- Convex (serverless database — TypeScript functions only, zero SQL) (001-foundation-auth)
+
+## Recent Changes
+- 001-foundation-auth: Added TypeScript 5.x (strict mode), Node.js 20+ + Next.js 14+ (App Router), Convex, @clerk/nextjs, shadcn/ui, Tailwind CSS 3.x

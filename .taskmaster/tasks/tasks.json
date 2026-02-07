@@ -2,143 +2,214 @@
   "master": {
     "tasks": [
       {
-        "id": 1,
+        "id": "1",
         "title": "Project Foundation & Infrastructure Setup",
         "description": "Bootstrap the Next.js 14+ project with App Router, configure Convex database, integrate Clerk authentication, set up Vercel deployment pipeline, and establish the base project structure following the constitution's tech stack requirements.",
         "details": "1. Initialize Next.js 14+ with App Router using `npx create-next-app@latest` with TypeScript, Tailwind CSS, and App Router enabled.\n2. Install and configure Convex: `npm install convex`, run `npx convex dev`, set up `convex/` directory with schema definitions.\n3. Integrate Clerk: Install `@clerk/nextjs`, configure middleware for route protection, set up Google OAuth and email/password providers.\n4. Install shadcn/ui: `npx shadcn-ui@latest init`, configure with Tailwind.\n5. Set up environment variables structure (.env.local) for: CONVEX_DEPLOYMENT, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY, etc.\n6. Create base folder structure: `app/`, `components/`, `lib/`, `hooks/`, `types/`.\n7. Configure TypeScript strict mode in tsconfig.json.\n8. Set up Vercel project and link to GitHub repository.\n9. Create base layout.tsx with Clerk providers and responsive navigation shell.\n10. Test: Verify authentication flow works, database connection succeeds, and deployment to Vercel preview environment succeeds.",
         "testStrategy": "Playwright E2E test: (1) User can sign up with Google OAuth and land on dashboard, (2) User can sign out, (3) Protected routes redirect to sign-in, (4) Convex connection verified by writing/reading a test record. Verify TypeScript compiles with zero errors. Verify Vercel preview deployment succeeds.",
         "priority": "high",
         "dependencies": [],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Initialize Next.js 14+ project with App Router and TypeScript",
+            "description": "Bootstrap the Next.js application using create-next-app with TypeScript, Tailwind CSS, and App Router configuration. Set up strict TypeScript compiler options and base folder structure.",
+            "dependencies": [],
+            "details": "Run `npx create-next-app@latest . --typescript --tailwind --app --no-src-dir --import-alias '@/*'` to initialize in current directory. Configure tsconfig.json with strict mode enabled. Create base folder structure: `app/`, `components/`, `lib/`, `hooks/`, `types/`. Install @types/node and @types/react. Verify Next.js dev server runs successfully on localhost:3000.",
+            "status": "done",
+            "testStrategy": "Verify TypeScript compiles with zero errors using `npm run build`. Confirm dev server starts with `npm run dev`. Check that tsconfig.json has strict:true and all base directories exist.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T00:23:31.349Z"
+          },
+          {
+            "id": 2,
+            "title": "Install and configure Convex database with initial schema structure",
+            "description": "Set up Convex as the TypeScript-only database. Install Convex SDK, initialize the project, configure environment variables, and create the convex/ directory with placeholder schema file ready for Task 2 schema implementation.",
+            "dependencies": [
+              1
+            ],
+            "details": "Install: `npm install convex`. Run `npx convex dev` to create Convex project and get deployment URL. Add CONVEX_DEPLOYMENT and NEXT_PUBLIC_CONVEX_URL to .env.local. Create `convex/schema.ts` with empty schema placeholder. Create `convex/tsconfig.json` for Convex function compilation. Set up ConvexProvider in Next.js app layout. Test connection by creating a simple test query function in `convex/test.ts`.",
+            "status": "done",
+            "testStrategy": "Verify Convex connection by running a test query from the frontend that writes and reads a record. Confirm `npx convex dev` runs without errors. Check that .env.local has CONVEX_DEPLOYMENT and NEXT_PUBLIC_CONVEX_URL variables set.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T00:24:27.261Z"
+          },
+          {
+            "id": 3,
+            "title": "Integrate Clerk authentication with Google OAuth and email/password",
+            "description": "Install and configure Clerk for authentication. Set up middleware for route protection, configure Google OAuth and email/password providers, and wrap the Next.js app with Clerk providers.",
+            "dependencies": [
+              1
+            ],
+            "details": "Install: `npm install @clerk/nextjs`. Create Clerk application at clerk.com dashboard. Configure Google OAuth and email/password in Clerk dashboard. Add NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY and CLERK_SECRET_KEY to .env.local. Create `middleware.ts` at root with publicRoutes config (/, /api/webhooks/clerk). Wrap app in `app/layout.tsx` with ClerkProvider. Create sign-in and sign-up pages at `app/sign-in/[[...sign-in]]/page.tsx` and `app/sign-up/[[...sign-up]]/page.tsx`. Set up Clerk-Convex integration for user sync.",
+            "status": "done",
+            "testStrategy": "Playwright E2E test: (1) User can navigate to sign-up page, (2) User can sign up with email/password and land on dashboard route, (3) User can sign out, (4) Protected route /dashboard redirects unauthenticated users to sign-in, (5) Google OAuth button is visible and clickable.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T00:28:21.169Z"
+          },
+          {
+            "id": 4,
+            "title": "Install shadcn/ui and configure Tailwind CSS theming",
+            "description": "Set up shadcn/ui component library with Tailwind CSS configuration. Initialize shadcn/ui CLI, configure theme colors for professional academic feel, and install core components needed for initial layouts.",
+            "dependencies": [
+              1
+            ],
+            "details": "Run `npx shadcn-ui@latest init` with default configuration. Select 'New York' style, neutral color scheme. Configure tailwind.config.js with custom colors for academic theme (professional blues, clean grays). Set up components.json. Install initial shadcn components: `npx shadcn-ui@latest add button card input label dropdown-menu navigation-menu`. Create `lib/utils.ts` with cn() helper. Verify mobile-responsive breakpoints are configured (sm:640px, md:768px, lg:1024px, xl:1280px).",
+            "status": "done",
+            "testStrategy": "Create a test page with Button, Card, and Input components from shadcn/ui. Verify they render correctly with proper styling. Test responsive behavior at 375px and 1280px viewport widths. Confirm Tailwind CSS classes apply correctly.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T00:28:29.522Z"
+          },
+          {
+            "id": 5,
+            "title": "Set up Vercel deployment pipeline and create base app layout",
+            "description": "Link project to Vercel for deployment, configure environment variables, set up GitHub integration, and create the base app layout with Clerk providers and responsive navigation shell. Deploy to Vercel preview environment.",
+            "dependencies": [
+              2,
+              3,
+              4
+            ],
+            "details": "Link GitHub repository at github.com/drshailesh88/writer2. Install Vercel CLI: `npm i -g vercel`. Run `vercel link` to connect project. Add all environment variables to Vercel dashboard: CONVEX_DEPLOYMENT, NEXT_PUBLIC_CONVEX_URL, NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY, DEEPSEEK_API_KEY. Create `app/layout.tsx` with ClerkProvider, ConvexProviderWithClerk, and base HTML structure. Create `app/dashboard/layout.tsx` with responsive navigation (mobile hamburger menu, desktop sidebar). Add metadata (title, description, icons). Deploy with `vercel --prod`. Verify preview deployment succeeds.",
+            "status": "done",
+            "testStrategy": "Playwright E2E test on Vercel preview URL: (1) Landing page loads successfully, (2) Sign-up flow completes and redirects to dashboard, (3) Dashboard layout renders with navigation, (4) Mobile menu works on 375px viewport. Verify all environment variables are accessible in deployed environment.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T00:30:41.661Z"
+          }
+        ],
+        "updatedAt": "2026-02-07T00:30:41.661Z"
       },
       {
-        "id": 2,
+        "id": "2",
         "title": "Convex Database Schema Implementation",
         "description": "Implement the complete Convex schema for all core entities (Users, Documents, Papers, Collections, Citations, Plagiarism Checks, AI Detection Checks, Deep Research Reports, Learn Mode Sessions, Subscriptions) with proper indexes and relationships.",
         "details": "1. In `convex/schema.ts`, define all tables using Convex's defineSchema and defineTable:\n   - users: clerkId (indexed), email, name, institution, specialization, subscriptionStatus, subscriptionExpiry, razorpayCustomerId, plagiarismChecksUsed, aiDetectionChecksUsed, deepResearchUsed, timestamps\n   - documents: userId (indexed), title, content (JSON), mode, currentStage, outlineData, approvedPapers, citationStyle, wordCount, status, timestamps\n   - papers: userId (indexed), collectionId, externalId (indexed), source, title, authors (array), journal, year, abstract, doi, url, pdfFileId, isOpenAccess, metadata (JSON), timestamps\n   - collections: userId (indexed), name, description, timestamps\n   - citations: documentId (indexed), paperId, sectionName, position, citationText\n   - plagiarismChecks: userId (indexed), documentId, inputText, wordCount, overallSimilarity, sources (JSON), copyleaksScanId, status, timestamps\n   - aiDetectionChecks: userId (indexed), documentId, inputText, wordCount, overallAiScore, sentenceResults (JSON), copyleaksScanId, status, timestamps\n   - deepResearchReports: userId (indexed), topic, report, citedPapers (JSON), status, timestamps\n   - learnModeSessions: userId (indexed), documentId (indexed), currentStage, conversationHistory (JSON), feedbackGiven (JSON), timestamps\n   - subscriptions: userId (indexed), razorpaySubscriptionId, planType, status, currentPeriodStart, currentPeriodEnd, timestamps\n2. Add indexes for common queries (userId on all tables, documentId where relevant, status fields).\n3. Create Convex mutations and queries for CRUD operations on each table.\n4. Set up Convex file storage configuration for PDF uploads.\n5. Implement helper functions for subscription tier checking and usage limit enforcement.",
         "testStrategy": "Unit tests for each Convex function: Create, read, update, delete operations for each entity. Test index performance with mock data (1000+ records). Verify file storage works by uploading/retrieving a test PDF. Playwright E2E: Create a user via Clerk, verify user record created in Convex users table with correct clerkId mapping.",
         "priority": "high",
         "dependencies": [
-          1
+          "1"
         ],
         "status": "pending",
         "subtasks": []
       },
       {
-        "id": 3,
+        "id": "3",
         "title": "Landing Page & Dashboard UI",
         "description": "Design and implement the public landing page with hero section, feature highlights, pricing, and CTAs, plus the authenticated user dashboard showing recent drafts, quick actions, and usage statistics. Use Anthropic Frontend Design Skill (Opus) for high-quality UI design.",
         "details": "1. Use Anthropic Frontend Design Skill to design clean, Google Docs-inspired UI.\n2. Landing page (`app/page.tsx`):\n   - Hero section: Product name, tagline \"All research needs met under one single roof\", \"KhanMigo meets SciSpace\" positioning\n   - Feature highlights grid: Learn Mode, Draft Mode, Paper Search, Bibliography, Plagiarism Check, AI Detection\n   - \"Made by a doctor, for doctors\" credibility section\n   - Pricing table (Free, Basic INR 1,000/mo, Pro INR 2,000/mo future)\n   - Free plagiarism check CTA button (acquisition funnel)\n   - Sign up / Login buttons (Clerk components)\n3. Dashboard (`app/dashboard/page.tsx`, protected route):\n   - Welcome message with user's name from Clerk\n   - Quick action cards: \"Start New Paper\" (mode selector), \"Search Papers\", \"Continue Draft\"\n   - Recent drafts list (query from Convex documents table, show title, mode, status, last updated)\n   - Usage stats widget: Plagiarism checks remaining, AI detection checks remaining, subscription tier badge\n4. Responsive design: Mobile-first with Tailwind breakpoints (sm, md, lg, xl).\n5. shadcn/ui components: Button, Card, Badge, Separator.\n6. Implement mode selection dialog for \"Start New Paper\" (Learn Mode vs Draft Mode with descriptions).",
         "testStrategy": "Playwright E2E: (1) Landing page loads, all sections visible, CTA buttons clickable. (2) Sign in redirects to dashboard. (3) Dashboard shows user's name, recent drafts (after creating one), usage stats match subscription tier. (4) Test on mobile viewport (375px width). (5) Verify all touch targets ≥44px. Visual regression test with screenshots.",
         "priority": "medium",
         "dependencies": [
-          1,
-          2
+          "1",
+          "2"
         ],
         "status": "pending",
         "subtasks": []
       },
       {
-        "id": 4,
+        "id": "4",
         "title": "Multi-Source Paper Search Integration",
         "description": "Implement unified paper search interface querying PubMed E-utilities, Semantic Scholar, and OpenAlex APIs simultaneously. Include deduplication, filtering (year, study type, open access), sorting, and 'Save to Library' functionality.",
         "details": "1. Create API route handlers:\n   - `app/api/search/pubmed/route.ts`: Integrate NCBI E-utilities API (esearch + esummary). Use NCBI API key from env.\n   - `app/api/search/semantic-scholar/route.ts`: Integrate Semantic Scholar API. Use API key from env.\n   - `app/api/search/openalex/route.ts`: Integrate OpenAlex API (polite pool with email header, no key required).\n2. Create unified search endpoint `app/api/search/route.ts` that:\n   - Calls all three APIs in parallel (Promise.all)\n   - Deduplicates results by DOI, PubMed ID, or title similarity (Levenshtein distance)\n   - Merges metadata (prefer PubMed for medical papers, Semantic Scholar for citation counts)\n   - Returns standardized result format: { externalId, source, title, authors, journal, year, abstract, doi, url, isOpenAccess, citationCount }\n3. Implement search UI (`app/search/page.tsx`):\n   - PubMed-like search bar with search button\n   - Filters: Year range (from/to), study type dropdown, open access toggle, human studies only checkbox\n   - Sort dropdown: Relevance, Newest first, Citation count\n   - Results list: Paper cards with title, authors, journal, year, abstract preview (150 chars), open access badge, citation count\n   - \"Save to Library\" button per result (Convex mutation to papers table)\n   - \"View Full Abstract\" expandable section\n   - \"Find Related\" button (using Semantic Scholar recommendations API)\n4. Implement pagination (20 results per page).\n5. Loading states and error handling (graceful degradation if one API fails).\n6. Rate limiting consideration: Cache results for identical queries for 1 hour.",
         "testStrategy": "Playwright E2E: (1) Search for 'laparoscopic appendectomy', verify results from all three sources appear. (2) Apply filter 'Year: 2020-2024', verify results filtered. (3) Toggle 'Open Access Only', verify badge appears on all results. (4) Click 'Save to Library', verify paper saved in Convex papers table. (5) Test error handling by mocking API failure. (6) Test deduplication with known duplicate papers. Unit tests: Deduplication logic, result merging.",
         "priority": "high",
         "dependencies": [
-          2
+          "2"
         ],
         "status": "pending",
         "subtasks": []
       },
       {
-        "id": 5,
+        "id": "5",
         "title": "Personal Paper Library & PDF Management",
         "description": "Build the personal library interface for saving, organizing, and managing research papers. Support collections/folders, PDF uploads to Convex file storage, metadata display, and in-app PDF viewing using PDF.js.",
         "details": "1. Library UI (`app/library/page.tsx`):\n   - Left sidebar: Collections list (Convex query from collections table), \"New Collection\" button\n   - Main area: Paper grid/list view with metadata cards\n   - Top bar: Upload PDF button, sort dropdown (Date added, Date published, Alphabetical, Journal), search within library input\n2. Collections CRUD:\n   - Create collection: Modal with name + optional description (Convex mutation)\n   - Rename/delete collection (Convex mutations)\n   - Drag-and-drop papers into collections (update paper.collectionId)\n3. PDF upload:\n   - File input (accept=\".pdf\", max 50MB)\n   - Upload to Convex file storage using `storage.store(file)`\n   - Extract metadata: Parse first page for title/authors using pdf-parse npm library\n   - Create paper record in Convex with source='uploaded', pdfFileId\n4. Paper card component:\n   - Title, authors, journal, year, abstract preview\n   - Badges: Open Access, Uploaded, Collection name\n   - Quick actions: View (modal with full abstract), Download (if pdfFileId exists), Open Original (external link), Remove from Library\n5. PDF viewer modal:\n   - Integrate PDF.js (via react-pdf npm library)\n   - Basic controls: Page navigation, zoom, download\n   - Only for papers with pdfFileId (open access or uploaded)\n6. Usage limits: Free tier limited to 50 papers (check count before allowing save).\n7. Related papers feature: \"More like this\" button queries Semantic Scholar /recommendations endpoint.",
         "testStrategy": "Playwright E2E: (1) Create collection 'Thesis Chapter 1', verify appears in sidebar. (2) Save paper from search to library, verify appears in All Papers. (3) Move paper to collection, verify appears under collection. (4) Upload test PDF, verify upload succeeds, metadata extracted, viewable in PDF viewer. (5) Test 50-paper limit for free tier (mock user with 50 papers, verify save blocked). (6) Search within library works. (7) Related papers button returns recommendations.",
         "priority": "medium",
         "dependencies": [
-          2,
-          4
+          "2",
+          "4"
         ],
         "status": "pending",
         "subtasks": []
       },
       {
-        "id": 6,
+        "id": "6",
         "title": "Tiptap Writing Editor with Citations & Auto-Save",
         "description": "Implement the rich text editor using Tiptap with IMRAD templates, inline citation insertion from library, auto-save to Convex, multiple draft management, word count, and AI integration panels for Learn/Draft modes.",
         "details": "1. Install Tiptap: `npm install @tiptap/react @tiptap/starter-kit @tiptap/extension-placeholder @tiptap/extension-character-count`.\n2. Editor component (`components/editor/TiptapEditor.tsx`):\n   - Extensions: StarterKit (bold, italic, headings, lists, blockquote), Placeholder, CharacterCount, custom Citation extension\n   - Toolbar: Bold, Italic, Underline, H1-H6, Bullet List, Numbered List, Blockquote, Insert Citation button\n   - Full-screen mode toggle\n   - Word count display (bottom right)\n3. IMRAD template:\n   - Pre-populate new documents with section headers: Introduction, Methods, Results, Discussion, Conclusion\n   - Each section is a H2 heading with placeholder text\n4. Auto-save:\n   - Debounced save (2 seconds after last edit) to Convex documents table\n   - Save status indicator (\"Saving...\", \"All changes saved\", timestamp)\n   - Update wordCount field on each save\n5. Citation insertion:\n   - \"Insert Citation\" button opens modal with user's library (papers from Convex)\n   - Select paper, inserts inline citation placeholder [1] or (Author, Year) depending on citationStyle\n   - Creates record in citations table linking documentId + paperId\n6. Multiple drafts:\n   - Draft selector dropdown in top bar (query user's documents from Convex)\n   - \"New Draft\" button\n   - Draft title editable inline (blur event saves to Convex)\n7. AI panels:\n   - Learn Mode: Right sidebar with chat-like interface for Socratic questions, sentence starters, examples\n   - Draft Mode: Right sidebar with workflow progress (Step 1-5), approve/reject buttons\n   - Toggle sidebar visibility\n8. Mobile responsive: Stack editor + sidebar vertically on mobile, sidebar slides over on button press.",
         "testStrategy": "Playwright E2E: (1) Create new draft, verify IMRAD template appears. (2) Type text, wait 3 seconds, verify auto-save triggered and document updated in Convex. (3) Format text (bold, italic, H2), verify formatting persists after reload. (4) Insert citation from library, verify [1] appears and citations table updated. (5) Word count updates in real-time. (6) Full-screen mode works. (7) Switch between multiple drafts. (8) Test on mobile viewport. Unit test: Auto-save debounce logic.",
         "priority": "high",
         "dependencies": [
-          2,
-          5
+          "2",
+          "5"
         ],
         "status": "pending",
         "subtasks": []
       },
       {
-        "id": 7,
+        "id": "7",
         "title": "Bibliography Generator with Citation.js",
         "description": "Integrate Citation.js to auto-generate formatted bibliographies in Vancouver, APA, AMA, and Chicago styles. Support in-text citation formatting, style switching, and bibliography export. Target major medical journals (NEJM, Lancet, JAMA).",
         "details": "1. Install Citation.js: `npm install @citation-js/core @citation-js/plugin-csl`.\n2. Fetch CSL style files for Vancouver, APA, AMA, Chicago from GitHub (Zotero style repository).\n3. Create bibliography service (`lib/bibliography.ts`):\n   - Function: generateBibliography(citations: Citation[], style: 'vancouver' | 'apa' | 'ama' | 'chicago') → string[]\n   - For each citation, fetch paper metadata from Convex papers table\n   - Convert to CSL-JSON format (title, author, issued, container-title, DOI, etc.)\n   - Use Citation.js to format according to selected style\n   - Return sorted bibliography entries\n4. In-text citation formatting:\n   - Vancouver: Numbered [1], [2,3], [4-7]\n   - APA: (Author, Year), (Author1 & Author2, Year), (Author1 et al., Year)\n   - Scan document for citation placeholders, replace with correct format based on citationStyle\n5. Bibliography section:\n   - Auto-insert \"References\" H2 at end of document\n   - Render bibliography entries below (generated from citations table)\n   - Update automatically when citations added/removed\n6. Style switcher:\n   - Dropdown in editor toolbar: Vancouver (default), APA, AMA, Chicago\n   - On change, update document.citationStyle in Convex, re-render citations and bibliography\n7. Export bibliography separately:\n   - \"Export Bibliography\" button → download .txt file with just the references\n8. Journal-specific formatting:\n   - Validate formatting against NEJM, Lancet, JAMA, JACC, Nature guidelines (unit tests with sample citations).",
         "testStrategy": "Unit tests: (1) Generate Vancouver bibliography from 10 sample papers, verify numbering and format. (2) Generate APA bibliography, verify author-year format. (3) Test edge cases: 1 author, 7+ authors (et al.), no DOI, no journal. (4) Verify NEJM compliance (Vancouver numbered, et al. for >6 authors). Playwright E2E: (1) Insert 3 citations, verify in-text [1][2][3] and bibliography auto-generated. (2) Switch to APA, verify in-text changes to (Author, Year) and bibliography reformatted. (3) Add citation, verify bibliography updates. (4) Export bibliography as .txt.",
         "priority": "medium",
         "dependencies": [
-          6
+          "6"
         ],
         "status": "pending",
         "subtasks": []
       },
       {
-        "id": 8,
+        "id": "8",
         "title": "Mastra Agent Framework & GLM-4.7 Integration for Draft Mode",
         "description": "Set up Mastra agent framework, integrate GLM-4.7 (Zhipu AI) as the LLM provider, implement Draft Mode Guided workflow with human-in-the-loop suspend/resume points (outline → papers → write), and Hands-Off workflow with disclaimer.",
         "details": "1. Install Mastra: `npm install @mastra/core @mastra/vercel-ai`. Mastra already supports Zhipu AI via `createZhipu` provider.\n2. Set up GLM-4.7 integration:\n   - Sign up at z.ai or bigmodel.cn, obtain API key\n   - Add ZHIPU_API_KEY to .env.local\n   - Configure Mastra client with Zhipu provider in `lib/mastra.ts`\n3. Define Draft Mode agents (`lib/agents/draftMode.ts`):\n   - OutlineAgent: Takes research topic, generates IMRAD outline with subsections. System prompt: \"You are an expert medical researcher. Generate a structured outline in IMRAD format for: [topic]. Include subsections.\"\n   - PaperFinderAgent: Takes outline section, queries paper search APIs, returns relevant papers. Integrates with search API from Task 4.\n   - WriterAgent: Takes section + approved papers, writes section with inline citations. System prompt: \"Write the [section] section using ONLY the following papers as sources: [papers]. Include numbered citations.\"\n4. Implement Guided workflow (`lib/workflows/draftModeGuided.ts`):\n   - Step 1: User inputs topic → OutlineAgent generates outline → SUSPEND → user reviews/edits outline → RESUME\n   - Step 2: For each section → PaperFinderAgent fetches papers → SUSPEND → user approves/removes papers → RESUME\n   - Step 3: For each section → WriterAgent writes section → SUSPEND → user reviews → RESUME\n   - Step 4: Combine all sections into complete draft in Tiptap editor\n   - Store workflow state in Convex documents.outlineData and documents.approvedPapers\n5. Implement Hands-Off workflow (`lib/workflows/draftModeHandsOff.ts`):\n   - Same steps, NO SUSPEND points\n   - Display disclaimer BEFORE starting and AFTER completion\n   - Disclaimer component: Modal with full text from constitution Article 5.1, require explicit acknowledgment\n6. UI for Draft Mode (`app/draft/page.tsx`):\n   - Topic input field\n   - Mode toggle: Guided vs Hands-Off\n   - Right sidebar shows workflow progress (Step 1/5, current action)\n   - Approve/Reject buttons at each suspend point\n   - Loading states with progress indicators\n7. Error handling: If LLM API fails, show graceful error, allow retry.",
         "testStrategy": "Playwright E2E: (1) Guided mode: Enter topic 'laparoscopic appendectomy', verify outline generated, edit outline, approve, verify papers fetched, approve papers, verify draft written section-by-section. (2) Hands-Off mode: Verify disclaimer shown, accept, verify complete draft generated without pauses. (3) Test workflow state persistence (refresh page mid-workflow, verify can resume). (4) Test error handling (mock GLM-4.7 API failure, verify error message). Unit tests: Each agent with mock LLM responses. Verify correct prompts sent to GLM-4.7.",
         "priority": "high",
         "dependencies": [
-          6
+          "6"
         ],
         "status": "pending",
         "subtasks": []
       },
       {
-        "id": 9,
+        "id": "9",
         "title": "Learn Mode Socratic Coach with Mastra Workflows",
         "description": "Implement Learn Mode 5-stage sequential workflow (Understand → Literature → Outline → Drafting → Feedback) using Mastra agents. Enforce Socratic questioning, sentence starters, examples from published papers, and structured one-at-a-time feedback. Never write complete sentences for the student.",
         "details": "1. Define Learn Mode agents (`lib/agents/learnMode.ts`):\n   - SocraticCoachAgent: Asks probing questions, provides sentence starters. System prompt: \"You are a writing coach using the Socratic method. Ask questions to guide the student, never provide direct answers. Suggest sentence starters but NEVER complete them. Example: 'You could start with: The primary objective...' then stop.\"\n   - FeedbackAgent: Provides structured feedback in 5 categories (Thesis & Focus, Evidence & Reasoning, Methodology Rigor, Structure & Organization, Language & Tone). System prompt: \"Analyze the student's text in the category: [category]. Provide ONE specific suggestion for improvement. Show an example from a published paper if relevant.\"\n2. Implement Learn Mode workflow (`lib/workflows/learnMode.ts`):\n   - Stage 1 (Understand): SocraticCoachAgent asks clarifying questions about research topic/question → SUSPEND → student responds → Agent evaluates clarity → If unclear, ask more questions → If clear, RESUME to Stage 2\n   - Stage 2 (Literature): Agent guides student on search keywords → Student uses paper search (Task 4) → Agent asks: \"Is this paper relevant? Why?\" → Student saves papers to library → Agent asks about gaps in literature → RESUME to Stage 3\n   - Stage 3 (Outline): Agent proposes IMRAD outline → SUSPEND → Student reviews/modifies → Agent asks questions about each section → Student approves → RESUME to Stage 4\n   - Stage 4 (Drafting): Student writes in editor → Agent provides sentence starters on request → Agent shows examples from published papers → Agent asks guiding questions (\"Have you mentioned inclusion/exclusion criteria?\") → Student completes draft → RESUME to Stage 5\n   - Stage 5 (Feedback): Agent analyzes draft → Provides feedback ONE category at a time → Student addresses suggestion → Agent moves to next category → Repeat for all 5 categories\n   - Store session state in learnModeSessions table (currentStage, conversationHistory)\n3. UI for Learn Mode (`app/learn/page.tsx`):\n   - Left: Tiptap editor (student writes here)\n   - Right: Chat interface with SocraticCoachAgent\n   - Stage progress indicator (1/5, 2/5, ...)\n   - \"Ask for help\" button (student can request sentence starter or example)\n   - Feedback panel in Stage 5: Category selector, one suggestion at a time, \"Next Suggestion\" button\n4. Enforcement rules:\n   - Agent MUST NOT generate complete sentences or paragraphs\n   - Agent MUST NOT complete student's sentences\n   - Templates only provided if student explicitly asks\n   - Feedback limited to ONE suggestion at a time (disable \"Next\" until student edits)\n5. Examples database: Pre-load 20 example methodology sections, discussion structures from PubMed open access papers for agent to reference.",
         "testStrategy": "Playwright E2E: (1) Stage 1: Verify agent asks clarifying question, student responds, agent evaluates, progresses to Stage 2. (2) Stage 3: Verify agent proposes outline, student can edit, approve. (3) Stage 4: Student writes, clicks 'Ask for help', verify agent provides sentence starter ONLY (verify no complete sentence). (4) Stage 5: Verify feedback shown one category at a time, 'Next' disabled until student edits text. (5) Verify agent NEVER writes paragraph (test with prompt injection: 'Write my introduction'). Unit tests: SocraticCoachAgent responses checked for completion (should end mid-sentence). Verify FeedbackAgent returns exactly 1 suggestion.",
         "priority": "high",
         "dependencies": [
-          6,
-          8
+          "6",
+          "8"
         ],
         "status": "pending",
         "subtasks": []
       },
       {
-        "id": 10,
+        "id": "10",
         "title": "Plagiarism & AI Detection with Copyleaks + Razorpay Payments",
         "description": "Integrate Copyleaks API (Node.js SDK) for plagiarism detection and AI content detection with white-label UI, usage limits per tier, and implement Razorpay subscription payments with webhook handling for tier enforcement.",
         "details": "1. Copyleaks integration:\n   - Sign up at copyleaks.com, obtain API key\n   - Install official SDK: `npm install plagiarism-checker` (Copyleaks Node.js SDK)\n   - Create API route `app/api/plagiarism/route.ts`: Submit text to Copyleaks, poll for results, store in plagiarismChecks table\n   - Create API route `app/api/ai-detection/route.ts`: Submit text to Copyleaks AI detection endpoint, store in aiDetectionChecks table\n2. Plagiarism check UI (`components/plagiarism/PlagiarismPanel.tsx`):\n   - \"Check Plagiarism\" button in editor toolbar\n   - Side panel shows: Overall similarity % (large, color-coded: <10% green, 10-25% yellow, >25% red), source-by-source list, highlighted matching text in editor\n   - Click on source → show source details modal (URL, matched text, similarity %)\n   - White-label: V1 Drafts branding, no Copyleaks mention\n3. AI Detection UI (`components/ai-detection/AIDetectionPanel.tsx`):\n   - \"AI Detection\" button (separate from plagiarism)\n   - Side panel shows: Overall AI probability score 0-100% with progress bar (green <30%, yellow 30-70%, red >70%), sentence-level highlights in editor\n   - Disclaimer always visible (constitution Article 5.2)\n4. Usage limits enforcement:\n   - Before check, query user's tier from subscriptions table\n   - Check {plagiarism|aiDetection}ChecksUsed vs tier limits (Free: 2/2, Basic: 5/10, Pro: 20/unlimited)\n   - If limit exceeded, show upgrade modal\n   - After check, increment checksUsed in users table\n   - Reset counters monthly (cron job or Convex scheduled function)\n5. Free funnel (no signup):\n   - Landing page \"Free Plagiarism Check\" button → `/plagiarism-free` page\n   - Text input (max 1000 words), submit → run check (no user record)\n   - After results, CTA: \"Sign up for 2 free checks per month + more features\"\n6. Razorpay integration:\n   - Sign up at razorpay.com, obtain API keys (test + live)\n   - Install SDK: `npm install razorpay`\n   - Create subscription plans in Razorpay dashboard: Basic (INR 1,000/month), Pro (INR 2,000/month)\n   - Pricing page (`app/pricing/page.tsx`): Feature comparison table, \"Subscribe\" buttons\n   - Payment flow: Click Subscribe → Razorpay Checkout modal → On success, webhook creates subscription record in Convex\n   - Webhook handler (`app/api/razorpay/webhook/route.ts`): Verify signature, handle events (subscription.activated, subscription.cancelled, payment.failed), update subscriptions table and users.subscriptionStatus\n7. Subscription management (`app/account/subscription/page.tsx`):\n   - Show current plan, renewal date, payment history\n   - \"Cancel Subscription\" button (calls Razorpay API)\n   - Grace period: 3 days after failed payment before access downgrade",
         "testStrategy": "Playwright E2E: (1) Free funnel: Enter 1000-word text, verify plagiarism check runs, results shown, CTA displayed. (2) Free account: Run 2 plagiarism checks, verify 3rd blocked with upgrade modal. (3) Subscribe to Basic plan (test mode), verify Razorpay modal opens, mock payment success, verify webhook creates subscription record, user tier updated to 'basic', limits increased. (4) Run plagiarism check as paid user, verify highlighted matches and sources. (5) Run AI detection, verify sentence-level scores and disclaimer shown. (6) Cancel subscription, verify status updated. (7) Mock payment failure, verify grace period starts. Unit tests: Usage limit calculations, webhook signature verification, tier enforcement logic.",
         "priority": "high",
         "dependencies": [
-          2,
-          6
+          "2",
+          "6"
         ],
         "status": "pending",
         "subtasks": []
       }
     ],
     "metadata": {
-      "created": "2026-02-06T16:12:13.678Z",
-      "updated": "2026-02-06T16:12:13.678Z",
-      "description": "Tasks for master context"
+      "version": "1.0.0",
+      "lastModified": "2026-02-07T00:30:41.662Z",
+      "taskCount": 10,
+      "completedCount": 1,
+      "tags": [
+        "master"
+      ]
     }
   }
 }
