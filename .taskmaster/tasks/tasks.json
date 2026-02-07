@@ -89,7 +89,7 @@
         "dependencies": [
           "1"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -150,12 +150,13 @@
               4
             ],
             "details": "Create convex/citations.ts:\n- Mutation createCitation: args { documentId, paperId, sectionName, position, citationText }. Inserts citation, verifies user owns both document and paper.\n- Query listCitations: args { documentId }. Returns all citations for document, ordered by position, joins with papers table to include paper metadata for bibliography generation.\n- Mutation deleteCitation: args { id: v.id('citations') }. Verifies ownership via document lookup.\n\nCreate convex/plagiarismChecks.ts:\n- Mutation createCheck: args { documentId (optional), inputText, wordCount }. Uses checkPlagiarismLimit helper first. Gets userId, inserts with status='pending', incrementUsage('plagiarism'). Returns check ID.\n- Mutation updateCheckResults: args { id, overallSimilarity, sources, copyleaksScanId, status }. Updates check with Copyleaks results.\n- Query getCheck: args { id }. Verifies ownership.\n- Query listChecks: args { limit }. Returns user's checks sorted by createdAt descending.\n\nCreate convex/aiDetectionChecks.ts: Same structure as plagiarismChecks but with overallAiScore and sentenceResults fields.\n\nCreate convex/deepResearchReports.ts:\n- Mutation createReport: args { topic }. Uses checkDeepResearchLimit, inserts with status='pending', incrementUsage('deep_research').\n- Mutation updateReport: args { id, report, citedPapers, status }.\n- Query getReport/listReports: Standard ownership-verified queries.\n\nCreate convex/learnModeSessions.ts:\n- Mutation createSession: args { documentId }. Inserts with currentStage='understand', empty conversationHistory/feedbackGiven.\n- Mutation updateSession: args { id, currentStage, conversationHistory, feedbackGiven }. For persisting workflow state.\n- Query getSessionByDocument: args { documentId }. Returns active session for document.\n\nCreate convex/subscriptions.ts:\n- Mutation createSubscription: args { razorpaySubscriptionId, planType, currentPeriodStart, currentPeriodEnd }. Updates users table subscriptionStatus='active', subscriptionExpiry=currentPeriodEnd.\n- Mutation updateSubscriptionStatus: args { id, status }. For webhook handling (cancelled, past_due). Updates users table.\n- Query getCurrentSubscription: args {}. Gets userId, returns active subscription.\n\nAll functions use auth checks and ConvexError for unauthorized access.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit tests for each table: (1) citations: Create citation, verify joins with paper data in listCitations. (2) plagiarismChecks: createCheck enforces limits, incrementUsage called, updateCheckResults stores Copyleaks data. (3) aiDetectionChecks: same as plagiarism. (4) deepResearchReports: createReport enforces limits. (5) learnModeSessions: createSession/updateSession persist workflow state correctly. (6) subscriptions: createSubscription updates users table, updateSubscriptionStatus downgrades access when cancelled. Playwright E2E: Insert citation in editor, verify appears in citations table. Run plagiarism check (Task 10 UI), verify record created with pending status, then completed after Copyleaks returns.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T03:05:56.259Z"
           }
         ],
-        "updatedAt": "2026-02-07T03:04:32.926Z"
+        "updatedAt": "2026-02-07T03:05:56.259Z"
       },
       {
         "id": "3",
@@ -269,9 +270,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T03:04:32.927Z",
+      "lastModified": "2026-02-07T03:05:56.259Z",
       "taskCount": 10,
-      "completedCount": 1,
+      "completedCount": 2,
       "tags": [
         "master"
       ]

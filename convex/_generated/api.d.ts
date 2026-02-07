@@ -8,12 +8,17 @@
  * @module
  */
 
+import type * as aiDetectionChecks from "../aiDetectionChecks.js";
 import type * as citations from "../citations.js";
 import type * as collections from "../collections.js";
+import type * as deepResearchReports from "../deepResearchReports.js";
 import type * as documents from "../documents.js";
 import type * as files from "../files.js";
+import type * as learnModeSessions from "../learnModeSessions.js";
 import type * as lib_subscriptionLimits from "../lib/subscriptionLimits.js";
 import type * as papers from "../papers.js";
+import type * as plagiarismChecks from "../plagiarismChecks.js";
+import type * as subscriptions from "../subscriptions.js";
 import type * as users from "../users.js";
 
 import type {
@@ -23,12 +28,17 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  aiDetectionChecks: typeof aiDetectionChecks;
   citations: typeof citations;
   collections: typeof collections;
+  deepResearchReports: typeof deepResearchReports;
   documents: typeof documents;
   files: typeof files;
+  learnModeSessions: typeof learnModeSessions;
   "lib/subscriptionLimits": typeof lib_subscriptionLimits;
   papers: typeof papers;
+  plagiarismChecks: typeof plagiarismChecks;
+  subscriptions: typeof subscriptions;
   users: typeof users;
 }>;
 
