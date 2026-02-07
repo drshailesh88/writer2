@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { socraticCoachAgent } from "@/lib/mastra/agents";
 import { validateCoachResponse } from "@/lib/mastra/learn-mode-guard";
+import { formatExamplesForPrompt, getSentenceStarters } from "@/lib/examples/loader";
 import type { ConversationMessage, LearnModeStage } from "@/lib/mastra/types";
 
 export async function POST(req: NextRequest) {
@@ -27,17 +28,22 @@ export async function POST(req: NextRequest) {
 
     const stageInstruction = getStageInstruction(stage as LearnModeStage);
 
+    // Include relevant examples based on stage
+    const examplesContext = getExamplesContext(stage as LearnModeStage);
+
     const prompt = `${stageInstruction}
 
 Topic: "${topic || "research paper"}"
 Current stage: ${stage}
+
+${examplesContext}
 
 Recent conversation:
 ${historyContext || "(No previous messages)"}
 
 Student's latest message: "${message}"
 
-Respond as the Socratic writing coach. Remember: NEVER write complete sentences for the student. Ask questions, provide sentence starters (3-6 words only), or point to examples.`;
+Respond as the Socratic writing coach. Remember: NEVER write complete sentences for the student. Ask questions, provide sentence starters (3-6 words only), or point to examples from the database above.`;
 
     const result = await agent.generate(prompt);
 
@@ -74,5 +80,23 @@ function getStageInstruction(stage: LearnModeStage): string {
       return "You are in stage 4 (Write Draft). The student is writing their paper. Provide sentence starters (3-6 words only) when asked. Ask guiding questions about content gaps. Point to examples from published papers.";
     case "feedback":
       return "You are in stage 5 (Feedback). The FeedbackAgent handles structured feedback. For general questions, guide the student on revision strategies without rewriting their text.";
+  }
+}
+
+function getExamplesContext(stage: LearnModeStage): string {
+  switch (stage) {
+    case "drafting": {
+      const starters = getSentenceStarters()
+        .map((s) => `- ${s.section}: "${s.text}"`)
+        .join("\n");
+      const methodExamples = formatExamplesForPrompt("methodology", 2);
+      return `Available sentence starters (offer these when student asks for help):\n${starters}\n\nMethodology examples from published papers:\n${methodExamples}`;
+    }
+    case "outline":
+      return `Methodology structure examples from published papers:\n${formatExamplesForPrompt("methodology", 3)}`;
+    case "feedback":
+      return `Discussion structure examples from published papers:\n${formatExamplesForPrompt("discussion", 3)}`;
+    default:
+      return "";
   }
 }
