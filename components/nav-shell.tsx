@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Search } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -52,6 +53,13 @@ export function NavShell() {
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-4 sm:flex">
+          <Link
+            href="/search"
+            className="flex min-h-[44px] items-center gap-1.5 px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Search className="h-4 w-4" />
+            Search Papers
+          </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -121,7 +129,15 @@ export function NavShell() {
                     <p className="text-xs text-muted-foreground">{email}</p>
                   </div>
                 </div>
-                <div className="border-t pt-4">
+                <div className="border-t pt-4 space-y-1">
+                  <Link
+                    href="/search"
+                    className="flex min-h-[44px] items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Search className="h-4 w-4" />
+                    Search Papers
+                  </Link>
                   <Button
                     variant="ghost"
                     className="w-full min-h-[44px] justify-start"

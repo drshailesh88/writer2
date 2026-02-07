@@ -88,6 +88,8 @@ Check what others are working on with `task-master list` before starting.
 - Convex (serverless database — TypeScript functions only, zero SQL) (001-foundation-auth)
 - TypeScript 5.x (strict mode) + Convex 1.31.7 (defineSchema, defineTable, v validators, mutation, query, internalMutation) (002-convex-database-schema)
 - Convex (serverless document database with built-in file storage) (002-convex-database-schema)
+- TypeScript 5.x, Next.js 16.1.6 (App Router) + Next.js API routes (search aggregation), Convex (persistence), Clerk (auth), shadcn/ui + Tailwind CSS (UI), lucide-react (icons) (004-paper-search)
+- Convex (papers, collections tables — already exist) (004-paper-search)
 
 ## Recent Changes
 - 001-foundation-auth: Added TypeScript 5.x (strict mode), Node.js 20+ + Next.js 14+ (App Router), Convex, @clerk/nextjs, shadcn/ui, Tailwind CSS 3.x

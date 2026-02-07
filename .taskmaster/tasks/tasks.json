@@ -169,7 +169,7 @@
           "1",
           "2"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -228,13 +228,13 @@
               4
             ],
             "details": "Create Playwright test file `tests/e2e/landing-and-dashboard.spec.ts`. (1) Landing page tests: Test 'Landing page loads and displays all sections' - navigate to '/', expect hero section with tagline visible, expect 6 feature cards present (check for text 'Learn Mode', 'Draft Mode', 'Paper Search', 'Bibliography', 'Plagiarism Check', 'AI Detection'), expect credibility section with 'Made by a doctor, for doctors', expect pricing table with 3 plans (Free, Basic, Pro), expect pricing shows 'INR 1,000' for Basic, expect 'Recommended' badge on Basic plan, expect free plagiarism CTA section. Test 'Landing page CTAs navigate correctly' - click 'Start Writing for Free' button, expect URL to be /sign-up, go back, click 'Sign In' button, expect URL to be /sign-in. Test 'Landing page is mobile responsive' - set viewport to 375x667, navigate to '/', verify all sections visible, verify touch targets ≥44px (check button heights). (2) Dashboard tests: Test 'Dashboard loads and shows user data' - sign in programmatically (use Playwright Clerk helpers or test user tokens), navigate to /dashboard, expect welcome message to contain user's name, expect quick action cards present (3 cards). Test 'Mode selection dialog works' - click 'Start New Paper' button, expect dialog to be visible, expect 2 options (Learn Mode, Draft Mode), select Learn Mode, fill in title 'E2E Test Paper', submit, expect URL to match /editor/*, expect document created in Convex (verify via API query). Test 'Recent drafts display correctly' - create test document via Convex mutation, refresh dashboard, expect recent drafts section to show 1 document, expect document title 'E2E Test Paper', expect mode badge 'Learn', expect status badge 'In Progress', expect last updated timestamp. Test 'Usage stats widget displays correctly' - expect usage stats card visible, expect subscription tier badge (e.g., 'Free'), expect usage text for plagiarism checks (e.g., '0/2'), expect usage text for AI detection (e.g., '0/2'), expect 'Upgrade' button if Free tier. Test 'Dashboard is mobile responsive' - set viewport to 375x667, navigate to /dashboard, verify layout stacks (single column), verify all sections visible and readable. (3) Add test utilities: Helper functions for creating test users, test documents, cleaning up test data. Use Playwright's `test.beforeEach` and `test.afterEach` for setup/teardown.",
-            "status": "in-progress",
+            "status": "done",
             "testStrategy": "Run `npx playwright test tests/e2e/landing-and-dashboard.spec.ts`. All tests must pass. Verify tests cover: (1) Landing page sections visibility (hero, features, credibility, pricing, CTA). (2) Landing page CTAs navigation (sign-up, sign-in). (3) Landing page mobile responsiveness (375px viewport). (4) Dashboard loads with user data (welcome, quick actions, usage stats). (5) Mode selection dialog opens and creates document. (6) Recent drafts list displays created document with correct badges. (7) Usage stats widget shows correct subscription tier and usage counts. (8) Dashboard mobile responsiveness (375px viewport, stacked layout). All tests should use proper assertions (expect statements) and wait for elements to be visible/stable before interacting. Tests should clean up created data (documents) after completion.",
             "parentId": "undefined",
-            "updatedAt": "2026-02-07T04:04:21.905Z"
+            "updatedAt": "2026-02-07T04:11:39.777Z"
           }
         ],
-        "updatedAt": "2026-02-07T04:04:21.905Z"
+        "updatedAt": "2026-02-07T04:11:39.777Z"
       },
       {
         "id": "4",
@@ -246,8 +246,69 @@
         "dependencies": [
           "2"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Individual API Route Handlers for PubMed, Semantic Scholar, and OpenAlex",
+            "description": "Build three separate Next.js API route handlers to integrate with PubMed E-utilities (esearch + esummary), Semantic Scholar API, and OpenAlex API. Each route should handle query parameters, API authentication, rate limiting, and return standardized paper metadata.",
+            "dependencies": [],
+            "details": "Implement `app/api/search/pubmed/route.ts` using NCBI E-utilities (esearch for search, esummary for metadata). Add NCBI_API_KEY to .env.local. Implement `app/api/search/semantic-scholar/route.ts` with API key authentication (SEMANTIC_SCHOLAR_API_KEY in env). Implement `app/api/search/openalex/route.ts` with polite pool header (mailto email, no key required). Each handler should accept query params: q (query string), yearFrom, yearTo, studyType, openAccessOnly, humanOnly. Return standardized format: { externalId, source, title, authors: string[], journal, year, abstract, doi, url, isOpenAccess, citationCount, metadata }. Install axios or use native fetch. Implement error handling with try-catch, return 200 with error flag on API failure for graceful degradation.",
+            "status": "pending",
+            "testStrategy": "Unit test each route handler with mock queries. Verify PubMed returns results with PMIDs. Verify Semantic Scholar returns citation counts. Verify OpenAlex respects open access filter. Test error handling when API is unavailable.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Build Unified Search Endpoint with Parallel API Calls and Deduplication",
+            "description": "Create the main search aggregation endpoint that calls all three APIs in parallel, merges results, deduplicates by DOI/PMID/title similarity, and returns unified standardized results with caching.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement `app/api/search/route.ts` as the unified endpoint. Use Promise.allSettled to call pubmed, semantic-scholar, and openalex routes in parallel. Handle partial failures gracefully (if one API fails, still return results from others). Implement deduplication algorithm: (1) Match by DOI if present, (2) Match by PubMed ID if present, (3) Use Levenshtein distance on titles (threshold: 85% similarity) for fuzzy matching. Merge metadata: prefer PubMed metadata for medical papers, prefer Semantic Scholar for citation counts, use OpenAlex for open access status. Install fast-levenshtein npm package for string similarity. Implement in-memory cache (Map) for identical queries with 1-hour TTL. Return format: { results: Paper[], sources: { pubmed: number, semanticScholar: number, openalex: number }, cached: boolean, errors: string[] }. Apply filters (year range, study type, open access, human studies) post-merge if not supported by individual APIs.",
+            "status": "pending",
+            "testStrategy": "Playwright E2E: Search for 'laparoscopic appendectomy', verify results from all three sources appear with merged metadata. Test deduplication by searching query with known duplicates across sources. Test cache by running identical query twice, verify second response is cached. Test graceful degradation by mocking one API failure.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Implement Search UI with Filters, Sorting, and Results Display",
+            "description": "Build the search page UI with PubMed-like search bar, advanced filters (year range, study type, open access, human studies), sort options, and responsive results list with paper cards showing metadata and expandable abstracts.",
+            "dependencies": [
+              2
+            ],
+            "details": "Create `app/search/page.tsx` as a client component ('use client'). UI components: (1) Search bar using shadcn/ui Input + Button, (2) Filter panel with: Year range (two Number inputs for from/to), Study type dropdown (Select component: Clinical Trial, Meta-Analysis, Randomized Controlled Trial, Review, Observational Study), Open Access toggle (Switch component), Human Studies checkbox. (3) Sort dropdown (Select: Relevance, Newest First, Citation Count). (4) Results section: Display paper cards using shadcn/ui Card component. Each card shows: title (bold), authors (comma-separated, max 3 + 'et al.'), journal + year, abstract preview (150 chars with '...' truncation), Open Access badge (shadcn/ui Badge if isOpenAccess), citation count display, 'View Full Abstract' expandable section (Collapsible component), 'Save to Library' button (calls Convex papers.save mutation), 'Find Related' button (calls Semantic Scholar recommendations API). Use React state for filters, query, results. Implement loading state (Skeleton components) and empty state ('No results found'). Mobile responsive: stack filters vertically on <768px, single column results. Use Tailwind for spacing and layout.",
+            "status": "pending",
+            "testStrategy": "Playwright E2E: (1) Enter search query, click search, verify results render. (2) Apply year filter 2020-2024, verify filtered results. (3) Toggle 'Open Access Only', verify all results show OA badge. (4) Change sort to 'Newest First', verify results reorder. (5) Click 'View Full Abstract', verify abstract expands. (6) Verify mobile responsive at 375px viewport.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Implement Save to Library Functionality with Convex Integration",
+            "description": "Add 'Save to Library' button functionality that saves selected papers to the user's Convex papers table, with duplicate detection, success/error feedback, and saved state indication.",
+            "dependencies": [
+              3
+            ],
+            "details": "In search page, import Convex useMutation and useQuery hooks. Use papers.save mutation from convex/papers.ts (already implemented). On 'Save to Library' button click: (1) Call mutation with paper data (externalId, source, title, authors, journal, year, abstract, doi, url, isOpenAccess, metadata), (2) Handle success: show success toast (install sonner npm for toast notifications), disable button and show 'Saved' state. (3) Handle error: show error toast with message. Use papers.getByExternalId query to check if paper already saved on initial load, pre-mark buttons as 'Saved' if true. Button states: 'Save to Library' (default), 'Saving...' (loading), 'Saved ✓' (saved). Use shadcn/ui Button variant 'outline' for save button, 'ghost' for saved state. Implement optimistic UI update (immediately mark as saved, revert on error). Add optional collectionId param to save directly to a collection (for future library feature).",
+            "status": "pending",
+            "testStrategy": "Playwright E2E: (1) Search for paper, click 'Save to Library', verify success toast appears and button shows 'Saved ✓'. (2) Reload page, search same query, verify button already shows 'Saved' state. (3) Try saving duplicate, verify mutation returns existing paper ID (no duplicate created). (4) Verify saved paper appears in Convex papers table with correct userId.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Implement Pagination, Related Papers, and Rate Limiting",
+            "description": "Add pagination (20 results per page) with page controls, implement 'Find Related' functionality using Semantic Scholar recommendations API, and add client-side rate limiting to prevent API abuse.",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "Pagination: Modify unified search endpoint to accept page param (default 1) and return paginated results (20 per page). Add totalResults count to response. In search UI, add pagination controls using shadcn/ui Button components: Previous, page numbers (show current ± 2), Next. Update URL query params on page change for shareable links (use next/navigation useRouter and searchParams). 'Find Related' button: Create `app/api/search/related/route.ts` that calls Semantic Scholar recommendations API endpoint `/recommendations/v1/papers/forpaper/{paper_id}`. Accept paperId (Semantic Scholar ID or DOI) as param, return same standardized format. In UI, clicking 'Find Related' opens new search results with related papers. Rate limiting: Implement client-side debounce on search input (300ms) to prevent excessive API calls. Add request throttling on API routes using simple in-memory counter (max 60 requests per minute per IP). If rate limit exceeded, return 429 status with retry-after header. Loading states: Show skeleton loader during pagination. Scroll to top on page change.",
+            "status": "pending",
+            "testStrategy": "Playwright E2E: (1) Search query with >20 results, verify pagination controls appear. (2) Click page 2, verify next 20 results load and URL updates. (3) Click 'Find Related' on a paper, verify related papers load in new results view. (4) Test rate limiting by making 61 rapid requests, verify 429 response on 61st. (5) Test debounce by typing quickly, verify only one API call after 300ms pause.",
+            "parentId": "undefined"
+          }
+        ],
+        "updatedAt": "2026-02-07T05:44:25.337Z"
       },
       {
         "id": "5",
@@ -334,9 +395,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T04:04:21.906Z",
+      "lastModified": "2026-02-07T05:44:25.338Z",
       "taskCount": 10,
-      "completedCount": 2,
+      "completedCount": 3,
       "tags": [
         "master"
       ]
