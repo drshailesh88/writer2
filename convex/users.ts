@@ -90,3 +90,100 @@ export const resetMonthlyUsage = internalMutation({
     });
   },
 });
+
+// ─── Usage Queries & Mutations (Task 10) ───
+
+import { SUBSCRIPTION_LIMITS } from "./lib/subscriptionLimits";
+
+export const getUsage = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) {
+      return null;
+    }
+
+    const tier = user.subscriptionTier;
+    const limits = SUBSCRIPTION_LIMITS[tier];
+
+    return {
+      tier,
+      plagiarismUsed: user.plagiarismChecksUsed ?? 0,
+      plagiarismLimit: limits.plagiarism,
+      aiDetectionUsed: user.aiDetectionChecksUsed ?? 0,
+      aiDetectionLimit: limits.aiDetection,
+      deepResearchUsed: user.deepResearchUsed ?? 0,
+      deepResearchLimit: limits.deepResearch,
+    };
+  },
+});
+
+export const decrementPlagiarismUsage = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) return;
+
+    const currentUsage = user.plagiarismChecksUsed ?? 0;
+    if (currentUsage > 0) {
+      await ctx.db.patch(user._id, {
+        plagiarismChecksUsed: currentUsage - 1,
+        updatedAt: Date.now(),
+      });
+    }
+  },
+});
+
+export const decrementAiDetectionUsage = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) return;
+
+    const currentUsage = user.aiDetectionChecksUsed ?? 0;
+    if (currentUsage > 0) {
+      await ctx.db.patch(user._id, {
+        aiDetectionChecksUsed: currentUsage - 1,
+        updatedAt: Date.now(),
+      });
+    }
+  },
+});
+
+export const resetAllUsageCounters = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    for (const user of users) {
+      await ctx.db.patch(user._id, {
+        plagiarismChecksUsed: 0,
+        aiDetectionChecksUsed: 0,
+        deepResearchUsed: 0,
+        updatedAt: Date.now(),
+      });
+    }
+  },
+});
