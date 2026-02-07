@@ -169,8 +169,71 @@
           "1",
           "2"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Design landing page UI using Anthropic Frontend Design Skill with Opus",
+            "description": "Use Anthropic Frontend Design Skill (Opus model) to design a clean, Google Docs-inspired landing page with hero section, feature highlights grid, credibility section, pricing table, and CTAs. Generate high-fidelity design specifications for implementation.",
+            "dependencies": [],
+            "details": "Invoke Frontend Design Skill with Opus model to design the landing page (`app/page.tsx`). Design requirements: (1) Hero section with 'V1 Drafts' branding, tagline 'All research needs met under one single roof', positioning 'KhanMigo meets SciSpace', primary CTA 'Start Writing for Free', secondary CTA 'Sign In'. (2) Feature highlights grid: 6 cards for Learn Mode (guided coaching), Draft Mode (AI assistance), Paper Search (multi-source), Bibliography (auto-generation), Plagiarism Check (Copyleaks), AI Detection (authenticity). Each card should have icon, title, 2-sentence description. (3) 'Made by a doctor, for doctors' credibility section with brief founder story. (4) Pricing table: Free (2 plagiarism checks, 2 AI detection, Learn Mode unlimited), Basic INR 1,000/mo (5 plagiarism, 10 AI detection, 5 deep research, Draft Mode unlimited), Pro INR 2,000/mo (20 plagiarism, unlimited AI detection, 15 deep research). Highlight Basic as recommended. (5) Free plagiarism check CTA section (acquisition funnel entry point). Design should be mobile-responsive (375px to 1280px+), clean, non-overwhelming, professional academic aesthetic. Output should include component structure, Tailwind classes, spacing, typography scale, color usage from theme.",
+            "status": "done",
+            "testStrategy": "Manual design review: Verify design meets Google Docs simplicity aesthetic, professional academic feel. Check mobile responsiveness at 375px, 768px, 1280px viewports. Ensure all required sections present: hero, features grid (6 cards), credibility, pricing (3 tiers), free plagiarism CTA. Verify CTA buttons have min 44px touch targets.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T04:02:01.579Z"
+          },
+          {
+            "id": 2,
+            "title": "Implement landing page with feature highlights, pricing, and CTAs",
+            "description": "Implement the landing page at `app/page.tsx` based on Frontend Design Skill output. Include hero section, feature highlights grid, credibility section, pricing table, and sign-up CTAs using shadcn/ui components.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement `app/page.tsx` following the design from subtask 1. (1) Install missing shadcn/ui components if needed: `npx shadcn@latest add card badge separator`. (2) Structure: Header with logo + Sign In/Get Started buttons, Hero section (h1 tagline, subtitle, 2 CTAs), Features grid (6 Card components in 2-col mobile, 3-col tablet, 3-col desktop grid), Credibility section (centered, 'Made by a doctor, for doctors' headline + 2-3 paragraph story), Pricing section (3 Card components with Badge for 'Recommended' on Basic plan, feature lists, pricing in INR, CTA buttons), Free Plagiarism CTA section (highlighted box with CTA button), Footer (branding + 'KhanMigo meets SciSpace' tagline). (3) Use Tailwind responsive classes (sm:, md:, lg:, xl:). (4) Clerk components for Sign In/Sign Up buttons: `<SignInButton>` and `<SignUpButton>` from `@clerk/nextjs`. (5) All CTAs should navigate appropriately: 'Start Writing for Free' → /sign-up, 'Sign In' → /sign-in, 'Free Plagiarism Check' → /sign-up?redirect=/plagiarism. (6) Ensure 44px min touch targets for mobile. (7) Use semantic HTML (header, main, section, footer).",
+            "status": "done",
+            "testStrategy": "Playwright E2E: (1) Navigate to '/', verify page loads without errors. (2) Check hero section visible with correct tagline 'All research needs met under one single roof'. (3) Verify 6 feature cards present (Learn Mode, Draft Mode, Paper Search, Bibliography, Plagiarism Check, AI Detection). (4) Verify pricing table shows 3 plans (Free, Basic INR 1,000/mo, Pro INR 2,000/mo) with Basic marked 'Recommended'. (5) Click 'Start Writing for Free' button, verify redirects to /sign-up. (6) Click 'Sign In' button, verify redirects to /sign-in. (7) Resize viewport to 375px width, verify mobile layout (stacked cards, readable text, touch targets ≥44px). (8) Verify footer shows 'KhanMigo meets SciSpace'.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T04:02:05.278Z"
+          },
+          {
+            "id": 3,
+            "title": "Design dashboard UI using Anthropic Frontend Design Skill with Opus",
+            "description": "Use Anthropic Frontend Design Skill (Opus model) to design the authenticated dashboard UI with welcome message, quick action cards, recent drafts list, and usage statistics widget. Generate design specifications for clean, focused workspace.",
+            "dependencies": [],
+            "details": "Invoke Frontend Design Skill with Opus model to design the dashboard page (`app/(protected)/dashboard/page.tsx`). Design requirements: (1) Welcome section: Personalized greeting 'Welcome, [User Name]', subtitle 'Your research workspace is ready'. (2) Quick action cards section: 3 prominent cards - 'Start New Paper' (opens mode selection dialog), 'Search Papers' (navigates to /search), 'Continue Draft' (shows recent drafts or disabled if none). Each card should have icon, title, description, and be clickable. (3) Recent drafts section: Title 'Recent Drafts', list/grid view of documents from Convex (max 5 shown), each item shows paper title, mode badge (Learn/Draft Guided/Draft Hands-off), status badge (In Progress/Completed/Archived), last updated timestamp, clicking opens editor. Empty state: 'No drafts yet. Start your first paper!' with CTA. (4) Usage statistics widget: Card showing subscription tier badge (Free/Basic/Pro), usage bars for plagiarism checks (X/Y used), AI detection checks (X/Y used), deep research reports (X/Y used). Show 'Unlimited' for -1 limits. Include 'Upgrade' button for Free tier users. (5) Layout: Welcome + Quick Actions at top, Recent Drafts (2/3 width) + Usage Stats (1/3 width) below in desktop, stacked on mobile. Design should feel spacious, Google Docs-inspired, professional. Provide component structure, Tailwind classes, spacing.",
+            "status": "done",
+            "testStrategy": "Manual design review: Verify dashboard feels clean, spacious, not overwhelming. Check mobile responsive layout (stacked sections). Ensure quick action cards are prominent and intuitive. Verify usage widget clearly shows limits with visual indicators (progress bars or fraction display). Check empty state design for recent drafts.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T04:02:08.081Z"
+          },
+          {
+            "id": 4,
+            "title": "Implement dashboard with recent drafts, quick actions, and usage stats",
+            "description": "Implement the dashboard page at `app/(protected)/dashboard/page.tsx` based on Frontend Design Skill output. Integrate Convex queries for user data, documents list, and usage statistics. Include mode selection dialog component.",
+            "dependencies": [
+              3
+            ],
+            "details": "Implement `app/(protected)/dashboard/page.tsx` following design from subtask 3. (1) Install missing shadcn/ui components if needed: `npx shadcn@latest add dialog progress`. (2) Fetch data using Convex queries: `useQuery(api.users.getCurrent)` for user info, `useQuery(api.documents.list, {})` for recent drafts (limit to 5 most recent, sort by updatedAt desc), calculate usage from user object fields (plagiarismChecksUsed, aiDetectionChecksUsed, deepResearchUsed) and compare against `SUBSCRIPTION_LIMITS[user.subscriptionTier]`. (3) Welcome section: Display user.name or 'Researcher' fallback. (4) Quick action cards: 3 Card components with icons (use lucide-react: FileText, Search, FileEdit). 'Start New Paper' onClick opens mode selection Dialog. 'Search Papers' links to /search. 'Continue Draft' links to most recent draft /editor/[docId] or disabled if no drafts. (5) Recent drafts: Map over documents array, render Card for each with title (link to /editor/[docId]), mode Badge (color-coded: Learn=blue, Draft Guided=green, Draft Hands-off=purple), status Badge (In Progress=yellow, Completed=green, Archived=gray), relative timestamp (use date-fns or similar). Empty state if documents.length === 0. (6) Usage stats widget: Card with subscription tier Badge at top, 3 Progress bars for each feature with label 'Plagiarism Checks: X/Y' (or 'Unlimited' if limit=-1), 'Upgrade' Button if tier='free' links to /pricing. (7) Mode selection Dialog: Opens on 'Start New Paper' click, shows 2 radio options: 'Learn Mode' (description: 'Guided coaching, step-by-step feedback, learn research writing'), 'Draft Mode' (description: 'AI-assisted writing, faster drafting, autonomous help'). Submit creates document via `useMutation(api.documents.create)` with selected mode, then navigates to /editor/[newDocId].",
+            "status": "done",
+            "testStrategy": "Playwright E2E: (1) Sign in as test user, navigate to /dashboard. (2) Verify welcome message shows 'Welcome, [User's Name]' (user.name from Clerk). (3) Verify 3 quick action cards present: 'Start New Paper', 'Search Papers', 'Continue Draft'. (4) Click 'Start New Paper', verify mode selection dialog opens with Learn Mode and Draft Mode options. (5) Select Learn Mode, enter title 'Test Paper', submit, verify redirects to /editor/[docId] and document created in Convex. (6) Return to dashboard, verify 'Test Paper' appears in Recent Drafts with 'Learn' mode badge and 'In Progress' status badge. (7) Verify usage stats widget shows subscription tier badge (e.g., 'Free') and usage numbers (e.g., 'Plagiarism Checks: 0/2', 'AI Detection: 0/2'). (8) If Free tier, verify 'Upgrade' button present. (9) Test on mobile viewport (375px), verify layout stacks correctly (welcome, quick actions, recent drafts, usage stats in single column).",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T04:02:11.054Z"
+          },
+          {
+            "id": 5,
+            "title": "Add Playwright E2E tests for landing page and dashboard",
+            "description": "Write comprehensive Playwright E2E tests covering landing page sections, navigation, CTAs, dashboard functionality, mode selection, recent drafts display, and usage statistics. Include mobile viewport tests.",
+            "dependencies": [
+              2,
+              4
+            ],
+            "details": "Create Playwright test file `tests/e2e/landing-and-dashboard.spec.ts`. (1) Landing page tests: Test 'Landing page loads and displays all sections' - navigate to '/', expect hero section with tagline visible, expect 6 feature cards present (check for text 'Learn Mode', 'Draft Mode', 'Paper Search', 'Bibliography', 'Plagiarism Check', 'AI Detection'), expect credibility section with 'Made by a doctor, for doctors', expect pricing table with 3 plans (Free, Basic, Pro), expect pricing shows 'INR 1,000' for Basic, expect 'Recommended' badge on Basic plan, expect free plagiarism CTA section. Test 'Landing page CTAs navigate correctly' - click 'Start Writing for Free' button, expect URL to be /sign-up, go back, click 'Sign In' button, expect URL to be /sign-in. Test 'Landing page is mobile responsive' - set viewport to 375x667, navigate to '/', verify all sections visible, verify touch targets ≥44px (check button heights). (2) Dashboard tests: Test 'Dashboard loads and shows user data' - sign in programmatically (use Playwright Clerk helpers or test user tokens), navigate to /dashboard, expect welcome message to contain user's name, expect quick action cards present (3 cards). Test 'Mode selection dialog works' - click 'Start New Paper' button, expect dialog to be visible, expect 2 options (Learn Mode, Draft Mode), select Learn Mode, fill in title 'E2E Test Paper', submit, expect URL to match /editor/*, expect document created in Convex (verify via API query). Test 'Recent drafts display correctly' - create test document via Convex mutation, refresh dashboard, expect recent drafts section to show 1 document, expect document title 'E2E Test Paper', expect mode badge 'Learn', expect status badge 'In Progress', expect last updated timestamp. Test 'Usage stats widget displays correctly' - expect usage stats card visible, expect subscription tier badge (e.g., 'Free'), expect usage text for plagiarism checks (e.g., '0/2'), expect usage text for AI detection (e.g., '0/2'), expect 'Upgrade' button if Free tier. Test 'Dashboard is mobile responsive' - set viewport to 375x667, navigate to /dashboard, verify layout stacks (single column), verify all sections visible and readable. (3) Add test utilities: Helper functions for creating test users, test documents, cleaning up test data. Use Playwright's `test.beforeEach` and `test.afterEach` for setup/teardown.",
+            "status": "pending",
+            "testStrategy": "Run `npx playwright test tests/e2e/landing-and-dashboard.spec.ts`. All tests must pass. Verify tests cover: (1) Landing page sections visibility (hero, features, credibility, pricing, CTA). (2) Landing page CTAs navigation (sign-up, sign-in). (3) Landing page mobile responsiveness (375px viewport). (4) Dashboard loads with user data (welcome, quick actions, usage stats). (5) Mode selection dialog opens and creates document. (6) Recent drafts list displays created document with correct badges. (7) Usage stats widget shows correct subscription tier and usage counts. (8) Dashboard mobile responsiveness (375px viewport, stacked layout). All tests should use proper assertions (expect statements) and wait for elements to be visible/stable before interacting. Tests should clean up created data (documents) after completion.",
+            "parentId": "undefined"
+          }
+        ],
+        "updatedAt": "2026-02-07T04:02:11.054Z"
       },
       {
         "id": "4",
@@ -270,7 +333,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T03:05:56.259Z",
+      "lastModified": "2026-02-07T04:02:11.055Z",
       "taskCount": 10,
       "completedCount": 2,
       "tags": [
