@@ -400,8 +400,70 @@
           "2",
           "5"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Install Tiptap packages and create base TiptapEditor component with toolbar",
+            "description": "Install @tiptap/react, @tiptap/starter-kit, @tiptap/extension-placeholder, and @tiptap/extension-character-count packages. Create components/editor/TiptapEditor.tsx with base Tiptap initialization using StarterKit (bold, italic, headings, lists, blockquote), Placeholder, and CharacterCount extensions. Implement toolbar with formatting buttons (Bold, Italic, Underline, H1-H6, Bullet List, Numbered List, Blockquote) using lucide-react icons and shadcn/ui Button components. Add word count display in bottom-right corner. Follow existing component patterns: use 'use client', mobile-first responsive design with min-h-[44px] touch targets, shadcn/ui styling.",
+            "dependencies": [],
+            "details": "Install command: `npm install @tiptap/react @tiptap/starter-kit @tiptap/extension-placeholder @tiptap/extension-character-count`. Create editor component with useEditor hook initializing StarterKit, Placeholder (text: 'Start writing your research paper...'), CharacterCount extensions. Toolbar buttons should toggle formatting states with active state styling (primary color when active). Word count should display both character and word counts using editor.storage.characterCount. Component should accept props: { content?: any, onUpdate: (content: any, wordCount: number) => void, placeholder?: string, editable?: boolean }. Use existing UI patterns from library/page.tsx and dashboard/page.tsx. Mobile responsive: stack toolbar vertically on small screens, ensure 44px minimum touch targets.",
+            "status": "in-progress",
+            "testStrategy": "Playwright E2E: (1) Render editor, verify toolbar buttons appear. (2) Click Bold button, type text, verify bold formatting applied. (3) Type 100 words, verify word count updates and displays correctly. (4) Test on mobile viewport (375px), verify toolbar is accessible and buttons have adequate touch targets.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T06:23:28.331Z"
+          },
+          {
+            "id": 2,
+            "title": "Implement IMRAD template initialization and custom Citation extension",
+            "description": "Add IMRAD template support that pre-populates new documents with structured section headers (Introduction, Methods, Results, Discussion, Conclusion) as H2 headings with placeholder text. Create custom Tiptap extension for inline citation marks (@tiptap/core) that renders citation placeholders like [1] or (Author, Year) based on document's citationStyle field. Extension should store citation metadata (paperId, citationId) as node attributes and render as non-editable inline nodes with distinct styling.",
+            "dependencies": [
+              1
+            ],
+            "details": "IMRAD template: Create lib/editor/imradTemplate.ts exporting getImradTemplate() function returning JSON content with H2 nodes for each section and placeholder paragraph text under each heading. Template should be applied when creating new documents. Custom Citation extension: Extend Node from @tiptap/core, define schema with attributes { citationId: string, paperId: string, citationText: string }, implement renderHTML to output <span class='citation' data-citation-id='...'>[1]</span>. Add command addCitation({ citationId, paperId, citationText }) to insert citation at current cursor position. Citation styling: inline badge-like appearance (bg-blue-50, text-blue-700, rounded px-1, hover:bg-blue-100), non-editable, with click handler to view citation details. Follow Tiptap extension patterns from documentation.",
+            "status": "pending",
+            "testStrategy": "Playwright E2E: (1) Create new document, verify IMRAD template sections appear (Introduction, Methods, Results, Discussion, Conclusion) as H2 headings. (2) Manually trigger addCitation command, verify citation [1] appears inline and is non-editable. (3) Verify citation styling matches design (badge-like, blue). Unit test: Verify getImradTemplate() returns correct JSON structure with all 5 sections.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Implement auto-save with debounced updates to Convex documents table",
+            "description": "Add auto-save functionality with 2-second debounce after last edit, updating document content and wordCount in Convex documents table. Display save status indicator showing 'Saving...', 'All changes saved', or last saved timestamp. Use React hooks (useEffect, useRef) to track editor changes and debounce save operations. Handle edge cases: don't save if content unchanged, show error state if save fails, retry on network errors.",
+            "dependencies": [
+              1
+            ],
+            "details": "Implement useDebouncedSave custom hook that accepts { documentId, content, wordCount, delay: 2000 }. Use useRef to track previous content for comparison, useEffect to set up debounced save timer. Call Convex documents.update mutation with { documentId, content, wordCount }. Save status component: small text indicator in bottom-left corner showing current state with icon (Loader2 for saving, Check for saved, Clock for timestamp). States: 'Saving...' (gray, animated), 'All changes saved' (green, check icon), 'Saved at HH:MM' (gray), 'Save failed' (red, with retry button). Use Date.now() to track last save timestamp. Mobile responsive: position status indicator to not overlap with word count. Test network error handling using Convex error states.",
+            "status": "pending",
+            "testStrategy": "Playwright E2E: (1) Create new draft, type text, wait 2.5 seconds, verify 'All changes saved' appears and document updated in Convex. (2) Type text rapidly, verify only one save request sent after debounce period. (3) Simulate network failure (offline mode), verify 'Save failed' state appears. (4) Verify word count updates in database match editor display. Unit test: Test debounce logic with fake timers.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Create citation insertion modal with paper library integration and draft selector",
+            "description": "Build 'Insert Citation' button in editor toolbar that opens modal displaying user's paper library. Modal allows searching/filtering papers, selecting paper to insert as inline citation. Create citation record in Convex citations table linking documentId + paperId. Implement draft selector dropdown in editor top bar for switching between user's documents, with 'New Draft' button and inline title editing (blur event saves to Convex).",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Citation modal component (components/editor/CitationModal.tsx): Dialog with search input, list of papers from Convex papers.list query (filtered by search term). Display paper title, authors, year. 'Insert' button calls citations.insert mutation with { documentId, paperId, sectionName: getCurrentSection(), position: getCursorPosition(), citationText: generateCitationText(paper, citationStyle) }. After insert, use editor.commands.addCitation() to insert citation mark. generateCitationText utility (lib/editor/citations.ts): formats citation based on style (Vancouver: [n], APA: (Author, Year), etc.). Draft selector: Dropdown in top bar using shadcn/ui Select, queries documents.list, shows document title + mode badge + word count. onChange navigates to /editor/[documentId]. Title editing: contentEditable span with onBlur handler calling documents.update mutation. 'New Draft' button opens dialog with mode selector (Learn/Guided/Hands-off), creates document then navigates to editor. Mobile: modal full-screen on mobile, draft selector in collapsible menu.",
+            "status": "pending",
+            "testStrategy": "Playwright E2E: (1) Click 'Insert Citation' button, verify modal opens with user's library papers. (2) Search for paper title, verify filtered results. (3) Select paper, click Insert, verify citation [1] appears in editor and record created in citations table. (4) Click draft selector, switch to different document, verify editor loads new document content. (5) Edit document title inline, blur, verify title saved in Convex. (6) Click 'New Draft', select mode, verify new document created and editor navigates to it.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Create editor page route and implement AI panels for Learn/Draft modes with mobile responsive layout",
+            "description": "Create app/(protected)/editor/[documentId]/page.tsx as main editor page route. Integrate TiptapEditor component with Convex document loading/saving. Implement right sidebar AI panels that change based on document mode: Learn mode shows Socratic chat-like interface placeholder (for Task 9), Draft mode shows workflow progress steps placeholder (for Task 8). Add sidebar toggle button, full-screen mode, mobile responsive layout (stack editor + sidebar vertically, sidebar slides over on mobile).",
+            "dependencies": [
+              4
+            ],
+            "details": "Editor page: useQuery to fetch document by documentId from route params, pass to TiptapEditor. Layout: main editor area (flex-1) + right sidebar (w-80 on desktop, full-width slide-over on mobile). Sidebar components: LearnModePanel (components/editor/LearnModePanel.tsx) - placeholder with chat UI structure (message list, input field, 'Ask Coach' button). DraftModePanel (components/editor/DraftModePanel.tsx) - placeholder showing Steps 1-5 with status badges, approve/reject buttons (non-functional stubs). Sidebar toggle button in editor top bar (lucide-react PanelRight icon). Full-screen toggle button (Maximize icon) that hides navbar and expands editor. Mobile layout: use Sheet component for sidebar (slides from right), auto-hide on mobile, sticky top bar with hamburger menu for sidebar access. Top bar: contains draft selector, title editor, sidebar toggle, full-screen toggle, save status, word count. Desktop layout: fixed sidebar on right, editor fills remaining space. Use existing patterns from library/page.tsx for responsive Sheet implementation. Loading state: Skeleton while document loads. Not found: 404 if document doesn't exist or user unauthorized.",
+            "status": "pending",
+            "testStrategy": "Playwright E2E: (1) Navigate to /editor/[documentId] for Learn mode document, verify editor loads with IMRAD template, LearnModePanel visible in sidebar. (2) Navigate to Draft mode document, verify DraftModePanel shows workflow steps. (3) Click sidebar toggle, verify sidebar hides/shows. (4) Click full-screen toggle, verify navbar hides and editor expands. (5) Test on mobile viewport (375px): verify sidebar opens as slide-over Sheet, editor stacks vertically, touch targets adequate. (6) Type in editor, verify auto-save works with both panel types visible. (7) Test with invalid documentId, verify 404 or unauthorized error.",
+            "parentId": "undefined"
+          }
+        ],
+        "updatedAt": "2026-02-07T06:23:28.331Z"
       },
       {
         "id": "7",
@@ -460,7 +522,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T06:08:02.270Z",
+      "lastModified": "2026-02-07T06:23:28.332Z",
       "taskCount": 10,
       "completedCount": 5,
       "tags": [
