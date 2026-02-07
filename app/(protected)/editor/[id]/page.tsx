@@ -247,6 +247,13 @@ export default function EditorPage() {
       return;
     }
 
+    // Wait for citation/paper data to finish loading
+    if (citations === undefined || papers === undefined) {
+      setExportToast("Loading bibliography data... Please try again in a moment.");
+      setTimeout(() => setExportToast(null), 3000);
+      return;
+    }
+
     setIsExportLoading(true);
     try {
       const blocks = tiptapToBlocks(content);
@@ -298,6 +305,13 @@ export default function EditorPage() {
     const content = document?.content as Record<string, unknown> | undefined;
     if (!content) {
       setExportToast("Nothing to export");
+      setTimeout(() => setExportToast(null), 3000);
+      return;
+    }
+
+    // Wait for citation/paper data to finish loading
+    if (citations === undefined || papers === undefined) {
+      setExportToast("Loading bibliography data... Please try again in a moment.");
       setTimeout(() => setExportToast(null), 3000);
       return;
     }

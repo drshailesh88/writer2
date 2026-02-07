@@ -58,9 +58,23 @@ export function usePlagiarismCheck(): UsePlagiarismCheckReturn {
   const pollForResults = useCallback(
     (id: string) => {
       let isPolling = false;
+      let pollCount = 0;
+      const MAX_POLLS = 60; // 60 * 3s = 3 minutes max
+
       pollingRef.current = setInterval(async () => {
         if (isPolling) return; // Prevent stacking requests
         isPolling = true;
+        pollCount++;
+
+        // Timeout after MAX_POLLS attempts
+        if (pollCount > MAX_POLLS) {
+          stopPolling();
+          setStatus("failed");
+          setError("Plagiarism check timed out. Please try again.");
+          isPolling = false;
+          return;
+        }
+
         try {
           const response = await fetch(
             `/api/plagiarism/status?checkId=${encodeURIComponent(id)}`
