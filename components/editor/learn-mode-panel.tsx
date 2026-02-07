@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -8,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLearnMode } from "@/lib/hooks/use-learn-mode";
 import Link from "next/link";
 import { FEEDBACK_CATEGORIES } from "@/lib/mastra/types";
-import type { ConversationMessage } from "@/lib/mastra/types";
+import type { ConversationMessage, LearnModeStage } from "@/lib/mastra/types";
 import {
   GraduationCap,
   Send,
@@ -58,19 +61,62 @@ export function LearnModePanel({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const learnMode = useLearnMode(documentId, topic);
+  const updateSession = useMutation(api.learnModeSessions.update);
+  const updateDocument = useMutation(api.documents.update);
+
+  // Query existing session from Convex for restoration
+  const existingSession = useQuery(
+    api.learnModeSessions.getByDocument,
+    documentId ? { documentId: documentId as Id<"documents"> } : "skip"
+  );
+
+  // Persist conversation, stage, and feedback to Convex after changes
+  const persistSession = useCallback(() => {
+    if (!existingSession?._id) return;
+    if (learnMode.status === "idle" || learnMode.status === "starting") return;
+
+    updateSession({
+      sessionId: existingSession._id,
+      currentStage: learnMode.currentStage,
+      conversationHistory: learnMode.conversationHistory,
+      feedbackGiven: learnMode.feedbackItems,
+    }).catch(() => {/* silent — best effort persistence */});
+
+    // Also persist currentStage to the document for page-level display
+    updateDocument({
+      documentId: documentId as Id<"documents">,
+      currentStage: learnMode.currentStage,
+    }).catch(() => {/* silent */});
+  }, [existingSession?._id, learnMode.currentStage, learnMode.conversationHistory.length, learnMode.feedbackItems.length, learnMode.status, updateSession, updateDocument, documentId]);
+
+  // Trigger persistence on conversation or stage changes
+  useEffect(() => {
+    persistSession();
+  }, [persistSession]);
 
   // Auto-scroll chat to bottom on new messages
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [learnMode.conversationHistory.length]);
 
-  // Start session on mount if idle
+  // Restore session from Convex or start new one
   useEffect(() => {
-    if (learnMode.status === "idle" && topic) {
+    if (learnMode.status !== "idle" || !topic) return;
+
+    if (existingSession && existingSession.conversationHistory) {
+      // Restore from persisted session
+      learnMode.restoreSession({
+        currentStage: existingSession.currentStage as LearnModeStage,
+        conversationHistory: existingSession.conversationHistory as ConversationMessage[],
+        feedbackGiven: existingSession.feedbackGiven as undefined,
+      });
+    } else if (existingSession === null) {
+      // No existing session — start new one (null means query completed, no result)
       learnMode.startSession();
     }
+    // existingSession === undefined means query still loading — wait
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [existingSession]);
 
   const handleSend = async () => {
     const trimmed = input.trim();
