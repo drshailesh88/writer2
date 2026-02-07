@@ -15,6 +15,8 @@ import {
   ArrowRight,
   Loader2,
   Plus,
+  Search,
+  PlayCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -306,6 +308,50 @@ export default function DashboardPage() {
               </Card>
             </button>
           ))}
+        </div>
+        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+          <button
+            className="group text-left"
+            onClick={() => router.push("/search")}
+          >
+            <Card className="h-full border-l-4 border-l-teal-500 py-0 gap-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+              <CardContent className="flex items-center gap-4 py-4">
+                <div
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                  style={{ background: "oklch(0.95 0.04 175)" }}
+                >
+                  <Search className="h-5 w-5" style={{ color: "oklch(0.55 0.14 175)" }} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">Search Papers</p>
+                  <p className="text-xs text-muted-foreground">PubMed, Semantic Scholar & more</p>
+                </div>
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+              </CardContent>
+            </Card>
+          </button>
+          {recentDocs.length > 0 && recentDocs[0].status === "in_progress" && (
+            <button
+              className="group text-left"
+              onClick={() => router.push(`/editor/${recentDocs[0]._id}`)}
+            >
+              <Card className="h-full border-l-4 border-l-emerald-500 py-0 gap-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+                <CardContent className="flex items-center gap-4 py-4">
+                  <div
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                    style={{ background: "oklch(0.95 0.05 150)" }}
+                  >
+                    <PlayCircle className="h-5 w-5" style={{ color: "oklch(0.55 0.16 150)" }} />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold">Continue Draft</p>
+                    <p className="text-xs text-muted-foreground truncate">{recentDocs[0].title}</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+                </CardContent>
+              </Card>
+            </button>
+          )}
         </div>
       </section>
 
