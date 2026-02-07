@@ -5,9 +5,10 @@ import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import CharacterCount from "@tiptap/extension-character-count";
 import Underline from "@tiptap/extension-underline";
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { EditorToolbar } from "./editor-toolbar";
 import { EditorHeader } from "./editor-header";
+import { CitationExtension } from "./citation-extension";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
 type DocumentMode = "learn" | "draft_guided" | "draft_handsoff";
@@ -48,11 +49,20 @@ const IMRAD_TEMPLATE = {
   ],
 };
 
+export interface TiptapEditorHandle {
+  insertCitation: (
+    paperId: string,
+    citationNumber: number,
+    authorYear: string
+  ) => void;
+}
+
 interface TiptapEditorProps {
   documentId: string;
   initialContent?: Record<string, unknown>;
   initialTitle: string;
   mode: DocumentMode;
+  citationStyle?: "vancouver" | "apa" | "ama" | "chicago";
   onSave: (data: {
     content: Record<string, unknown>;
     wordCount: number;
@@ -61,145 +71,175 @@ interface TiptapEditorProps {
   onInsertCitation?: () => void;
 }
 
-export function TiptapEditor({
-  initialContent,
-  initialTitle,
-  mode,
-  onSave,
-  onInsertCitation,
-}: TiptapEditorProps) {
-  const [title, setTitle] = useState(initialTitle);
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
-  const [lastSavedAt, setLastSavedAt] = useState<number | undefined>();
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const pendingTitleRef = useRef<string | null>(null);
+export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
+  function TiptapEditor(
+    {
+      initialContent,
+      initialTitle,
+      mode,
+      citationStyle = "vancouver",
+      onSave,
+      onInsertCitation,
+    },
+    ref
+  ) {
+    const [title, setTitle] = useState(initialTitle);
+    const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+    const [lastSavedAt, setLastSavedAt] = useState<number | undefined>();
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const pendingTitleRef = useRef<string | null>(null);
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
-      }),
-      Placeholder.configure({
-        placeholder: ({ node }) => {
-          if (node.type.name === "heading") {
-            return "Section heading...";
+    const editor = useEditor({
+      extensions: [
+        StarterKit.configure({
+          heading: { levels: [1, 2, 3] },
+        }),
+        Placeholder.configure({
+          placeholder: ({ node }) => {
+            if (node.type.name === "heading") {
+              return "Section heading...";
+            }
+            return "Start writing...";
+          },
+        }),
+        CharacterCount,
+        Underline,
+        CitationExtension,
+      ],
+      content: initialContent || IMRAD_TEMPLATE,
+      editorProps: {
+        attributes: {
+          class:
+            "prose prose-sm sm:prose-base max-w-none focus:outline-none min-h-[400px] px-6 py-4 sm:px-10 sm:py-6",
+        },
+      },
+      onUpdate: ({ editor: ed }) => {
+        debouncedSave(ed.getJSON(), ed.storage.characterCount.words());
+      },
+    });
+
+    const debouncedSave = useCallback(
+      (content: Record<string, unknown>, wordCount: number) => {
+        if (saveTimerRef.current) {
+          clearTimeout(saveTimerRef.current);
+        }
+        saveTimerRef.current = setTimeout(async () => {
+          setSaveStatus("saving");
+          try {
+            await onSave({
+              content,
+              wordCount,
+              title: pendingTitleRef.current || undefined,
+            });
+            pendingTitleRef.current = null;
+            setSaveStatus("saved");
+            setLastSavedAt(Date.now());
+          } catch {
+            setSaveStatus("error");
           }
-          return "Start writing...";
+        }, 2000);
+      },
+      [onSave]
+    );
+
+    const handleTitleChange = useCallback(
+      (newTitle: string) => {
+        setTitle(newTitle);
+        pendingTitleRef.current = newTitle;
+        if (editor) {
+          debouncedSave(
+            editor.getJSON(),
+            editor.storage.characterCount.words()
+          );
+        }
+      },
+      [editor, debouncedSave]
+    );
+
+    const toggleFullscreen = useCallback(() => {
+      setIsFullscreen((prev) => !prev);
+    }, []);
+
+    // Cleanup timer on unmount
+    useEffect(() => {
+      return () => {
+        if (saveTimerRef.current) {
+          clearTimeout(saveTimerRef.current);
+        }
+      };
+    }, []);
+
+    // Expose insertCitation to parent via ref
+    useImperativeHandle(
+      ref,
+      () => ({
+        insertCitation: (
+          paperId: string,
+          citationNumber: number,
+          authorYear: string
+        ) => {
+          if (!editor) return;
+          editor
+            .chain()
+            .focus()
+            .insertContent({
+              type: "citation",
+              attrs: {
+                paperId,
+                citationNumber,
+                authorYear,
+                style: citationStyle,
+              },
+            })
+            .run();
         },
       }),
-      CharacterCount,
-      Underline,
-    ],
-    content: initialContent || IMRAD_TEMPLATE,
-    editorProps: {
-      attributes: {
-        class:
-          "prose prose-sm sm:prose-base max-w-none focus:outline-none min-h-[400px] px-6 py-4 sm:px-10 sm:py-6",
-      },
-    },
-    onUpdate: ({ editor: ed }) => {
-      debouncedSave(ed.getJSON(), ed.storage.characterCount.words());
-    },
-  });
+      [editor, citationStyle]
+    );
 
-  const debouncedSave = useCallback(
-    (content: Record<string, unknown>, wordCount: number) => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-      saveTimerRef.current = setTimeout(async () => {
-        setSaveStatus("saving");
-        try {
-          await onSave({
-            content,
-            wordCount,
-            title: pendingTitleRef.current || undefined,
-          });
-          pendingTitleRef.current = null;
-          setSaveStatus("saved");
-          setLastSavedAt(Date.now());
-        } catch {
-          setSaveStatus("error");
-        }
-      }, 2000);
-    },
-    [onSave]
-  );
+    const wordCount = editor?.storage.characterCount.words() ?? 0;
+    const charCount = editor?.storage.characterCount.characters() ?? 0;
 
-  const handleTitleChange = useCallback(
-    (newTitle: string) => {
-      setTitle(newTitle);
-      pendingTitleRef.current = newTitle;
-      // Trigger save with current editor content
-      if (editor) {
-        debouncedSave(
-          editor.getJSON(),
-          editor.storage.characterCount.words()
-        );
-      }
-    },
-    [editor, debouncedSave]
-  );
+    return (
+      <div
+        className={`flex flex-col bg-background ${
+          isFullscreen ? "fixed inset-0 z-50" : "rounded-lg border shadow-sm"
+        }`}
+      >
+        <EditorHeader
+          title={title}
+          onTitleChange={handleTitleChange}
+          saveStatus={saveStatus}
+          lastSavedAt={lastSavedAt}
+          mode={mode}
+          isFullscreen={isFullscreen}
+          onToggleFullscreen={toggleFullscreen}
+        />
 
-  const toggleFullscreen = useCallback(() => {
-    setIsFullscreen((prev) => !prev);
-  }, []);
+        <EditorToolbar editor={editor} onInsertCitation={onInsertCitation} />
 
-  // Cleanup timer on unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimerRef.current) {
-        clearTimeout(saveTimerRef.current);
-      }
-    };
-  }, []);
+        <div className="flex-1 overflow-y-auto">
+          <div className="mx-auto max-w-3xl">
+            <EditorContent editor={editor} />
+          </div>
+        </div>
 
-  const wordCount = editor?.storage.characterCount.words() ?? 0;
-  const charCount = editor?.storage.characterCount.characters() ?? 0;
-
-  return (
-    <div
-      className={`flex flex-col bg-background ${
-        isFullscreen ? "fixed inset-0 z-50" : "rounded-lg border shadow-sm"
-      }`}
-    >
-      {/* Header bar */}
-      <EditorHeader
-        title={title}
-        onTitleChange={handleTitleChange}
-        saveStatus={saveStatus}
-        lastSavedAt={lastSavedAt}
-        mode={mode}
-        isFullscreen={isFullscreen}
-        onToggleFullscreen={toggleFullscreen}
-      />
-
-      {/* Toolbar */}
-      <EditorToolbar editor={editor} onInsertCitation={onInsertCitation} />
-
-      {/* Editor area */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-3xl">
-          <EditorContent editor={editor} />
+        <div className="flex items-center justify-between border-t bg-muted/20 px-4 py-1.5 text-xs text-muted-foreground">
+          <div className="sm:hidden">
+            {saveStatus === "saving" && "Saving..."}
+            {saveStatus === "saved" && "Saved"}
+            {saveStatus === "error" && "Save failed"}
+          </div>
+          <div className="hidden sm:block" />
+          <div className="flex items-center gap-3">
+            <span>{wordCount.toLocaleString()} words</span>
+            <span className="hidden sm:inline">
+              {charCount.toLocaleString()} characters
+            </span>
+          </div>
         </div>
       </div>
-
-      {/* Bottom status bar */}
-      <div className="flex items-center justify-between border-t bg-muted/20 px-4 py-1.5 text-xs text-muted-foreground">
-        <div className="sm:hidden">
-          {saveStatus === "saving" && "Saving..."}
-          {saveStatus === "saved" && "Saved"}
-          {saveStatus === "error" && "Save failed"}
-        </div>
-        <div className="hidden sm:block" />
-        <div className="flex items-center gap-3">
-          <span>{wordCount.toLocaleString()} words</span>
-          <span className="hidden sm:inline">
-            {charCount.toLocaleString()} characters
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
+    );
+  }
+);
