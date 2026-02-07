@@ -196,9 +196,14 @@ export function useLearnMode(documentId: string, topic: string) {
   const requestFeedback = useCallback(
     async (draftText: string) => {
       const categoryIndex = state.currentFeedbackIndex;
-      if (categoryIndex >= FEEDBACK_CATEGORIES.length) return;
+      if (categoryIndex >= FEEDBACK_CATEGORIES.length) {
+        setState((prev) => ({ ...prev, status: "completed" }));
+        return;
+      }
 
-      const category = FEEDBACK_CATEGORIES[categoryIndex].id;
+      const categoryObj = FEEDBACK_CATEGORIES[categoryIndex];
+      if (!categoryObj) return;
+      const category = categoryObj.id;
       setState((prev) => ({
         ...prev,
         status: "loading-feedback",
@@ -243,13 +248,15 @@ export function useLearnMode(documentId: string, topic: string) {
   // Mark current feedback as addressed and move to next
   const addressFeedback = useCallback(() => {
     setState((prev) => {
-      const updated = [...prev.feedbackItems];
-      if (updated[prev.currentFeedbackIndex]) {
-        updated[prev.currentFeedbackIndex] = {
-          ...updated[prev.currentFeedbackIndex],
-          addressed: true,
-        };
+      if (prev.currentFeedbackIndex >= prev.feedbackItems.length) {
+        return prev; // No feedback to address at this index
       }
+
+      const updated = [...prev.feedbackItems];
+      updated[prev.currentFeedbackIndex] = {
+        ...updated[prev.currentFeedbackIndex],
+        addressed: true,
+      };
 
       const nextIndex = prev.currentFeedbackIndex + 1;
       const isComplete = nextIndex >= FEEDBACK_CATEGORIES.length;

@@ -24,6 +24,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (typeof topic === "string" && topic.length > 500) {
+      return NextResponse.json(
+        { error: "Topic must be under 500 characters" },
+        { status: 400 }
+      );
+    }
+
     const workflowKey =
       mode === "draft_handsoff"
         ? "draftHandsOffWorkflow"

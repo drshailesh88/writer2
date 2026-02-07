@@ -161,6 +161,8 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
             setLastSavedAt(Date.now());
           } catch {
             setSaveStatus("error");
+            // Auto-clear error after 5 seconds so next edit retries
+            setTimeout(() => setSaveStatus("idle"), 5000);
           }
         }, 2000);
       },

@@ -57,7 +57,10 @@ export function usePlagiarismCheck(): UsePlagiarismCheckReturn {
 
   const pollForResults = useCallback(
     (id: string) => {
+      let isPolling = false;
       pollingRef.current = setInterval(async () => {
+        if (isPolling) return; // Prevent stacking requests
+        isPolling = true;
         try {
           const response = await fetch(
             `/api/plagiarism/status?checkId=${encodeURIComponent(id)}`
@@ -80,6 +83,8 @@ export function usePlagiarismCheck(): UsePlagiarismCheckReturn {
           }
         } catch {
           // Continue polling on transient errors
+        } finally {
+          isPolling = false;
         }
       }, 3000);
     },

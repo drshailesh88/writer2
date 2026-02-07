@@ -19,6 +19,7 @@ export type DraftWorkflowStatus =
 interface DraftWorkflowState {
   status: DraftWorkflowStatus;
   currentStep: number;
+  mode: "draft_guided" | "draft_handsoff" | null;
   outline: Outline | null;
   papersBySection: Record<string, ApprovedPaper[]> | null;
   sectionDrafts: SectionDraft[] | null;
@@ -38,6 +39,7 @@ export function useDraftWorkflow(documentId: string) {
   const [state, setState] = useState<DraftWorkflowState>({
     status: "idle",
     currentStep: 1,
+    mode: null,
     outline: null,
     papersBySection: null,
     sectionDrafts: null,
@@ -52,6 +54,7 @@ export function useDraftWorkflow(documentId: string) {
         ...prev,
         status: "starting",
         currentStep: 1,
+        mode,
         error: null,
       }));
 
@@ -108,16 +111,16 @@ export function useDraftWorkflow(documentId: string) {
         }
 
         const data = await res.json();
-        handleWorkflowResponse(data, "draft_guided");
+        handleWorkflowResponse(data, state.mode ?? "draft_guided");
       } catch (err) {
         setState((prev) => ({
           ...prev,
-          status: previousStatus,
+          status: "error",
           error: err instanceof Error ? err.message : "Failed to resume workflow",
         }));
       }
     },
-    [documentId, state.suspendedStep]
+    [documentId, state.suspendedStep, state.status, state.mode]
   );
 
   const handleWorkflowResponse = useCallback(
@@ -165,6 +168,7 @@ export function useDraftWorkflow(documentId: string) {
     setState({
       status: "idle",
       currentStep: 1,
+      mode: null,
       outline: null,
       papersBySection: null,
       sectionDrafts: null,
