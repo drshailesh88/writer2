@@ -140,8 +140,8 @@ export function DraftModePanel({
         </p>
       </div>
 
-      {/* Hands-off disclaimer banner */}
-      {isHandsOff && isIdle && (
+      {/* Hands-off disclaimer banner — shown in all states except completed */}
+      {isHandsOff && workflow.status !== "completed" && (
         <div className="border-b bg-amber-50/50 px-4 py-2 dark:bg-amber-950/20">
           <p className="text-[11px] text-amber-700 dark:text-amber-400 leading-relaxed">
             This draft is AI-generated and MUST be reviewed before submission.

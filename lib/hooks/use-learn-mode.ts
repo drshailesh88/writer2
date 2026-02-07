@@ -106,6 +106,7 @@ export function useLearnMode(documentId: string, topic: string) {
             stage: state.currentStage,
             conversationHistory: [...state.conversationHistory, studentMsg],
             topic,
+            documentId,
           }),
         });
 
@@ -137,7 +138,7 @@ export function useLearnMode(documentId: string, topic: string) {
         }));
       }
     },
-    [state.currentStage, state.conversationHistory, topic]
+    [state.currentStage, state.conversationHistory, topic, documentId]
   );
 
   // Advance to the next stage

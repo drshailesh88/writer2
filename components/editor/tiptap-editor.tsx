@@ -58,6 +58,7 @@ export interface TiptapEditorHandle {
   ) => void;
   setContent: (markdownDraft: string) => void;
   getText: () => string;
+  getCitationPaperIds: () => string[];
 }
 
 type CitationStyle = "vancouver" | "apa" | "ama" | "chicago";
@@ -259,6 +260,16 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
         getText: () => {
           if (!editor) return "";
           return editor.getText();
+        },
+        getCitationPaperIds: () => {
+          if (!editor) return [];
+          const ids: string[] = [];
+          editor.state.doc.descendants((node) => {
+            if (node.type.name === "citation" && node.attrs.paperId) {
+              ids.push(node.attrs.paperId);
+            }
+          });
+          return ids;
         },
       }),
       [editor, citationStyle]

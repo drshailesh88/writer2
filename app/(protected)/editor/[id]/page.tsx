@@ -62,6 +62,7 @@ export default function EditorPage() {
   });
   const updateDocument = useMutation(api.documents.update);
   const insertCitationMutation = useMutation(api.citations.insert);
+  const removeCitationMutation = useMutation(api.citations.remove);
 
   const papers = useQuery(api.papers.list, {});
   const citations = useQuery(api.citations.listByDocument, {
@@ -80,8 +81,18 @@ export default function EditorPage() {
         wordCount: data.wordCount,
         ...(data.title ? { title: data.title } : {}),
       });
+
+      // Sync citations: remove orphaned Convex records for citations deleted from editor
+      if (editorRef.current && citations) {
+        const editorPaperIds = new Set(editorRef.current.getCitationPaperIds());
+        for (const citation of citations) {
+          if (!editorPaperIds.has(citation.paperId)) {
+            removeCitationMutation({ citationId: citation._id }).catch(() => {});
+          }
+        }
+      }
     },
-    [documentId, updateDocument]
+    [documentId, updateDocument, citations, removeCitationMutation]
   );
 
   const handleCitationSelect = useCallback(

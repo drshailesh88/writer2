@@ -1,4 +1,5 @@
 import { Node, mergeAttributes } from "@tiptap/core";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { ReactNodeViewRenderer, NodeViewWrapper, type ReactNodeViewProps } from "@tiptap/react";
 
 // React component that renders the citation in the editor
@@ -63,5 +64,67 @@ export const CitationExtension = Node.create({
 
   addNodeView() {
     return ReactNodeViewRenderer(CitationView);
+  },
+
+  addProseMirrorPlugins() {
+    return [
+      new Plugin({
+        key: new PluginKey("citationRenumber"),
+        appendTransaction(transactions, _oldState, newState) {
+          // Only run when the document actually changed
+          const docChanged = transactions.some((tr) => tr.docChanged);
+          if (!docChanged) return null;
+
+          // Collect all citation nodes and their positions
+          const citations: { pos: number; paperId: string; currentNumber: number }[] = [];
+          newState.doc.descendants((node, pos) => {
+            if (node.type.name === "citation") {
+              citations.push({
+                pos,
+                paperId: node.attrs.paperId,
+                currentNumber: node.attrs.citationNumber,
+              });
+            }
+          });
+
+          // Build unique paper order (first appearance = citation 1, etc.)
+          const paperOrder: string[] = [];
+          for (const c of citations) {
+            if (!paperOrder.includes(c.paperId)) {
+              paperOrder.push(c.paperId);
+            }
+          }
+
+          // Check if any numbering is wrong
+          let needsRenumber = false;
+          for (const c of citations) {
+            const expectedNumber = paperOrder.indexOf(c.paperId) + 1;
+            if (c.currentNumber !== expectedNumber) {
+              needsRenumber = true;
+              break;
+            }
+          }
+
+          if (!needsRenumber) return null;
+
+          // Create transaction to fix numbering
+          const tr = newState.tr;
+          for (const c of citations) {
+            const expectedNumber = paperOrder.indexOf(c.paperId) + 1;
+            if (c.currentNumber !== expectedNumber) {
+              const node = newState.doc.nodeAt(c.pos);
+              if (node) {
+                tr.setNodeMarkup(c.pos, undefined, {
+                  ...node.attrs,
+                  citationNumber: expectedNumber,
+                });
+              }
+            }
+          }
+
+          return tr;
+        },
+      }),
+    ];
   },
 });

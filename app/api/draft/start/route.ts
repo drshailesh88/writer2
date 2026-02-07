@@ -2,8 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { mastra } from "@/lib/mastra";
 
-// In-memory store for workflow runs (keyed by documentId)
-const workflowRuns = new Map<string, { run: unknown; mode: string }>();
+// In-memory store for workflow runs (keyed by documentId) with TTL cleanup
+const WORKFLOW_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+const workflowRuns = new Map<string, { run: unknown; mode: string; createdAt: number }>();
+
+// Periodic cleanup of stale workflow runs to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of workflowRuns) {
+    if (now - entry.createdAt > WORKFLOW_TTL_MS) {
+      workflowRuns.delete(key);
+    }
+  }
+}, 5 * 60 * 1000); // Check every 5 minutes
 
 export { workflowRuns };
 
@@ -40,7 +52,7 @@ export async function POST(req: NextRequest) {
     const run = await workflow.createRun();
 
     // Store the run reference for later resume
-    workflowRuns.set(documentId, { run, mode });
+    workflowRuns.set(documentId, { run, mode, createdAt: Date.now() });
 
     // Start the workflow
     const result = await run.start({

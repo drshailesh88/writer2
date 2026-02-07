@@ -1,25 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
 import { socraticCoachAgent } from "@/lib/mastra/agents";
 import { validateCoachResponse } from "@/lib/mastra/learn-mode-guard";
 import { formatExamplesForPrompt, getSentenceStarters } from "@/lib/examples/loader";
 import type { ConversationMessage, LearnModeStage } from "@/lib/mastra/types";
 
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+
 export async function POST(req: NextRequest) {
   try {
     // Authenticate
     const { getToken } = await auth();
-    if (!(await getToken())) {
+    const token = await getToken({ template: "convex" });
+    if (!token) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const { message, stage, conversationHistory, topic } = await req.json();
+    const { message, stage, conversationHistory, topic, documentId } = await req.json();
 
     if (!message || !stage) {
       return NextResponse.json(
         { error: "Missing required fields: message, stage" },
         { status: 400 }
       );
+    }
+
+    // Validate active session exists (prevents usage bypass)
+    if (documentId) {
+      convex.setAuth(token);
+      const session = await convex.query(api.learnModeSessions.getByDocument, {
+        documentId,
+      });
+      if (!session) {
+        return NextResponse.json(
+          { error: "No active Learn Mode session found" },
+          { status: 403 }
+        );
+      }
     }
 
     const agent = socraticCoachAgent;

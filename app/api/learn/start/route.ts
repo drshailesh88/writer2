@@ -6,8 +6,20 @@ import { mastra } from "@/lib/mastra";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
-// In-memory store for learn mode workflow runs (keyed by documentId)
-const learnWorkflowRuns = new Map<string, { run: unknown }>();
+// In-memory store for learn mode workflow runs (keyed by documentId) with TTL cleanup
+const LEARN_WORKFLOW_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+const learnWorkflowRuns = new Map<string, { run: unknown; createdAt: number }>();
+
+// Periodic cleanup of stale workflow runs to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of learnWorkflowRuns) {
+    if (now - entry.createdAt > LEARN_WORKFLOW_TTL_MS) {
+      learnWorkflowRuns.delete(key);
+    }
+  }
+}, 5 * 60 * 1000); // Check every 5 minutes
 
 export { learnWorkflowRuns };
 
@@ -59,7 +71,7 @@ export async function POST(req: NextRequest) {
     const run = await workflow.createRun();
 
     // Store the run reference for later resume/advance
-    learnWorkflowRuns.set(documentId, { run });
+    learnWorkflowRuns.set(documentId, { run, createdAt: Date.now() });
 
     // Start the workflow
     const result = await run.start({
