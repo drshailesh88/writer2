@@ -572,8 +572,69 @@
           "6",
           "8"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Create Learn Mode Agents (SocraticCoachAgent and FeedbackAgent)",
+            "description": "Define Learn Mode agents in lib/agents/learnMode.ts with strict Socratic questioning and feedback system prompts. SocraticCoachAgent must never provide direct answers or complete sentences. FeedbackAgent must analyze in 5 categories one at a time.",
+            "dependencies": [],
+            "details": "Create lib/agents/learnMode.ts with two agents using Mastra Agent class:\n\n1. SocraticCoachAgent:\n   - System prompt: 'You are a writing coach using the Socratic method. Ask questions to guide the student, never provide direct answers. Suggest sentence starters but NEVER complete them. Example: \"You could start with: The primary objective...\" then stop. Do not write full sentences or paragraphs for the student.'\n   - Model: LLM_MODEL (GLM-4.7 from config)\n   - ID: 'socratic-coach-agent'\n\n2. FeedbackAgent:\n   - System prompt: 'Analyze the student's text in the category: [category]. Provide ONE specific suggestion for improvement. Show an example from a published paper if relevant. Categories: Thesis & Focus, Evidence & Reasoning, Methodology Rigor, Structure & Organization, Language & Tone.'\n   - Model: LLM_MODEL (GLM-4.7 from config)\n   - ID: 'feedback-agent'\n\nFollow existing pattern from lib/mastra/agents.ts (outlineAgent, paperFinderAgent, writerAgent). Import from @mastra/core/agent and lib/mastra/config.ts.",
+            "status": "done",
+            "testStrategy": "Unit test: Verify SocraticCoachAgent generates questions, not answers. Test with prompt 'Write my introduction' and verify response contains questions like 'What is your research question?' instead of complete sentences. Test FeedbackAgent with sample text and verify it provides exactly ONE suggestion per category.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T07:38:17.919Z"
+          },
+          {
+            "id": 2,
+            "title": "Implement Learn Mode 5-Stage Workflow with Suspend/Resume",
+            "description": "Create lib/workflows/learnMode.ts implementing sequential workflow for Understand → Literature → Outline → Drafting → Feedback stages with human-in-the-loop suspend/resume points using Mastra createWorkflow and createStep.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create lib/workflows/learnMode.ts following pattern from draft-guided.ts:\n\nStage 1 (Understand): SocraticCoachAgent asks clarifying questions → suspend → student responds → agent evaluates clarity → if unclear, loop questions → if clear, resume to Stage 2\n\nStage 2 (Literature): Agent guides on search keywords → suspend → student searches papers (via Task 4 API) → agent asks 'Is this paper relevant? Why?' → student saves papers → agent asks about gaps → resume to Stage 3\n\nStage 3 (Outline): Agent proposes IMRAD outline → suspend → student reviews/edits → agent asks questions about each section → student approves → resume to Stage 4\n\nStage 4 (Drafting): Student writes in editor → agent provides sentence starters on request → agent shows examples from published papers → agent asks guiding questions ('Have you mentioned inclusion/exclusion criteria?') → student completes draft → resume to Stage 5\n\nStage 5 (Feedback): Agent analyzes draft → provides feedback ONE category at a time (Thesis & Focus, Evidence & Reasoning, Methodology Rigor, Structure & Organization, Language & Tone) → suspend after each suggestion → student addresses → resume to next category → repeat for all 5\n\nUse createStep with resumeSchema for each stage. Store session state (currentStage, conversationHistory) in learnModeSessions table via Convex mutations.",
+            "status": "pending",
+            "testStrategy": "Playwright E2E: (1) Start Learn Mode, verify Stage 1 asks clarifying question, student responds, agent progresses to Stage 2. (2) Stage 3: Verify agent proposes outline, student can edit, approve moves to Stage 4. (3) Stage 5: Verify feedback given one category at a time, 'Next Suggestion' button disabled until student edits.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Build Learn Mode UI Page with Chat Interface and Editor",
+            "description": "Create app/learn/page.tsx with split layout: left side Tiptap editor (student writes), right side chat interface with SocraticCoachAgent, stage progress indicator, 'Ask for help' button, and feedback panel for Stage 5.",
+            "dependencies": [
+              1,
+              2
+            ],
+            "details": "Create app/learn/page.tsx:\n\nLayout:\n- Left panel: Reuse TiptapEditor component from components/editor/tiptap-editor.tsx\n- Right panel: Chat interface with:\n  - Stage progress indicator showing 1/5, 2/5, etc. (use STAGES array from learn-mode-panel.tsx)\n  - Message history (agent questions + student responses)\n  - Input field for student to respond\n  - 'Ask for help' button (triggers agent to provide sentence starter or example)\n  - Feedback panel in Stage 5: Category selector (5 categories), one suggestion at a time, 'Next Suggestion' button (disabled until student edits)\n\nState management:\n- Use Convex query/mutation for learnModeSessions (create, get, update)\n- Track conversationHistory, currentStage, feedbackGiven\n- Auto-save student's text to documents table\n\nUI components: Reuse Button, Input, Badge, Separator from shadcn/ui. Follow LearnModePanel structure but make functional.\n\nMobile responsive: Stack editor on top, chat on bottom for < 768px.",
+            "status": "pending",
+            "testStrategy": "Playwright E2E: (1) Navigate to /learn, verify editor on left, chat on right. (2) Type in editor, verify auto-save triggered. (3) Send message to coach, verify response appears in chat. (4) Click 'Ask for help', verify agent provides sentence starter only. (5) Stage 5: Verify one feedback suggestion shown, 'Next' disabled until edit.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Enforce Socratic Rules and Feedback Constraints",
+            "description": "Implement enforcement rules to ensure agents never generate complete sentences, never complete student's sentences, templates only on request, and feedback limited to ONE suggestion at a time with UI blocking until student edits.",
+            "dependencies": [
+              2,
+              3
+            ],
+            "details": "Enforcement mechanisms:\n\n1. Agent-level constraints (in system prompts):\n   - SocraticCoachAgent: Add post-processing check to truncate responses after sentence starters (e.g., 'You could start with: The primary objective' → stop, don't complete)\n   - FeedbackAgent: Add category parameter to system prompt, enforce single suggestion per call\n\n2. UI-level constraints:\n   - 'Ask for help' button: Shows sentence starter in chat, does NOT insert into editor automatically\n   - Templates: Only provide IMRAD template if student explicitly clicks 'Use template' button\n   - Feedback panel: Disable 'Next Suggestion' button until student has edited the document (track wordCount change or content diff)\n\n3. Workflow-level constraints:\n   - In Stage 4 (Drafting), agent's generate() calls must include parameter preventing full paragraph generation\n   - In Stage 5 (Feedback), loop through categories one-by-one with suspend/resume between each\n\n4. Client-side validation:\n   - If agent response contains >3 sentences, show warning and truncate\n   - If agent response completes a sentence starter, reject and re-prompt\n\nImplement in lib/workflows/learnMode.ts and app/learn/page.tsx.",
+            "status": "pending",
+            "testStrategy": "Playwright E2E: (1) Click 'Ask for help', verify response is < 20 words and ends with '...'. (2) Stage 5: Submit text, verify ONE feedback shown. Click 'Next' without editing, verify button disabled. Edit text, verify 'Next' enabled. (3) Test agent with prompt 'Write my methods section', verify response is question, not paragraph.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Pre-load Examples Database with Published Paper Excerpts",
+            "description": "Create data/examples.json with 20 example methodology sections, discussion structures, and sentence starters extracted from PubMed open-access papers for agents to reference when providing examples.",
+            "dependencies": [],
+            "details": "Create data/examples.json with structure:\n```json\n[\n  {\n    \"id\": 1,\n    \"category\": \"methodology\",\n    \"section\": \"Study Design\",\n    \"text\": \"This retrospective cohort study analyzed data from patients admitted to...\",\n    \"source\": \"PMID:12345678\",\n    \"paperTitle\": \"Impact of...\"\n  },\n  {\n    \"id\": 2,\n    \"category\": \"discussion\",\n    \"section\": \"Limitations\",\n    \"text\": \"Our study has several limitations. First, the retrospective design...\",\n    \"source\": \"PMID:23456789\",\n    \"paperTitle\": \"...\"\n  },\n  ...\n]\n```\n\nCollect 20 examples:\n- 8 methodology sections (study design, inclusion/exclusion criteria, data collection, statistical analysis)\n- 6 discussion structures (interpretation, limitations, comparison with literature, future directions)\n- 6 sentence starters for common research paper phrases (objective, hypothesis, primary finding, clinical implication)\n\nUse PubMed open-access papers from medical research (search terms: 'laparoscopic surgery', 'diabetes management', 'cardiovascular outcomes').\n\nCreate lib/examples/loader.ts to import and serve examples to agents. Update SocraticCoachAgent and FeedbackAgent system prompts to reference examples database.",
+            "status": "pending",
+            "testStrategy": "Unit test: Verify data/examples.json contains 20 valid entries with all required fields. Test loader.ts exports getExamplesByCategory() function. Integration test: In Learn Mode Stage 4, click 'Ask for help', verify agent response includes example from database with source PMID citation.",
+            "parentId": "undefined"
+          }
+        ],
+        "updatedAt": "2026-02-07T07:38:17.919Z"
       },
       {
         "id": "10",
@@ -592,7 +653,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T07:18:06.216Z",
+      "lastModified": "2026-02-07T07:38:17.920Z",
       "taskCount": 10,
       "completedCount": 7,
       "tags": [

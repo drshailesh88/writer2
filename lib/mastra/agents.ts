@@ -24,3 +24,23 @@ export const writerAgent = new Agent({
   instructions: SYSTEM_PROMPTS.writer,
   model: LLM_MODEL,
 });
+
+// ─── Learn Mode Agents ───
+
+// SocraticCoachAgent: Guides students through writing using Socratic questioning
+// NEVER writes complete sentences or paragraphs for the student
+export const socraticCoachAgent = new Agent({
+  id: "socratic-coach-agent",
+  name: "Socratic Coach Agent",
+  instructions: SYSTEM_PROMPTS.socraticCoach,
+  model: LLM_MODEL,
+});
+
+// FeedbackAgent: Provides structured feedback one category at a time
+// Returns JSON with category, suggestion, and optional example
+export const feedbackAgent = new Agent({
+  id: "feedback-agent",
+  name: "Feedback Agent",
+  instructions: SYSTEM_PROMPTS.feedbackCoach,
+  model: LLM_MODEL,
+});

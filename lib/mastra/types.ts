@@ -44,3 +44,86 @@ export const WORKFLOW_STEP_LABELS: Record<number, string> = {
   4: "Write Draft",
   5: "Review & Finalize",
 };
+
+// ─── Learn Mode Types ───
+
+export type LearnModeStage =
+  | "understand"
+  | "literature"
+  | "outline"
+  | "drafting"
+  | "feedback";
+
+export const LEARN_MODE_STAGES: {
+  id: LearnModeStage;
+  label: string;
+  stepNumber: number;
+}[] = [
+  { id: "understand", label: "Understand Topic", stepNumber: 1 },
+  { id: "literature", label: "Literature Review", stepNumber: 2 },
+  { id: "outline", label: "Create Outline", stepNumber: 3 },
+  { id: "drafting", label: "Write Draft", stepNumber: 4 },
+  { id: "feedback", label: "Get Feedback", stepNumber: 5 },
+];
+
+export type FeedbackCategory =
+  | "thesis_focus"
+  | "evidence_reasoning"
+  | "methodology_rigor"
+  | "structure_organization"
+  | "language_tone";
+
+export const FEEDBACK_CATEGORIES: {
+  id: FeedbackCategory;
+  label: string;
+  description: string;
+}[] = [
+  {
+    id: "thesis_focus",
+    label: "Thesis & Focus",
+    description: "Clarity of research question, hypothesis, and central argument",
+  },
+  {
+    id: "evidence_reasoning",
+    label: "Evidence & Reasoning",
+    description: "Quality of citations, logical flow, and evidence-based claims",
+  },
+  {
+    id: "methodology_rigor",
+    label: "Methodology Rigor",
+    description: "Study design, data collection, inclusion/exclusion criteria",
+  },
+  {
+    id: "structure_organization",
+    label: "Structure & Organization",
+    description: "IMRAD adherence, paragraph flow, section transitions",
+  },
+  {
+    id: "language_tone",
+    label: "Language & Tone",
+    description: "Academic register, conciseness, clarity, and grammar",
+  },
+];
+
+export interface ConversationMessage {
+  role: "coach" | "student";
+  content: string;
+  stage: LearnModeStage;
+  timestamp: number;
+}
+
+export interface FeedbackItem {
+  category: FeedbackCategory;
+  suggestion: string;
+  example?: string; // Example from published paper
+  addressed: boolean;
+}
+
+export interface LearnModeState {
+  sessionId: string;
+  documentId: string;
+  currentStage: LearnModeStage;
+  conversationHistory: ConversationMessage[];
+  feedbackItems: FeedbackItem[];
+  currentFeedbackIndex: number;
+}
