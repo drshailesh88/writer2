@@ -13,6 +13,7 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.60.0",
     "@clerk/nextjs": "^6.37.3",
+    "@mastra/core": "^1.2.0",
     "@tiptap/extension-character-count": "^3.19.0",
     "@tiptap/extension-placeholder": "^3.19.0",
     "@tiptap/extension-underline": "^3.19.0",
@@ -28,7 +29,8 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-pdf": "^10.3.0",
-    "tailwind-merge": "^3.4.0"
+    "tailwind-merge": "^3.4.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

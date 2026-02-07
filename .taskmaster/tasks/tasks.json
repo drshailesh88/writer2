@@ -400,7 +400,7 @@
           "2",
           "5"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -408,10 +408,10 @@
             "description": "Install @tiptap/react, @tiptap/starter-kit, @tiptap/extension-placeholder, and @tiptap/extension-character-count packages. Create components/editor/TiptapEditor.tsx with base Tiptap initialization using StarterKit (bold, italic, headings, lists, blockquote), Placeholder, and CharacterCount extensions. Implement toolbar with formatting buttons (Bold, Italic, Underline, H1-H6, Bullet List, Numbered List, Blockquote) using lucide-react icons and shadcn/ui Button components. Add word count display in bottom-right corner. Follow existing component patterns: use 'use client', mobile-first responsive design with min-h-[44px] touch targets, shadcn/ui styling.",
             "dependencies": [],
             "details": "Install command: `npm install @tiptap/react @tiptap/starter-kit @tiptap/extension-placeholder @tiptap/extension-character-count`. Create editor component with useEditor hook initializing StarterKit, Placeholder (text: 'Start writing your research paper...'), CharacterCount extensions. Toolbar buttons should toggle formatting states with active state styling (primary color when active). Word count should display both character and word counts using editor.storage.characterCount. Component should accept props: { content?: any, onUpdate: (content: any, wordCount: number) => void, placeholder?: string, editable?: boolean }. Use existing UI patterns from library/page.tsx and dashboard/page.tsx. Mobile responsive: stack toolbar vertically on small screens, ensure 44px minimum touch targets.",
-            "status": "in-progress",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Render editor, verify toolbar buttons appear. (2) Click Bold button, type text, verify bold formatting applied. (3) Type 100 words, verify word count updates and displays correctly. (4) Test on mobile viewport (375px), verify toolbar is accessible and buttons have adequate touch targets.",
             "parentId": "undefined",
-            "updatedAt": "2026-02-07T06:23:28.331Z"
+            "updatedAt": "2026-02-07T06:28:40.723Z"
           },
           {
             "id": 2,
@@ -421,9 +421,10 @@
               1
             ],
             "details": "IMRAD template: Create lib/editor/imradTemplate.ts exporting getImradTemplate() function returning JSON content with H2 nodes for each section and placeholder paragraph text under each heading. Template should be applied when creating new documents. Custom Citation extension: Extend Node from @tiptap/core, define schema with attributes { citationId: string, paperId: string, citationText: string }, implement renderHTML to output <span class='citation' data-citation-id='...'>[1]</span>. Add command addCitation({ citationId, paperId, citationText }) to insert citation at current cursor position. Citation styling: inline badge-like appearance (bg-blue-50, text-blue-700, rounded px-1, hover:bg-blue-100), non-editable, with click handler to view citation details. Follow Tiptap extension patterns from documentation.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Create new document, verify IMRAD template sections appear (Introduction, Methods, Results, Discussion, Conclusion) as H2 headings. (2) Manually trigger addCitation command, verify citation [1] appears inline and is non-editable. (3) Verify citation styling matches design (badge-like, blue). Unit test: Verify getImradTemplate() returns correct JSON structure with all 5 sections.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T06:30:45.347Z"
           },
           {
             "id": 3,
@@ -433,9 +434,10 @@
               1
             ],
             "details": "Implement useDebouncedSave custom hook that accepts { documentId, content, wordCount, delay: 2000 }. Use useRef to track previous content for comparison, useEffect to set up debounced save timer. Call Convex documents.update mutation with { documentId, content, wordCount }. Save status component: small text indicator in bottom-left corner showing current state with icon (Loader2 for saving, Check for saved, Clock for timestamp). States: 'Saving...' (gray, animated), 'All changes saved' (green, check icon), 'Saved at HH:MM' (gray), 'Save failed' (red, with retry button). Use Date.now() to track last save timestamp. Mobile responsive: position status indicator to not overlap with word count. Test network error handling using Convex error states.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Create new draft, type text, wait 2.5 seconds, verify 'All changes saved' appears and document updated in Convex. (2) Type text rapidly, verify only one save request sent after debounce period. (3) Simulate network failure (offline mode), verify 'Save failed' state appears. (4) Verify word count updates in database match editor display. Unit test: Test debounce logic with fake timers.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T06:35:04.611Z"
           },
           {
             "id": 4,
@@ -446,9 +448,10 @@
               3
             ],
             "details": "Citation modal component (components/editor/CitationModal.tsx): Dialog with search input, list of papers from Convex papers.list query (filtered by search term). Display paper title, authors, year. 'Insert' button calls citations.insert mutation with { documentId, paperId, sectionName: getCurrentSection(), position: getCursorPosition(), citationText: generateCitationText(paper, citationStyle) }. After insert, use editor.commands.addCitation() to insert citation mark. generateCitationText utility (lib/editor/citations.ts): formats citation based on style (Vancouver: [n], APA: (Author, Year), etc.). Draft selector: Dropdown in top bar using shadcn/ui Select, queries documents.list, shows document title + mode badge + word count. onChange navigates to /editor/[documentId]. Title editing: contentEditable span with onBlur handler calling documents.update mutation. 'New Draft' button opens dialog with mode selector (Learn/Guided/Hands-off), creates document then navigates to editor. Mobile: modal full-screen on mobile, draft selector in collapsible menu.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Click 'Insert Citation' button, verify modal opens with user's library papers. (2) Search for paper title, verify filtered results. (3) Select paper, click Insert, verify citation [1] appears in editor and record created in citations table. (4) Click draft selector, switch to different document, verify editor loads new document content. (5) Edit document title inline, blur, verify title saved in Convex. (6) Click 'New Draft', select mode, verify new document created and editor navigates to it.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T06:38:29.594Z"
           },
           {
             "id": 5,
@@ -458,12 +461,13 @@
               4
             ],
             "details": "Editor page: useQuery to fetch document by documentId from route params, pass to TiptapEditor. Layout: main editor area (flex-1) + right sidebar (w-80 on desktop, full-width slide-over on mobile). Sidebar components: LearnModePanel (components/editor/LearnModePanel.tsx) - placeholder with chat UI structure (message list, input field, 'Ask Coach' button). DraftModePanel (components/editor/DraftModePanel.tsx) - placeholder showing Steps 1-5 with status badges, approve/reject buttons (non-functional stubs). Sidebar toggle button in editor top bar (lucide-react PanelRight icon). Full-screen toggle button (Maximize icon) that hides navbar and expands editor. Mobile layout: use Sheet component for sidebar (slides from right), auto-hide on mobile, sticky top bar with hamburger menu for sidebar access. Top bar: contains draft selector, title editor, sidebar toggle, full-screen toggle, save status, word count. Desktop layout: fixed sidebar on right, editor fills remaining space. Use existing patterns from library/page.tsx for responsive Sheet implementation. Loading state: Skeleton while document loads. Not found: 404 if document doesn't exist or user unauthorized.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Navigate to /editor/[documentId] for Learn mode document, verify editor loads with IMRAD template, LearnModePanel visible in sidebar. (2) Navigate to Draft mode document, verify DraftModePanel shows workflow steps. (3) Click sidebar toggle, verify sidebar hides/shows. (4) Click full-screen toggle, verify navbar hides and editor expands. (5) Test on mobile viewport (375px): verify sidebar opens as slide-over Sheet, editor stacks vertically, touch targets adequate. (6) Type in editor, verify auto-save works with both panel types visible. (7) Test with invalid documentId, verify 404 or unauthorized error.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T06:41:20.890Z"
           }
         ],
-        "updatedAt": "2026-02-07T06:23:28.331Z"
+        "updatedAt": "2026-02-07T06:41:20.890Z"
       },
       {
         "id": "7",
@@ -488,8 +492,74 @@
         "dependencies": [
           "6"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Install Mastra packages and configure GLM-4.7 (Zhipu AI) LLM provider",
+            "description": "Install @mastra/core and @mastra/vercel-ai packages. Sign up for Zhipu AI API key at z.ai or bigmodel.cn, add ZHIPU_API_KEY to .env.local. Create lib/mastra.ts to configure Mastra client with createZhipu provider pointing to GLM-4.7 model.",
+            "dependencies": [],
+            "details": "Run `npm install @mastra/core @mastra/vercel-ai`. Create lib/mastra.ts with Mastra client initialization using createZhipu provider from Mastra's Zhipu AI integration (Mastra already supports Zhipu AI out of the box). Configure model as 'glm-4-plus' or 'glm-4-air' depending on API availability. Store API key in ZHIPU_API_KEY environment variable. Verify connection with a simple test call.",
+            "status": "done",
+            "testStrategy": "Manual test: Call Mastra client with a simple prompt ('Hello, GLM-4.7') and verify response is returned. Check that ZHIPU_API_KEY is loaded from .env.local. Verify no errors in console.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T07:17:54.991Z"
+          },
+          {
+            "id": 2,
+            "title": "Define Draft Mode agents (OutlineAgent, PaperFinderAgent, WriterAgent)",
+            "description": "Create lib/agents/draftMode.ts with three Mastra agents: OutlineAgent (generates IMRAD outline from topic), PaperFinderAgent (fetches papers using search APIs from Task 4), and WriterAgent (writes sections with inline citations from approved papers).",
+            "dependencies": [
+              1
+            ],
+            "details": "OutlineAgent system prompt: 'You are an expert medical researcher. Generate a structured outline in IMRAD format for: [topic]. Include subsections for Introduction (background, gap, hypothesis), Methods (study design, participants, procedures), Results (key findings), and Discussion (interpretation, limitations, future directions).' PaperFinderAgent: Takes outline section, calls /api/search route (from Task 4), returns top 5 relevant papers per section. WriterAgent system prompt: 'Write the [section] section using ONLY the following papers as sources: [papers]. Include numbered citations in square brackets like [1], [2]. Write in academic medical style with clear topic sentences and evidence-based reasoning.' All agents use GLM-4.7 via Mastra client from subtask 1.",
+            "status": "done",
+            "testStrategy": "Unit test each agent: (1) OutlineAgent with topic 'laparoscopic appendectomy', verify IMRAD structure returned. (2) PaperFinderAgent with section 'Introduction', verify papers array returned with titles and DOIs. (3) WriterAgent with section 'Methods' and 2 mock papers, verify output contains citations [1] and [2].",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T07:17:57.831Z"
+          },
+          {
+            "id": 3,
+            "title": "Implement Guided workflow with suspend/resume points",
+            "description": "Create lib/workflows/draftModeGuided.ts implementing a 4-step workflow: (1) User inputs topic → OutlineAgent generates outline → SUSPEND → user reviews/edits → RESUME, (2) For each section → PaperFinderAgent fetches papers → SUSPEND → user approves/removes → RESUME, (3) For each section → WriterAgent writes → SUSPEND → user reviews → RESUME, (4) Combine sections into complete draft. Store workflow state in Convex documents.outlineData and documents.approvedPapers.",
+            "dependencies": [
+              2
+            ],
+            "details": "Use Mastra's workflow API to define 4 sequential steps with suspend/resume points. Step 1: Call OutlineAgent.generate(topic), store result in Convex documents.outlineData, emit SUSPEND event with outline data for UI display, wait for user approval (RESUME trigger with edited outline). Step 2: For each section in approved outline, call PaperFinderAgent.findPapers(section), store in documents.approvedPapers[section], SUSPEND with papers list, wait for user approval/removal. Step 3: For each section, call WriterAgent.writeSection(section, approvedPapers[section]), SUSPEND with generated text, wait for user review. Step 4: Combine all approved sections into final Tiptap JSON content, save to documents.content. Workflow state must persist across page reloads using Convex.",
+            "status": "done",
+            "testStrategy": "Playwright E2E: Enter topic 'laparoscopic appendectomy', verify outline generated and displayed for approval. Edit outline (add subsection), approve. Verify papers fetched for first section. Approve 3 papers, reject 2. Verify WriterAgent writes first section with citations. Verify workflow state persisted in Convex (check outlineData and approvedPapers fields).",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T07:18:00.620Z"
+          },
+          {
+            "id": 4,
+            "title": "Implement Hands-Off workflow with disclaimer modal",
+            "description": "Create lib/workflows/draftModeHandsOff.ts implementing the same 4-step workflow as Guided mode but with NO SUSPEND points (fully autonomous). Create components/editor/hands-off-disclaimer-modal.tsx displaying the full disclaimer text from constitution Article 5.1. Require explicit user acknowledgment BEFORE starting workflow and show confirmation AFTER completion.",
+            "dependencies": [
+              2
+            ],
+            "details": "Disclaimer modal must display: 'V1 Drafts provides AI-assisted research and writing tools to accelerate your academic workflow. The hands-off mode generates a complete first draft autonomously. This draft is a starting point and MUST be reviewed, verified, and edited by you before submission. V1 Drafts is not responsible for the accuracy, originality, or academic integrity of content submitted to journals or universities. You are solely responsible for your submissions.' (from constitution.md Article 5.1). Modal requires 'I Understand' button click before proceeding. After workflow completes, show 'Draft Complete — Review Required' message with same disclaimer. Workflow runs all 4 steps sequentially without suspend points: generate outline, fetch papers for all sections, write all sections, combine into complete draft.",
+            "status": "done",
+            "testStrategy": "Playwright E2E: Start Hands-Off workflow, verify disclaimer modal appears BEFORE workflow starts. Verify 'I Understand' button is required to proceed. Click accept, verify workflow runs autonomously (no suspend points). Verify complete draft generated with all sections (Introduction, Methods, Results, Discussion) and citations. Verify completion message with disclaimer shown after workflow finishes.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T07:18:03.393Z"
+          },
+          {
+            "id": 5,
+            "title": "Build Draft Mode UI with workflow controls and progress tracking",
+            "description": "Update app/draft/page.tsx (create if missing) with topic input field, mode toggle (Guided vs Hands-Off), workflow progress sidebar (Step 1/5, current action), Approve/Reject buttons at suspend points (Guided only), loading states with progress indicators. Update components/editor/draft-mode-panel.tsx to connect to real workflow state and remove placeholder text. Add error handling for LLM API failures with retry button.",
+            "dependencies": [
+              3,
+              4
+            ],
+            "details": "Topic input: Text field with placeholder 'Enter your research topic (e.g., laparoscopic appendectomy)'. Mode toggle: Radio buttons 'Guided (step-by-step)' vs 'Hands-Off (autonomous)'. Right sidebar shows current step (1-5) with icons and descriptions matching DraftModePanel.WORKFLOW_STEPS. Approve/Reject buttons only shown in Guided mode at suspend points. Loading states show spinner with text like 'Generating outline...', 'Fetching papers...', 'Writing Introduction...'. Error handling: If GLM-4.7 API fails, show toast 'LLM service temporarily unavailable. Please try again.' with Retry button. Progress persists across page reloads (read from Convex documents.currentStage, outlineData, approvedPapers). Wire DraftModePanel to read real workflow state instead of showing placeholder.",
+            "status": "done",
+            "testStrategy": "Playwright E2E: (1) Guided mode: Enter topic, verify outline generated, edit outline, approve, verify papers fetched for each section, approve papers, verify sections written one-by-one with approve buttons, verify final draft in editor. (2) Hands-Off mode: Verify disclaimer shown, accept, verify complete draft generated without pauses. (3) Test error handling: Mock LLM API failure, verify error message and retry button appear. (4) Test progress persistence: Start workflow, refresh page, verify workflow resumes from correct step.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T07:18:06.215Z"
+          }
+        ],
+        "updatedAt": "2026-02-07T07:18:06.215Z"
       },
       {
         "id": "9",
@@ -522,9 +592,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T06:23:28.332Z",
+      "lastModified": "2026-02-07T07:18:06.216Z",
       "taskCount": 10,
-      "completedCount": 5,
+      "completedCount": 7,
       "tags": [
         "master"
       ]

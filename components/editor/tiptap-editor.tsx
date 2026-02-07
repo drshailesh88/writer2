@@ -55,6 +55,7 @@ export interface TiptapEditorHandle {
     citationNumber: number,
     authorYear: string
   ) => void;
+  setContent: (markdownDraft: string) => void;
 }
 
 interface TiptapEditorProps {
@@ -172,7 +173,7 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
       };
     }, []);
 
-    // Expose insertCitation to parent via ref
+    // Expose insertCitation and setContent to parent via ref
     useImperativeHandle(
       ref,
       () => ({
@@ -195,6 +196,17 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
               },
             })
             .run();
+        },
+        setContent: (markdownDraft: string) => {
+          if (!editor) return;
+          // Convert markdown-style draft to Tiptap-compatible HTML
+          const html = markdownDraft
+            .replace(/^## (.+)$/gm, "<h2>$1</h2>")
+            .replace(/^### (.+)$/gm, "<h3>$1</h3>")
+            .replace(/^---$/gm, "<hr>")
+            .replace(/\n\n/g, "</p><p>")
+            .replace(/^(?!<[hp]|<h[r23])(.+)/gm, "<p>$1</p>");
+          editor.commands.setContent(html);
         },
       }),
       [editor, citationStyle]

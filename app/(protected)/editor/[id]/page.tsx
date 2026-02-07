@@ -97,10 +97,23 @@ export default function EditorPage() {
   const isDraftMode =
     document.mode === "draft_guided" || document.mode === "draft_handsoff";
 
+  const handleDraftComplete = useCallback(
+    (draft: string) => {
+      if (editorRef.current) {
+        editorRef.current.setContent(draft);
+      }
+    },
+    []
+  );
+
   const sidebarContent = isLearnMode ? (
     <LearnModePanel currentStage={document.currentStage || "understand"} />
   ) : isDraftMode ? (
-    <DraftModePanel mode={document.mode as "draft_guided" | "draft_handsoff"} />
+    <DraftModePanel
+      mode={document.mode as "draft_guided" | "draft_handsoff"}
+      documentId={documentId}
+      onDraftComplete={handleDraftComplete}
+    />
   ) : null;
 
   const sidebarToggle = (
