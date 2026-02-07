@@ -1,4 +1,4 @@
-import Copyleaks from "plagiarism-checker";
+import { Copyleaks } from "plagiarism-checker";
 
 // Auth token cache — Copyleaks tokens are valid for 48 hours
 let cachedToken: { token: string; expiresAt: number } | null = null;

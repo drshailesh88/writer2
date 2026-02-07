@@ -79,6 +79,9 @@ interface TiptapEditorProps {
   isPlagiarismLoading?: boolean;
   onCheckAiDetection?: () => void;
   isAiDetectionLoading?: boolean;
+  onExportDocx?: () => void;
+  onExportPdf?: () => void;
+  isExportLoading?: boolean;
   draftSelector?: React.ReactNode;
 }
 
@@ -97,6 +100,9 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
       isPlagiarismLoading,
       onCheckAiDetection,
       isAiDetectionLoading,
+      onExportDocx,
+      onExportPdf,
+      isExportLoading,
       draftSelector,
     },
     ref
@@ -285,6 +291,9 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
           isPlagiarismLoading={isPlagiarismLoading}
           onCheckAiDetection={onCheckAiDetection}
           isAiDetectionLoading={isAiDetectionLoading}
+          onExportDocx={onExportDocx}
+          onExportPdf={onExportPdf}
+          isExportLoading={isExportLoading}
         />
 
         <div className="flex-1 overflow-y-auto">

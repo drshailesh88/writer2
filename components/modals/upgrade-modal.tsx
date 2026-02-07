@@ -14,7 +14,7 @@ import { AlertTriangle, ArrowRight, Check, X } from "lucide-react";
 import Link from "next/link";
 
 interface UpgradeModalProps {
-  feature: "plagiarism" | "aiDetection";
+  feature: "plagiarism" | "aiDetection" | "export";
   currentUsage: number;
   limit: number;
   tier: string;
@@ -25,12 +25,13 @@ interface UpgradeModalProps {
 const FEATURE_LABELS: Record<string, string> = {
   plagiarism: "Plagiarism Check",
   aiDetection: "AI Detection",
+  export: "Document Export",
 };
 
 const TIER_LIMITS = {
-  free: { plagiarism: 2, aiDetection: 2 },
-  basic: { plagiarism: 5, aiDetection: 10 },
-  pro: { plagiarism: 20, aiDetection: "Unlimited" },
+  free: { plagiarism: 2, aiDetection: 2, export: "N/A" },
+  basic: { plagiarism: 5, aiDetection: 10, export: "Unlimited" },
+  pro: { plagiarism: 20, aiDetection: "Unlimited", export: "Unlimited" },
 };
 
 export function UpgradeModal({
@@ -49,21 +50,29 @@ export function UpgradeModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-500" />
-            Monthly Limit Reached
+            {feature === "export" ? "Upgrade Required" : "Monthly Limit Reached"}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            You have reached your monthly usage limit for {featureLabel}
+            {feature === "export"
+              ? `${featureLabel} is not available on your current plan`
+              : `You have reached your monthly usage limit for ${featureLabel}`}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
             <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-              You&apos;ve used{" "}
-              <span className="font-bold">
-                {currentUsage}/{limit}
-              </span>{" "}
-              {featureLabel.toLowerCase()} checks this month.
+              {feature === "export" ? (
+                <>{featureLabel} is available on Basic and Pro plans.</>
+              ) : (
+                <>
+                  You&apos;ve used{" "}
+                  <span className="font-bold">
+                    {currentUsage}/{limit}
+                  </span>{" "}
+                  {featureLabel.toLowerCase()} checks this month.
+                </>
+              )}
             </p>
             <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
               Your current plan:{" "}

@@ -16,6 +16,10 @@ import { AiDetectionPanel } from "@/components/ai-detection/ai-detection-panel";
 import { UpgradeModal } from "@/components/modals/upgrade-modal";
 import { usePlagiarismCheck, usePlagiarismUsage } from "@/lib/hooks/use-plagiarism-check";
 import { useAiDetection } from "@/lib/hooks/use-ai-detection";
+import { tiptapToBlocks } from "@/lib/export/tiptap-to-blocks";
+import { exportAsDocx } from "@/lib/export/docx-exporter";
+import { exportAsPdf } from "@/lib/export/pdf-exporter";
+import { generateBibliography, type PaperData } from "@/lib/bibliography";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { PanelRight } from "lucide-react";
@@ -40,8 +44,10 @@ export default function EditorPage() {
     similarity: number;
     matchedText: string;
   } | null>(null);
+
+  const [isExportLoading, setIsExportLoading] = useState(false);
   const [upgradeModal, setUpgradeModal] = useState<{
-    feature: "plagiarism" | "aiDetection";
+    feature: "plagiarism" | "aiDetection" | "export";
     open: boolean;
   }>({ feature: "plagiarism", open: false });
 
@@ -213,6 +219,112 @@ export default function EditorPage() {
     aiDetection.reset();
   }, [aiDetection]);
 
+  const handleExportDocx = useCallback(async () => {
+    // Check subscription tier — free/none users cannot export
+    const tier = usage?.tier ?? "free";
+    if (tier === "free" || tier === "none") {
+      setUpgradeModal({ feature: "export", open: true });
+      return;
+    }
+
+    // Check for content
+    const content = document?.content as Record<string, unknown> | undefined;
+    if (!content) {
+      alert("Nothing to export");
+      return;
+    }
+
+    setIsExportLoading(true);
+    try {
+      const blocks = tiptapToBlocks(content);
+      const citationStyle = document?.citationStyle ?? "vancouver";
+
+      // Build bibliography from cited papers
+      const citedPaperIds = new Set(
+        (citations ?? []).map((c) => c.paperId)
+      );
+      const citedPapers: PaperData[] = (papers ?? [])
+        .filter((p) => citedPaperIds.has(p._id))
+        .map((p) => ({
+          _id: p._id,
+          title: p.title,
+          authors: p.authors,
+          journal: p.journal,
+          year: p.year,
+          doi: p.doi,
+          url: p.url,
+          metadata: p.metadata as PaperData["metadata"],
+        }));
+
+      const bibliography = generateBibliography(citedPapers, citationStyle as "vancouver" | "apa" | "ama" | "chicago");
+
+      await exportAsDocx({
+        title: document?.title ?? "Untitled",
+        blocks,
+        bibliography,
+        citationStyle: citationStyle as "vancouver" | "apa" | "ama" | "chicago",
+      });
+    } catch (err) {
+      console.error("DOCX export failed:", err);
+      alert("Export failed. Please try again.");
+    } finally {
+      setIsExportLoading(false);
+    }
+  }, [document, citations, papers, usage]);
+
+  const handleExportPdf = useCallback(async () => {
+    // Check subscription tier — free/none users cannot export
+    const tier = usage?.tier ?? "free";
+    if (tier === "free" || tier === "none") {
+      setUpgradeModal({ feature: "export", open: true });
+      return;
+    }
+
+    // Check for content
+    const content = document?.content as Record<string, unknown> | undefined;
+    if (!content) {
+      alert("Nothing to export");
+      return;
+    }
+
+    setIsExportLoading(true);
+    try {
+      const blocks = tiptapToBlocks(content);
+      const citationStyle = document?.citationStyle ?? "vancouver";
+
+      // Build bibliography from cited papers
+      const citedPaperIds = new Set(
+        (citations ?? []).map((c) => c.paperId)
+      );
+      const citedPapers: PaperData[] = (papers ?? [])
+        .filter((p) => citedPaperIds.has(p._id))
+        .map((p) => ({
+          _id: p._id,
+          title: p.title,
+          authors: p.authors,
+          journal: p.journal,
+          year: p.year,
+          doi: p.doi,
+          url: p.url,
+          metadata: p.metadata as PaperData["metadata"],
+        }));
+
+      const bibliography = generateBibliography(citedPapers, citationStyle as "vancouver" | "apa" | "ama" | "chicago");
+
+      await exportAsPdf({
+        title: document?.title ?? "Untitled",
+        blocks,
+        bibliography,
+        citationStyle: citationStyle as "vancouver" | "apa" | "ama" | "chicago",
+      });
+    } catch (err) {
+      console.error("PDF export failed:", err);
+      alert("Export failed. Please try again.");
+    } finally {
+      setIsExportLoading(false);
+    }
+  }, [document, citations, papers, usage]);
+
   const sidebarContent = isLearnMode ? (
     <LearnModePanel
       documentId={documentId}
@@ -265,6 +377,9 @@ export default function EditorPage() {
           isPlagiarismLoading={plagiarism.isLoading}
           onCheckAiDetection={handleCheckAiDetection}
           isAiDetectionLoading={aiDetection.isLoading}
+          onExportDocx={handleExportDocx}
+          onExportPdf={handleExportPdf}
+          isExportLoading={isExportLoading}
           draftSelector={
             <div className="flex items-center gap-1">
               <DraftSelector currentDocumentId={documentId} />
@@ -331,12 +446,16 @@ export default function EditorPage() {
         currentUsage={
           upgradeModal.feature === "plagiarism"
             ? (usage?.plagiarismUsed ?? 0)
-            : (usage?.aiDetectionUsed ?? 0)
+            : upgradeModal.feature === "aiDetection"
+              ? (usage?.aiDetectionUsed ?? 0)
+              : 0
         }
         limit={
           upgradeModal.feature === "plagiarism"
             ? (usage?.plagiarismLimit ?? 0)
-            : (usage?.aiDetectionLimit ?? 0)
+            : upgradeModal.feature === "aiDetection"
+              ? (usage?.aiDetectionLimit ?? 0)
+              : 0
         }
         tier={usage?.tier ?? "free"}
         open={upgradeModal.open}

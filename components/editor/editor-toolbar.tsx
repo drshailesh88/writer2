@@ -17,6 +17,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Bold,
   Italic,
   Underline,
@@ -29,6 +35,7 @@ import {
   BookOpen,
   FileCheck2,
   ShieldCheck,
+  FileDown,
   Loader2,
 } from "lucide-react";
 
@@ -90,6 +97,9 @@ interface EditorToolbarProps {
   isPlagiarismLoading?: boolean;
   onCheckAiDetection?: () => void;
   isAiDetectionLoading?: boolean;
+  onExportDocx?: () => void;
+  onExportPdf?: () => void;
+  isExportLoading?: boolean;
 }
 
 export function EditorToolbar({
@@ -101,6 +111,9 @@ export function EditorToolbar({
   isPlagiarismLoading,
   onCheckAiDetection,
   isAiDetectionLoading,
+  onExportDocx,
+  onExportPdf,
+  isExportLoading,
 }: EditorToolbarProps) {
   if (!editor) return null;
 
@@ -299,6 +312,59 @@ export function EditorToolbar({
                 <TooltipContent>Check for AI-generated content</TooltipContent>
               </Tooltip>
             )}
+          </>
+        )}
+
+        {/* Export */}
+        {(onExportDocx || onExportPdf) && (
+          <>
+            <Separator orientation="vertical" className="mx-1 h-6" />
+            <DropdownMenu>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={isExportLoading}
+                      className="min-h-[44px] sm:min-h-[32px] gap-1.5 text-xs font-medium"
+                      aria-label="Export document"
+                    >
+                      {isExportLoading ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <FileDown className="h-3.5 w-3.5" />
+                      )}
+                      <span className="hidden sm:inline">
+                        {isExportLoading ? "Exporting..." : "Export"}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                </TooltipTrigger>
+                <TooltipContent>Export document</TooltipContent>
+              </Tooltip>
+              <DropdownMenuContent align="end">
+                {onExportDocx && (
+                  <DropdownMenuItem
+                    onClick={onExportDocx}
+                    className="min-h-[44px] sm:min-h-[36px] cursor-pointer"
+                  >
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Export as DOCX
+                  </DropdownMenuItem>
+                )}
+                {onExportPdf && (
+                  <DropdownMenuItem
+                    onClick={onExportPdf}
+                    className="min-h-[44px] sm:min-h-[36px] cursor-pointer"
+                  >
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Export as PDF
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </>
         )}
       </div>

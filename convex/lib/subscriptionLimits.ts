@@ -1,5 +1,5 @@
 type SubscriptionTier = "none" | "free" | "basic" | "pro";
-type Feature = "plagiarism" | "aiDetection" | "deepResearch" | "draftMode" | "learnMode";
+type Feature = "plagiarism" | "aiDetection" | "deepResearch" | "draftMode" | "learnMode" | "export";
 
 // -1 means unlimited, 0 means not available
 export const SUBSCRIPTION_LIMITS: Record<SubscriptionTier, Record<Feature, number>> = {
@@ -9,6 +9,7 @@ export const SUBSCRIPTION_LIMITS: Record<SubscriptionTier, Record<Feature, numbe
     deepResearch: 0,
     draftMode: 0,
     learnMode: 0,
+    export: 0,
   },
   free: {
     plagiarism: 2,
@@ -16,6 +17,7 @@ export const SUBSCRIPTION_LIMITS: Record<SubscriptionTier, Record<Feature, numbe
     deepResearch: 0,
     draftMode: 0,
     learnMode: -1,
+    export: 0,
   },
   basic: {
     plagiarism: 5,
@@ -23,6 +25,7 @@ export const SUBSCRIPTION_LIMITS: Record<SubscriptionTier, Record<Feature, numbe
     deepResearch: 5,
     draftMode: -1,
     learnMode: -1,
+    export: -1,
   },
   pro: {
     plagiarism: 20,
@@ -30,6 +33,7 @@ export const SUBSCRIPTION_LIMITS: Record<SubscriptionTier, Record<Feature, numbe
     deepResearch: 15,
     draftMode: -1,
     learnMode: -1,
+    export: -1,
   },
 };
 
