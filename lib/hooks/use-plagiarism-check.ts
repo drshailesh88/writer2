@@ -111,11 +111,14 @@ export function usePlagiarismCheck(): UsePlagiarismCheckReturn {
         pollForResults(data.checkId);
       } catch (err) {
         setStatus("failed");
-        setError(
-          err instanceof Error
-            ? err.message
-            : "An unexpected error occurred"
-        );
+        // Show user-friendly message, hide technical details
+        const message =
+          err instanceof TypeError && err.message === "Failed to fetch"
+            ? "Service temporarily unavailable. Please try again in a few minutes."
+            : err instanceof Error && err.message
+              ? err.message
+              : "An unexpected error occurred. Please try again.";
+        setError(message);
       }
     },
     [reset, pollForResults]
