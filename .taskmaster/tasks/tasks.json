@@ -593,9 +593,10 @@
               1
             ],
             "details": "Create lib/workflows/learnMode.ts following pattern from draft-guided.ts:\n\nStage 1 (Understand): SocraticCoachAgent asks clarifying questions → suspend → student responds → agent evaluates clarity → if unclear, loop questions → if clear, resume to Stage 2\n\nStage 2 (Literature): Agent guides on search keywords → suspend → student searches papers (via Task 4 API) → agent asks 'Is this paper relevant? Why?' → student saves papers → agent asks about gaps → resume to Stage 3\n\nStage 3 (Outline): Agent proposes IMRAD outline → suspend → student reviews/edits → agent asks questions about each section → student approves → resume to Stage 4\n\nStage 4 (Drafting): Student writes in editor → agent provides sentence starters on request → agent shows examples from published papers → agent asks guiding questions ('Have you mentioned inclusion/exclusion criteria?') → student completes draft → resume to Stage 5\n\nStage 5 (Feedback): Agent analyzes draft → provides feedback ONE category at a time (Thesis & Focus, Evidence & Reasoning, Methodology Rigor, Structure & Organization, Language & Tone) → suspend after each suggestion → student addresses → resume to next category → repeat for all 5\n\nUse createStep with resumeSchema for each stage. Store session state (currentStage, conversationHistory) in learnModeSessions table via Convex mutations.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Start Learn Mode, verify Stage 1 asks clarifying question, student responds, agent progresses to Stage 2. (2) Stage 3: Verify agent proposes outline, student can edit, approve moves to Stage 4. (3) Stage 5: Verify feedback given one category at a time, 'Next Suggestion' button disabled until student edits.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T07:42:52.069Z"
           },
           {
             "id": 3,
@@ -634,7 +635,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-02-07T07:38:17.919Z"
+        "updatedAt": "2026-02-07T07:42:52.069Z"
       },
       {
         "id": "10",
@@ -653,7 +654,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T07:38:17.920Z",
+      "lastModified": "2026-02-07T07:42:52.070Z",
       "taskCount": 10,
       "completedCount": 7,
       "tags": [

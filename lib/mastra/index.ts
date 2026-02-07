@@ -8,6 +8,7 @@ import {
 } from "./agents";
 import { draftGuidedWorkflow } from "./workflows/draft-guided";
 import { draftHandsOffWorkflow } from "./workflows/draft-handsoff";
+import { learnModeWorkflow } from "./workflows/learn-mode";
 
 export const mastra = new Mastra({
   agents: {
@@ -20,5 +21,6 @@ export const mastra = new Mastra({
   workflows: {
     draftGuidedWorkflow,
     draftHandsOffWorkflow,
+    learnModeWorkflow,
   },
 });
