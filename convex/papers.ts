@@ -186,6 +186,30 @@ export const update = mutation({
   },
 });
 
+export const count = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+
+    if (!user) return 0;
+
+    const papers = await ctx.db
+      .query("papers")
+      .withIndex("by_user_id", (q) => q.eq("userId", user._id))
+      .collect();
+
+    return papers.length;
+  },
+});
+
 export const remove = mutation({
   args: { paperId: v.id("papers") },
   handler: async (ctx, args) => {

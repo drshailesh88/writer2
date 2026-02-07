@@ -246,7 +246,7 @@
         "dependencies": [
           "2"
         ],
-        "status": "in-progress",
+        "status": "done",
         "subtasks": [
           {
             "id": 1,
@@ -308,7 +308,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-02-07T05:44:25.337Z"
+        "updatedAt": "2026-02-07T05:51:16.016Z"
       },
       {
         "id": "5",
@@ -321,8 +321,73 @@
           "2",
           "4"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "done",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Build Library Page UI with Collections Sidebar",
+            "description": "Create the main library interface at app/library/page.tsx with a left sidebar showing collections, main paper grid/list view, and top toolbar with upload, sort, and search functionality.",
+            "dependencies": [],
+            "details": "Use Anthropic Frontend Design Skill with Opus model to design the library UI following Google Docs simplicity. Create app/(protected)/library/page.tsx with: (1) Left sidebar using Sheet/Dialog component for mobile, displaying collections from convex/collections.list query, 'All Papers' default view, and 'New Collection' button. (2) Main area with paper grid (card layout) using existing Card component from shadcn/ui. (3) Top toolbar with Upload PDF button, sort dropdown (Date Added, Date Published, Alphabetical, Journal), and search input for filtering within library. (4) Use convex/papers.list query to fetch papers, filter by collectionId when collection selected. (5) Implement responsive design (mobile-first, 375px to 1280px). (6) Empty states for no papers and no collections.",
+            "status": "done",
+            "testStrategy": "Playwright E2E: (1) Navigate to /library, verify page renders with sidebar and empty state. (2) Verify collections list loads from Convex. (3) Test responsive behavior on 375px and 1280px viewports. (4) Verify All Papers view shows all user papers.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T06:01:37.752Z"
+          },
+          {
+            "id": 2,
+            "title": "Implement Collections Management (Create/Rename/Delete)",
+            "description": "Build collection management modals and functionality using existing Convex mutations (create, update, remove) with proper UI feedback and drag-and-drop support for organizing papers.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create components/library/collection-dialog.tsx for create/edit using Dialog component from shadcn/ui with form inputs (name, optional description). Wire up to convex/collections.create and convex/collections.update mutations. Create components/library/collection-item.tsx for sidebar with context menu (rename, delete actions) using DropdownMenu component. Implement delete confirmation dialog. For drag-and-drop: use HTML5 drag-and-drop API or install @dnd-kit/core library, allow dragging paper cards onto collection items in sidebar, call convex/papers.update mutation to set collectionId. Show toast notifications on success/error. Handle edge cases: prevent deleting collection with papers (or show warning), limit collection name to 50 chars.",
+            "status": "done",
+            "testStrategy": "Playwright E2E: (1) Create collection 'Thesis Chapter 1', verify appears in sidebar. (2) Rename collection, verify name updates. (3) Drag paper to collection, verify paper.collectionId updated in Convex. (4) Delete empty collection, verify removed. (5) Try deleting collection with papers, verify warning shown.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T06:03:54.466Z"
+          },
+          {
+            "id": 3,
+            "title": "Implement PDF Upload with Metadata Extraction",
+            "description": "Build PDF upload functionality using Convex file storage, extract metadata from uploaded PDFs using pdf-parse library, and enforce 50MB file size limit with usage tier restrictions.",
+            "dependencies": [
+              1
+            ],
+            "details": "Install pdf-parse npm package. Create components/library/upload-pdf-button.tsx with file input (accept='.pdf', max 50MB validation). On file selection: (1) Validate file size client-side (max 50MB). (2) Check user's subscription tier and paper count limit (Free tier: 50 papers max - query convex/papers.list and count, use similar pattern to convex/lib/subscriptionLimits.ts). (3) Call convex/files.generateUploadUrl mutation to get upload URL. (4) Upload file to Convex storage using fetch POST. (5) Create server-side Convex mutation (convex/papers.uploadPdf.ts) that: receives storageId, uses ctx.storage.get to fetch file, uses pdf-parse to extract metadata (title from first page, authors if parseable), creates paper record with source='uploaded', pdfFileId=storageId, extracted metadata. (6) Show upload progress indicator. (7) Handle errors (file too large, tier limit reached, parse failure - use generic fallback metadata).",
+            "status": "done",
+            "testStrategy": "Playwright E2E: (1) Upload valid PDF <50MB, verify upload succeeds and paper appears in library. (2) Verify metadata extraction (title, authors). (3) Upload file >50MB, verify error shown. (4) Upload 51st paper on free tier, verify limit error. (5) Verify pdfFileId stored in Convex.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T06:06:07.178Z"
+          },
+          {
+            "id": 4,
+            "title": "Build Paper Card Component with Metadata and Actions",
+            "description": "Create reusable paper card component displaying title, authors, journal, year, abstract preview with badges and quick action buttons (View, Download, Open Original, Remove).",
+            "dependencies": [
+              1
+            ],
+            "details": "Create components/library/paper-card.tsx using Card, Badge components from shadcn/ui. Display: (1) Title (h3, truncate to 2 lines with ellipsis). (2) Authors (joined by comma, truncate to 3 authors + 'et al'). (3) Journal name and year (muted text). (4) Abstract preview (truncate to 150 chars with '...'). (5) Badges: Open Access (green badge if isOpenAccess=true), Uploaded (blue badge if source='uploaded'), Collection name (if collectionId exists - query collection name). (6) Quick actions dropdown using DropdownMenu: View (opens abstract modal), Download (if pdfFileId exists - call convex/files.getUrl query and trigger download), Open Original (opens paper.url in new tab if exists), Remove from Library (confirmation dialog, call convex/papers.remove mutation). (7) Hover effects and responsive layout. (8) Handle missing fields gracefully (show 'N/A' for missing journal/year).",
+            "status": "done",
+            "testStrategy": "Playwright E2E: (1) Save paper from search, verify card displays all metadata correctly. (2) Click View, verify abstract modal opens. (3) Click Download on uploaded PDF, verify download triggers. (4) Click Open Original, verify new tab opens. (5) Click Remove, confirm, verify paper deleted. (6) Verify badges (Open Access, Uploaded, Collection) render correctly.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T06:04:20.323Z"
+          },
+          {
+            "id": 5,
+            "title": "Integrate PDF Viewer Modal with PDF.js",
+            "description": "Implement in-app PDF viewing using react-pdf library with navigation controls, zoom, and download functionality for papers with stored pdfFileId.",
+            "dependencies": [
+              4
+            ],
+            "details": "Install react-pdf and pdfjs-dist npm packages. Create components/library/pdf-viewer-modal.tsx using Dialog component. Configure PDF.js worker (pdfjs.GlobalWorkerOptions.workerSrc in useEffect). Component props: paperId (to fetch pdfFileId via convex/papers.get query). On open: (1) Check if paper.pdfFileId exists, show error if not ('PDF not available'). (2) Fetch PDF URL using convex/files.getUrl query with pdfFileId. (3) Render react-pdf <Document> and <Page> components. (4) Implement controls: page navigation (prev/next buttons, page counter 'Page X of Y'), zoom controls (+/- buttons, fit-width/fit-height), download button (reuse download logic from paper card). (5) Loading state while PDF loads. (6) Error handling (PDF failed to load, corrupt file). (7) Close button. (8) Make modal full-screen on mobile, large centered modal on desktop. Only allow viewing for papers with pdfFileId (uploaded PDFs or open access with stored PDF).",
+            "status": "done",
+            "testStrategy": "Playwright E2E: (1) Upload PDF, click View, verify PDF viewer modal opens and renders first page. (2) Navigate to page 2, verify page changes. (3) Zoom in/out, verify zoom works. (4) Download from modal, verify download triggers. (5) Click paper without PDF, verify 'PDF not available' error. (6) Test on mobile viewport, verify full-screen mode.",
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T06:08:02.270Z"
+          }
+        ],
+        "updatedAt": "2026-02-07T06:08:02.270Z"
       },
       {
         "id": "6",
@@ -395,9 +460,9 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T05:44:25.338Z",
+      "lastModified": "2026-02-07T06:08:02.270Z",
       "taskCount": 10,
-      "completedCount": 3,
+      "completedCount": 5,
       "tags": [
         "master"
       ]
