@@ -191,5 +191,6 @@ export default defineSchema({
     createdAt: v.number(),
   })
     .index("by_user_id", ["userId"])
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    .index("by_razorpay_id", ["razorpaySubscriptionId"]),
 });

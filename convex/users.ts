@@ -1,4 +1,4 @@
-import { mutation, query, internalMutation } from "./_generated/server";
+import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
 
 export const getOrCreate = mutation({
@@ -185,5 +185,15 @@ export const resetAllUsageCounters = internalMutation({
         updatedAt: Date.now(),
       });
     }
+  },
+});
+
+export const getByClerkId = query({
+  args: { clerkId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
+      .unique();
   },
 });

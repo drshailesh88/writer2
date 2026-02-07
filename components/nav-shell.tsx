@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, Library, PenTool } from "lucide-react";
+import { Search, Library, PenTool, CreditCard, Tag } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -93,6 +93,19 @@ export function NavShell() {
                 <p className="text-xs text-muted-foreground">{email}</p>
               </div>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild className="min-h-[44px] cursor-pointer">
+                <Link href="/account/subscription">
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Subscription
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="min-h-[44px] cursor-pointer">
+                <Link href="/pricing">
+                  <Tag className="mr-2 h-4 w-4" />
+                  Pricing
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleSignOut}
                 className="min-h-[44px] cursor-pointer"
@@ -167,6 +180,22 @@ export function NavShell() {
                   >
                     <Library className="h-4 w-4" />
                     My Library
+                  </Link>
+                  <Link
+                    href="/account/subscription"
+                    className="flex min-h-[44px] items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    Subscription
+                  </Link>
+                  <Link
+                    href="/pricing"
+                    className="flex min-h-[44px] items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Tag className="h-4 w-4" />
+                    Pricing
                   </Link>
                   <Button
                     variant="ghost"

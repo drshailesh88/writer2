@@ -23,7 +23,8 @@ function getRazorpayInstance(): Razorpay {
 
 export async function createSubscription(
   planId: string,
-  totalCount: number = 12
+  totalCount: number = 12,
+  notes?: Record<string, string>
 ): Promise<{
   subscriptionId: string;
   shortUrl: string;
@@ -34,6 +35,7 @@ export async function createSubscription(
     plan_id: planId,
     total_count: totalCount,
     quantity: 1,
+    ...(notes ? { notes } : {}),
   });
 
   return {
