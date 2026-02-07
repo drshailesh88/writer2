@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { socraticCoachAgent } from "@/lib/mastra/agents";
+import { validateCoachResponse } from "@/lib/mastra/learn-mode-guard";
 import type { ConversationMessage, LearnModeStage } from "@/lib/mastra/types";
 
 export async function POST(req: NextRequest) {
@@ -40,8 +41,11 @@ Respond as the Socratic writing coach. Remember: NEVER write complete sentences 
 
     const result = await agent.generate(prompt);
 
+    // Enforce Socratic rules — validate response before sending
+    const validated = validateCoachResponse(result.text);
+
     return NextResponse.json({
-      coachMessage: result.text,
+      coachMessage: validated.text,
       stage,
     });
   } catch (error) {

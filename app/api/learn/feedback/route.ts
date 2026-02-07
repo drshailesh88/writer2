@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { feedbackAgent } from "@/lib/mastra/agents";
+import { validateFeedbackResponse } from "@/lib/mastra/learn-mode-guard";
 import { FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/lib/mastra/types";
 
 export async function POST(req: NextRequest) {
@@ -65,11 +66,14 @@ Return ONLY valid JSON in this format:
       };
     }
 
+    // Enforce single-suggestion constraint
+    const validated = validateFeedbackResponse(feedback);
+
     return NextResponse.json({
       feedback: {
-        category: feedback.category || category,
-        suggestion: feedback.suggestion,
-        example: feedback.example || null,
+        category: validated.category || category,
+        suggestion: validated.suggestion,
+        example: validated.example || null,
         addressed: false,
       },
     });

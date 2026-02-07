@@ -621,9 +621,10 @@
               3
             ],
             "details": "Enforcement mechanisms:\n\n1. Agent-level constraints (in system prompts):\n   - SocraticCoachAgent: Add post-processing check to truncate responses after sentence starters (e.g., 'You could start with: The primary objective' → stop, don't complete)\n   - FeedbackAgent: Add category parameter to system prompt, enforce single suggestion per call\n\n2. UI-level constraints:\n   - 'Ask for help' button: Shows sentence starter in chat, does NOT insert into editor automatically\n   - Templates: Only provide IMRAD template if student explicitly clicks 'Use template' button\n   - Feedback panel: Disable 'Next Suggestion' button until student has edited the document (track wordCount change or content diff)\n\n3. Workflow-level constraints:\n   - In Stage 4 (Drafting), agent's generate() calls must include parameter preventing full paragraph generation\n   - In Stage 5 (Feedback), loop through categories one-by-one with suspend/resume between each\n\n4. Client-side validation:\n   - If agent response contains >3 sentences, show warning and truncate\n   - If agent response completes a sentence starter, reject and re-prompt\n\nImplement in lib/workflows/learnMode.ts and app/learn/page.tsx.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Click 'Ask for help', verify response is < 20 words and ends with '...'. (2) Stage 5: Submit text, verify ONE feedback shown. Click 'Next' without editing, verify button disabled. Edit text, verify 'Next' enabled. (3) Test agent with prompt 'Write my methods section', verify response is question, not paragraph.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T07:49:31.439Z"
           },
           {
             "id": 5,
@@ -636,7 +637,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-02-07T07:46:40.406Z"
+        "updatedAt": "2026-02-07T07:49:31.439Z"
       },
       {
         "id": "10",
@@ -655,7 +656,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T07:46:40.408Z",
+      "lastModified": "2026-02-07T07:49:31.440Z",
       "taskCount": 10,
       "completedCount": 7,
       "tags": [

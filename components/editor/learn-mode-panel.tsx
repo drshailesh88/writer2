@@ -176,6 +176,7 @@ export function LearnModePanel({
           onGetFeedback={() => learnMode.requestFeedback(editorContent)}
           onAddressed={learnMode.addressFeedback}
           hasEditorContent={editorContent.length > 20}
+          editorContent={editorContent}
         />
       )}
 
@@ -342,6 +343,7 @@ function FeedbackPanel({
   onGetFeedback,
   onAddressed,
   hasEditorContent,
+  editorContent,
 }: {
   feedbackItems: { category: string; suggestion: string; example?: string | null; addressed: boolean }[];
   currentIndex: number;
@@ -349,11 +351,29 @@ function FeedbackPanel({
   onGetFeedback: () => void;
   onAddressed: () => void;
   hasEditorContent: boolean;
+  editorContent: string;
 }) {
   const totalCategories = FEEDBACK_CATEGORIES.length;
   const currentFeedback = feedbackItems[currentIndex - 1]; // Last received feedback
   const allDone = currentIndex >= totalCategories;
   const currentCategory = FEEDBACK_CATEGORIES[currentIndex];
+
+  // Track whether student has edited since receiving feedback
+  // Store the content snapshot when feedback was received
+  const [contentSnapshot, setContentSnapshot] = useState("");
+
+  // Capture snapshot when new feedback arrives
+  useEffect(() => {
+    if (currentFeedback && !currentFeedback.addressed) {
+      setContentSnapshot(editorContent);
+    }
+  }, [feedbackItems.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // "I've addressed this" is disabled until the student actually edits
+  const hasEdited =
+    !currentFeedback ||
+    currentFeedback.addressed ||
+    editorContent !== contentSnapshot;
 
   return (
     <div className="border-b px-3 py-3">
@@ -421,9 +441,17 @@ function FeedbackPanel({
             size="sm"
             className="w-full h-8 text-xs gap-1"
             onClick={onAddressed}
+            disabled={!hasEdited}
+            title={
+              !hasEdited
+                ? "Edit your draft to address this feedback first"
+                : undefined
+            }
           >
             <CheckCircle2 className="h-3 w-3" />
-            I&apos;ve addressed this
+            {hasEdited
+              ? "I've addressed this"
+              : "Edit your draft first"}
             <ChevronRight className="h-3 w-3 ml-auto" />
           </Button>
         </div>
