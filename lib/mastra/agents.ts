@@ -44,3 +44,13 @@ export const feedbackAgent = new Agent({
   instructions: SYSTEM_PROMPTS.feedbackCoach,
   model: LLM_MODEL,
 });
+
+// ─── Deep Research Agent ───
+
+// DeepResearchAgent: Synthesizes a comprehensive research report from papers
+export const deepResearchAgent = new Agent({
+  id: "deep-research-agent",
+  name: "Deep Research Agent",
+  instructions: SYSTEM_PROMPTS.deepResearcher,
+  model: LLM_MODEL,
+});

@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, Library, PenTool, CreditCard, Tag } from "lucide-react";
+import { Search, Library, PenTool, CreditCard, Tag, FlaskConical } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -73,6 +73,13 @@ export function NavShell() {
           >
             <Library className="h-4 w-4" />
             My Library
+          </Link>
+          <Link
+            href="/deep-research"
+            className="flex min-h-[44px] items-center gap-1.5 px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <FlaskConical className="h-4 w-4" />
+            Deep Research
           </Link>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -180,6 +187,14 @@ export function NavShell() {
                   >
                     <Library className="h-4 w-4" />
                     My Library
+                  </Link>
+                  <Link
+                    href="/deep-research"
+                    className="flex min-h-[44px] items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <FlaskConical className="h-4 w-4" />
+                    Deep Research
                   </Link>
                   <Link
                     href="/account/subscription"

@@ -14,7 +14,7 @@ import { AlertTriangle, ArrowRight, Check, X } from "lucide-react";
 import Link from "next/link";
 
 interface UpgradeModalProps {
-  feature: "plagiarism" | "aiDetection" | "export";
+  feature: "plagiarism" | "aiDetection" | "export" | "deepResearch";
   currentUsage: number;
   limit: number;
   tier: string;
@@ -26,12 +26,13 @@ const FEATURE_LABELS: Record<string, string> = {
   plagiarism: "Plagiarism Check",
   aiDetection: "AI Detection",
   export: "Document Export",
+  deepResearch: "Deep Research",
 };
 
 const TIER_LIMITS = {
-  free: { plagiarism: 2, aiDetection: 2, export: "N/A" },
-  basic: { plagiarism: 5, aiDetection: 10, export: "Unlimited" },
-  pro: { plagiarism: 20, aiDetection: "Unlimited", export: "Unlimited" },
+  free: { plagiarism: 2, aiDetection: 2, export: "N/A", deepResearch: "N/A" },
+  basic: { plagiarism: 5, aiDetection: 10, export: "Unlimited", deepResearch: 5 },
+  pro: { plagiarism: 20, aiDetection: "Unlimited", export: "Unlimited", deepResearch: 15 },
 };
 
 export function UpgradeModal({
@@ -50,10 +51,12 @@ export function UpgradeModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-500" />
-            {feature === "export" ? "Upgrade Required" : "Monthly Limit Reached"}
+            {feature === "export" || (feature === "deepResearch" && limit === 0)
+              ? "Upgrade Required"
+              : "Monthly Limit Reached"}
           </DialogTitle>
           <DialogDescription className="sr-only">
-            {feature === "export"
+            {feature === "export" || (feature === "deepResearch" && limit === 0)
               ? `${featureLabel} is not available on your current plan`
               : `You have reached your monthly usage limit for ${featureLabel}`}
           </DialogDescription>
@@ -62,7 +65,7 @@ export function UpgradeModal({
         <div className="space-y-4 pt-2">
           <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
             <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-              {feature === "export" ? (
+              {feature === "export" || (feature === "deepResearch" && limit === 0) ? (
                 <>{featureLabel} is available on Basic and Pro plans.</>
               ) : (
                 <>
