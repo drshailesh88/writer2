@@ -110,9 +110,10 @@
               1
             ],
             "details": "Create convex/documents.ts with:\n- Mutation createDocument: args { title: v.string(), mode: v.union('learn'|'draft'), citationStyle: v.optional(v.string()) }. Gets authenticated user via ctx.auth.getUserIdentity(), inserts document with userId from users table lookup by clerkId, initial wordCount=0, status='draft', timestamps=Date.now(). Returns document ID.\n- Query getDocument: args { id: v.id('documents') }. Fetches document, verifies userId matches authenticated user. Returns document or throws 'Not authorized'.\n- Mutation updateDocument: args { id: v.id('documents'), title: v.optional(v.string()), content: v.optional(v.any()), wordCount: v.optional(v.number()), currentStage: v.optional(v.string()), outlineData: v.optional(v.any()), approvedPapers: v.optional(v.array(v.string())), citationStyle: v.optional(v.string()), status: v.optional(v.string()) }. Patches document with provided fields, updates updatedAt. Verifies ownership.\n- Mutation deleteDocument: args { id: v.id('documents') }. Verifies ownership, deletes document.\n- Query listDocuments: args { mode: v.optional(v.union('learn'|'draft')), status: v.optional(v.string()), limit: v.optional(v.number()) }. Gets userId from auth, queries documents table with by_user_id index, applies optional filters, orders by updatedAt descending, returns up to limit (default 20) documents.\n\nFollow existing pattern in convex/users.ts for auth checks and error handling using ConvexError.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit tests via Convex testing tools: (1) createDocument as authenticated user, verify document created with correct userId and defaults. (2) getDocument returns correct document for owner, throws error for non-owner. (3) updateDocument modifies fields and updates updatedAt. (4) deleteDocument removes document. (5) listDocuments returns only user's documents, respects mode/status filters. Playwright E2E: Create document via UI, verify appears in dashboard recent drafts list.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T03:02:37.590Z"
           },
           {
             "id": 3,
@@ -152,7 +153,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-02-07T03:01:36.959Z"
+        "updatedAt": "2026-02-07T03:02:37.590Z"
       },
       {
         "id": "3",
@@ -266,7 +267,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T03:01:36.960Z",
+      "lastModified": "2026-02-07T03:02:37.590Z",
       "taskCount": 10,
       "completedCount": 1,
       "tags": [
