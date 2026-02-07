@@ -136,9 +136,10 @@
               1
             ],
             "details": "Convex file storage setup (no config file needed - built-in):\n- Create convex/files.ts with:\n  - Mutation generateUploadUrl: args {}. Returns ctx.storage.generateUploadUrl() for client-side PDF upload (max 50MB).\n  - Mutation savePdfMetadata: args { storageId: v.id('_storage'), paperId: v.id('papers') }. After client uploads PDF, this mutation links storageId to paper record by updating paper.pdfFileId.\n  - Query getFileUrl: args { storageId: v.id('_storage') }. Returns ctx.storage.getUrl(storageId) for viewing/downloading PDF.\n\nCreate convex/helpers.ts with:\n- Function getUserTier: args { userId: v.id('users') }. Queries users table and subscriptions table, returns tier ('free'|'basic'|'pro') based on subscriptionStatus and subscriptionExpiry. If subscription expired, returns 'free'.\n- Function checkPlagiarismLimit: args { userId: v.id('users') }. Gets tier, checks plagiarismChecksUsed vs limits (free:2, basic:5, pro:20). Returns { allowed: boolean, remaining: number }.\n- Function checkAiDetectionLimit: args { userId: v.id('users') }. Same logic for aiDetectionChecksUsed (free:2, basic:10, pro:unlimited).\n- Function checkDeepResearchLimit: args { userId: v.id('users') }. Same logic for deepResearchUsed (free:0, basic:5, pro:15).\n- Function incrementUsage: args { userId: v.id('users'), type: v.union('plagiarism'|'ai_detection'|'deep_research') }. Increments appropriate counter in users table.\n- Function resetMonthlyUsage: args {}. Scheduled function (runs monthly) to reset all checksUsed counters to 0 for all users.\n\nAll helpers use internal mutations/queries (internalMutation, internalQuery) for use within other Convex functions.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit tests: (1) generateUploadUrl returns valid URL. (2) savePdfMetadata links storageId to paper. (3) getFileUrl returns accessible URL. (4) getUserTier correctly identifies tier based on subscription. (5) checkPlagiarismLimit enforces limits (free user with 2 checks cannot do 3rd). (6) incrementUsage increases counter. (7) resetMonthlyUsage zeros out all counters. Playwright E2E: Upload PDF from library UI, verify file stored and viewable. Test with 51MB file, verify rejected (max 50MB).",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T03:04:32.926Z"
           },
           {
             "id": 5,
@@ -154,7 +155,7 @@
             "parentId": "undefined"
           }
         ],
-        "updatedAt": "2026-02-07T03:03:43.192Z"
+        "updatedAt": "2026-02-07T03:04:32.926Z"
       },
       {
         "id": "3",
@@ -268,7 +269,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T03:03:43.193Z",
+      "lastModified": "2026-02-07T03:04:32.927Z",
       "taskCount": 10,
       "completedCount": 1,
       "tags": [

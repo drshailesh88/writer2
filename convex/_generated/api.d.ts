@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as citations from "../citations.js";
 import type * as collections from "../collections.js";
 import type * as documents from "../documents.js";
 import type * as files from "../files.js";
@@ -22,6 +23,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  citations: typeof citations;
   collections: typeof collections;
   documents: typeof documents;
   files: typeof files;
