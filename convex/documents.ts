@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
+import { checkUsageLimit } from "./lib/subscriptionLimits";
 
 export const create = mutation({
   args: {
@@ -29,6 +30,16 @@ export const create = mutation({
 
     if (!user) {
       throw new ConvexError("User not found");
+    }
+
+    // Enforce Draft Mode gating for free/none tiers
+    if (args.mode === "draft_guided" || args.mode === "draft_handsoff") {
+      const draftCheck = checkUsageLimit(user.subscriptionTier, "draftMode", 0);
+      if (!draftCheck.allowed) {
+        throw new ConvexError(
+          "Draft Mode is not available on the free plan. Please upgrade to Basic or Pro."
+        );
+      }
     }
 
     const now = Date.now();

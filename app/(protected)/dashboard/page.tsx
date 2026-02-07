@@ -17,6 +17,7 @@ import {
   Plus,
   Search,
   PlayCircle,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -146,6 +147,13 @@ export default function DashboardPage() {
     mode: "learn" | "draft_guided" | "draft_handsoff"
   ) => {
     if (creatingMode) return;
+
+    // Redirect free users to pricing for draft mode
+    if (isDraftLocked && (mode === "draft_guided" || mode === "draft_handsoff")) {
+      router.push("/pricing");
+      return;
+    }
+
     setCreatingMode(mode);
     try {
       const title =
@@ -198,6 +206,7 @@ export default function DashboardPage() {
   /* ── Derived state ── */
   const tier = user.subscriptionTier || "free";
   const limits = LIMITS[tier] || LIMITS.free;
+  const isDraftLocked = tier === "free" || tier === "none";
   const recentDocs = (documents ?? []).slice(0, 5);
 
   const usageStats = [
@@ -270,44 +279,54 @@ export default function DashboardPage() {
           Quick Actions
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
-          {quickActions.map((qa) => (
-            <button
-              key={qa.mode}
-              onClick={() => handleCreate(qa.mode)}
-              disabled={!!creatingMode}
-              className="group text-left disabled:opacity-50"
-            >
-              <Card
-                className={`h-full border-l-4 ${qa.borderCls} py-0 gap-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md`}
+          {quickActions.map((qa) => {
+            const locked =
+              isDraftLocked &&
+              (qa.mode === "draft_guided" || qa.mode === "draft_handsoff");
+
+            return (
+              <button
+                key={qa.mode}
+                onClick={() => handleCreate(qa.mode)}
+                disabled={!!creatingMode}
+                className="group text-left disabled:opacity-50"
               >
-                <CardContent className="flex items-center gap-4 py-4">
-                  <div
-                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
-                    style={{ background: qa.iconBg }}
-                  >
-                    {creatingMode === qa.mode ? (
-                      <Loader2
-                        className="h-5 w-5 animate-spin"
-                        style={{ color: qa.iconColor }}
-                      />
+                <Card
+                  className={`h-full border-l-4 ${qa.borderCls} py-0 gap-0 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md ${locked ? "opacity-60" : ""}`}
+                >
+                  <CardContent className="flex items-center gap-4 py-4">
+                    <div
+                      className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                      style={{ background: qa.iconBg }}
+                    >
+                      {creatingMode === qa.mode ? (
+                        <Loader2
+                          className="h-5 w-5 animate-spin"
+                          style={{ color: qa.iconColor }}
+                        />
+                      ) : (
+                        <qa.icon
+                          className="h-5 w-5"
+                          style={{ color: qa.iconColor }}
+                        />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold">{qa.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {locked ? "Upgrade to unlock" : qa.subtitle}
+                      </p>
+                    </div>
+                    {locked ? (
+                      <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
                     ) : (
-                      <qa.icon
-                        className="h-5 w-5"
-                        style={{ color: qa.iconColor }}
-                      />
+                      <Plus className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
                     )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold">{qa.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {qa.subtitle}
-                    </p>
-                  </div>
-                  <Plus className="h-4 w-4 shrink-0 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
-                </CardContent>
-              </Card>
-            </button>
-          ))}
+                  </CardContent>
+                </Card>
+              </button>
+            );
+          })}
         </div>
         <div className="mt-3 grid gap-4 sm:grid-cols-2">
           <button

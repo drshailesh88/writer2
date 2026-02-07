@@ -36,6 +36,20 @@ export const save = mutation({
       throw new ConvexError("User not found");
     }
 
+    // Enforce paper library limit for free tier (50 papers)
+    if (user.subscriptionTier === "free" || user.subscriptionTier === "none") {
+      const userPapers = await ctx.db
+        .query("papers")
+        .withIndex("by_user_id", (q) => q.eq("userId", user._id))
+        .collect();
+
+      if (userPapers.length >= 50) {
+        throw new ConvexError(
+          "Paper library limit reached (50 papers). Please upgrade to Basic or Pro for unlimited storage."
+        );
+      }
+    }
+
     // Check for duplicate by externalId for this user
     const existing = await ctx.db
       .query("papers")
