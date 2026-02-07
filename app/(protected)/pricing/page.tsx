@@ -117,6 +117,18 @@ interface FeatureRow {
 
 const FEATURES: FeatureRow[] = [
   {
+    label: "Learn Mode",
+    free: "3 sessions/month",
+    basic: "Unlimited",
+    pro: "Unlimited",
+  },
+  {
+    label: "Draft Mode (Guided + Hands-off)",
+    free: false,
+    basic: "Unlimited",
+    pro: "Unlimited",
+  },
+  {
     label: "Plagiarism Checks",
     free: "2/month",
     basic: "5/month",
@@ -129,8 +141,14 @@ const FEATURES: FeatureRow[] = [
     pro: "Unlimited",
   },
   {
-    label: "Paper Search",
-    free: "Unlimited",
+    label: "Deep Research",
+    free: false,
+    basic: "5/month",
+    pro: "15/month",
+  },
+  {
+    label: "Paper Search & Library",
+    free: "50 papers",
     basic: "Unlimited",
     pro: "Unlimited",
   },
@@ -141,22 +159,10 @@ const FEATURES: FeatureRow[] = [
     pro: "Unlimited",
   },
   {
-    label: "Deep Research",
+    label: "DOCX & PDF Export",
     free: false,
-    basic: "5/month",
-    pro: "15/month",
-  },
-  {
-    label: "Learn Mode",
-    free: true,
-    basic: true,
-    pro: true,
-  },
-  {
-    label: "Draft Mode",
-    free: false,
-    basic: true,
-    pro: true,
+    basic: "Unlimited",
+    pro: "Unlimited",
   },
 ];
 

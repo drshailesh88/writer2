@@ -16,7 +16,7 @@ export const SUBSCRIPTION_LIMITS: Record<SubscriptionTier, Record<Feature, numbe
     aiDetection: 2,
     deepResearch: 0,
     draftMode: 0,
-    learnMode: -1,
+    learnMode: 3,
     export: 0,
   },
   basic: {

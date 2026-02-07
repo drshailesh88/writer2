@@ -115,13 +115,14 @@ test.describe("Pricing Page — Authenticated", () => {
     }
 
     // Check key features are listed
-    await expect(page.locator("text=Plagiarism Checks")).toBeVisible();
-    await expect(page.locator("text=AI Detection")).toBeVisible();
-    await expect(page.locator("text=Paper Search")).toBeVisible();
-    await expect(page.locator("text=Citations & Bibliography")).toBeVisible();
-    await expect(page.locator("text=Deep Research")).toBeVisible();
-    await expect(page.locator("text=Learn Mode")).toBeVisible();
-    await expect(page.locator("text=Draft Mode")).toBeVisible();
+    await expect(page.locator("text=Learn Mode").first()).toBeVisible();
+    await expect(page.locator("text=Draft Mode (Guided + Hands-off)").first()).toBeVisible();
+    await expect(page.locator("text=Plagiarism Checks").first()).toBeVisible();
+    await expect(page.locator("text=AI Detection").first()).toBeVisible();
+    await expect(page.locator("text=Deep Research").first()).toBeVisible();
+    await expect(page.locator("text=Paper Search & Library").first()).toBeVisible();
+    await expect(page.locator("text=Citations & Bibliography").first()).toBeVisible();
+    await expect(page.locator("text=DOCX & PDF Export").first()).toBeVisible();
   });
 
   test("feature comparison shows different limits per tier", async ({

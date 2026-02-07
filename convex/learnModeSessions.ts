@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
+import { checkUsageLimit } from "./lib/subscriptionLimits";
 
 export const create = mutation({
   args: {
@@ -25,6 +26,19 @@ export const create = mutation({
     if (!doc || doc.userId !== user._id) {
       throw new ConvexError("Document not found or not authorized");
     }
+
+    // Check Learn Mode usage limit
+    const tier = user.subscriptionTier;
+    const usageCheck = checkUsageLimit(tier, "learnMode", user.learnModeSessionsUsed);
+    if (!usageCheck.allowed) {
+      throw new ConvexError(usageCheck.reason ?? "Learn Mode session limit reached. Please upgrade your plan.");
+    }
+
+    // Increment usage counter
+    await ctx.db.patch(user._id, {
+      learnModeSessionsUsed: (user.learnModeSessionsUsed ?? 0) + 1,
+      updatedAt: Date.now(),
+    });
 
     const now = Date.now();
     return await ctx.db.insert("learnModeSessions", {

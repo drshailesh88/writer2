@@ -26,10 +26,10 @@ import { Separator } from "@/components/ui/separator";
 
 /* ── Subscription limits for usage display ── */
 const LIMITS: Record<string, Record<string, number>> = {
-  none: { plagiarism: 1, aiDetection: 0, deepResearch: 0 },
-  free: { plagiarism: 2, aiDetection: 2, deepResearch: 0 },
-  basic: { plagiarism: 5, aiDetection: 10, deepResearch: 5 },
-  pro: { plagiarism: 20, aiDetection: -1, deepResearch: 15 },
+  none: { plagiarism: 1, aiDetection: 0, deepResearch: 0, learnMode: 0 },
+  free: { plagiarism: 2, aiDetection: 2, deepResearch: 0, learnMode: 3 },
+  basic: { plagiarism: 5, aiDetection: 10, deepResearch: 5, learnMode: -1 },
+  pro: { plagiarism: 20, aiDetection: -1, deepResearch: 15, learnMode: -1 },
 };
 
 /* ── Helpers ── */
@@ -199,6 +199,14 @@ export default function DashboardPage() {
   const recentDocs = (documents ?? []).slice(0, 5);
 
   const usageStats = [
+    {
+      label: "Learn Mode",
+      icon: GraduationCap,
+      used: user.learnModeSessionsUsed ?? 0,
+      limit: limits.learnMode,
+      barColor: "bg-emerald-500",
+      iconCls: "bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400",
+    },
     {
       label: "Plagiarism Checks",
       icon: FileCheck2,

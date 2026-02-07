@@ -165,14 +165,14 @@ test.describe("Landing Page", () => {
     // Free tier
     await expect(page.locator("text=₹0")).toBeVisible();
     await expect(
-      page.locator("text=Learn Mode — unlimited access")
+      page.locator("text=Learn Mode — 3 sessions per month")
     ).toBeVisible();
     await expect(
       page.locator("text=2 plagiarism checks per month")
     ).toBeVisible();
 
     // Basic tier
-    await expect(page.locator("text=₹299")).toBeVisible();
+    await expect(page.locator("text=₹1,000")).toBeVisible();
     await expect(
       page.locator("text=Draft Mode — AI-assisted writing")
     ).toBeVisible();
@@ -181,12 +181,12 @@ test.describe("Landing Page", () => {
     ).toBeVisible();
 
     // Pro tier
-    await expect(page.locator("text=₹599")).toBeVisible();
+    await expect(page.locator("text=₹2,000")).toBeVisible();
     await expect(
-      page.locator("text=Unlimited plagiarism checks")
+      page.locator("text=20 plagiarism checks per month")
     ).toBeVisible();
     await expect(
-      page.locator("text=Priority support")
+      page.locator("text=Priority AI processing")
     ).toBeVisible();
   });
 

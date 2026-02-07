@@ -27,6 +27,7 @@ export const getOrCreate = mutation({
       plagiarismChecksUsed: 0,
       aiDetectionChecksUsed: 0,
       deepResearchUsed: 0,
+      learnModeSessionsUsed: 0,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -86,6 +87,7 @@ export const resetMonthlyUsage = internalMutation({
       plagiarismChecksUsed: 0,
       aiDetectionChecksUsed: 0,
       deepResearchUsed: 0,
+      learnModeSessionsUsed: 0,
       updatedAt: Date.now(),
     });
   },
@@ -123,6 +125,8 @@ export const getUsage = query({
       aiDetectionLimit: limits.aiDetection,
       deepResearchUsed: user.deepResearchUsed ?? 0,
       deepResearchLimit: limits.deepResearch,
+      learnModeUsed: user.learnModeSessionsUsed ?? 0,
+      learnModeLimit: limits.learnMode,
     };
   },
 });
@@ -182,6 +186,7 @@ export const resetAllUsageCounters = internalMutation({
         plagiarismChecksUsed: 0,
         aiDetectionChecksUsed: 0,
         deepResearchUsed: 0,
+        learnModeSessionsUsed: 0,
         updatedAt: Date.now(),
       });
     }

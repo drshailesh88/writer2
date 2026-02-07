@@ -82,44 +82,45 @@ const pricingTiers = [
     period: "forever",
     description: "Perfect for learning research writing",
     features: [
-      "Learn Mode — unlimited access",
+      "Learn Mode — 3 sessions per month",
       "2 plagiarism checks per month",
-      "Paper search & library",
-      "Community support",
+      "2 AI detection checks per month",
+      "Paper search & library (50 papers)",
+      "No Draft Mode or export",
     ],
     cta: "Start Free",
     highlighted: false,
   },
   {
     name: "Basic",
-    price: "₹299",
+    price: "₹1,000",
     period: "per month",
     description: "For students actively writing their thesis",
     features: [
-      "Everything in Free",
+      "Everything in Free, unlimited",
       "Draft Mode — AI-assisted writing",
       "5 plagiarism checks per month",
       "10 AI detection checks per month",
       "5 deep research reports per month",
-      "Smart citations & bibliography",
+      "DOCX & PDF export",
     ],
     cta: "Start Basic",
     highlighted: true,
   },
   {
     name: "Pro",
-    price: "₹599",
+    price: "₹2,000",
     period: "per month",
     description: "For serious researchers who want it all",
     features: [
       "Everything in Basic",
-      "Unlimited plagiarism checks",
+      "20 plagiarism checks per month",
       "Unlimited AI detection",
       "15 deep research reports per month",
-      "Priority support",
+      "Priority AI processing",
       "Early access to new features",
     ],
-    cta: "Start Pro",
+    cta: "Coming Soon",
     highlighted: false,
   },
 ];
@@ -253,6 +254,31 @@ export default function LandingPage() {
           <p className="mt-4 font-mono text-xs text-muted-foreground">
             No credit card required &middot; Free plan available
           </p>
+        </div>
+      </section>
+
+      {/* ─── Free Plagiarism Check CTA ─── */}
+      <section className="border-t bg-amber-50/60 py-12 dark:bg-amber-950/20 sm:py-16">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+          <p className="font-mono text-xs font-medium uppercase tracking-[0.2em] text-amber-700 dark:text-amber-400">
+            Try It Free
+          </p>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight sm:text-3xl">
+            Check your paper for plagiarism &mdash; no signup needed
+          </h2>
+          <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground sm:text-base">
+            Paste up to 1,000 words and get instant results. Powered by the same
+            engine that checks against 60 trillion web pages and 16,000+ journals.
+          </p>
+          <Link href="/plagiarism-free">
+            <Button
+              size="lg"
+              className="mt-6 min-h-[48px] min-w-[240px] bg-amber-600 text-base font-medium hover:bg-amber-700"
+            >
+              <FileCheck2 className="mr-2 h-4 w-4" />
+              Free Plagiarism Check
+            </Button>
+          </Link>
         </div>
       </section>
 

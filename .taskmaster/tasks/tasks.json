@@ -254,9 +254,10 @@
             "description": "Build three separate Next.js API route handlers to integrate with PubMed E-utilities (esearch + esummary), Semantic Scholar API, and OpenAlex API. Each route should handle query parameters, API authentication, rate limiting, and return standardized paper metadata.",
             "dependencies": [],
             "details": "Implement `app/api/search/pubmed/route.ts` using NCBI E-utilities (esearch for search, esummary for metadata). Add NCBI_API_KEY to .env.local. Implement `app/api/search/semantic-scholar/route.ts` with API key authentication (SEMANTIC_SCHOLAR_API_KEY in env). Implement `app/api/search/openalex/route.ts` with polite pool header (mailto email, no key required). Each handler should accept query params: q (query string), yearFrom, yearTo, studyType, openAccessOnly, humanOnly. Return standardized format: { externalId, source, title, authors: string[], journal, year, abstract, doi, url, isOpenAccess, citationCount, metadata }. Install axios or use native fetch. Implement error handling with try-catch, return 200 with error flag on API failure for graceful degradation.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit test each route handler with mock queries. Verify PubMed returns results with PMIDs. Verify Semantic Scholar returns citation counts. Verify OpenAlex respects open access filter. Test error handling when API is unavailable.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T16:20:01.394Z"
           },
           {
             "id": 2,
@@ -266,9 +267,10 @@
               1
             ],
             "details": "Implement `app/api/search/route.ts` as the unified endpoint. Use Promise.allSettled to call pubmed, semantic-scholar, and openalex routes in parallel. Handle partial failures gracefully (if one API fails, still return results from others). Implement deduplication algorithm: (1) Match by DOI if present, (2) Match by PubMed ID if present, (3) Use Levenshtein distance on titles (threshold: 85% similarity) for fuzzy matching. Merge metadata: prefer PubMed metadata for medical papers, prefer Semantic Scholar for citation counts, use OpenAlex for open access status. Install fast-levenshtein npm package for string similarity. Implement in-memory cache (Map) for identical queries with 1-hour TTL. Return format: { results: Paper[], sources: { pubmed: number, semanticScholar: number, openalex: number }, cached: boolean, errors: string[] }. Apply filters (year range, study type, open access, human studies) post-merge if not supported by individual APIs.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: Search for 'laparoscopic appendectomy', verify results from all three sources appear with merged metadata. Test deduplication by searching query with known duplicates across sources. Test cache by running identical query twice, verify second response is cached. Test graceful degradation by mocking one API failure.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T16:20:01.437Z"
           },
           {
             "id": 3,
@@ -278,9 +280,10 @@
               2
             ],
             "details": "Create `app/search/page.tsx` as a client component ('use client'). UI components: (1) Search bar using shadcn/ui Input + Button, (2) Filter panel with: Year range (two Number inputs for from/to), Study type dropdown (Select component: Clinical Trial, Meta-Analysis, Randomized Controlled Trial, Review, Observational Study), Open Access toggle (Switch component), Human Studies checkbox. (3) Sort dropdown (Select: Relevance, Newest First, Citation Count). (4) Results section: Display paper cards using shadcn/ui Card component. Each card shows: title (bold), authors (comma-separated, max 3 + 'et al.'), journal + year, abstract preview (150 chars with '...' truncation), Open Access badge (shadcn/ui Badge if isOpenAccess), citation count display, 'View Full Abstract' expandable section (Collapsible component), 'Save to Library' button (calls Convex papers.save mutation), 'Find Related' button (calls Semantic Scholar recommendations API). Use React state for filters, query, results. Implement loading state (Skeleton components) and empty state ('No results found'). Mobile responsive: stack filters vertically on <768px, single column results. Use Tailwind for spacing and layout.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Enter search query, click search, verify results render. (2) Apply year filter 2020-2024, verify filtered results. (3) Toggle 'Open Access Only', verify all results show OA badge. (4) Change sort to 'Newest First', verify results reorder. (5) Click 'View Full Abstract', verify abstract expands. (6) Verify mobile responsive at 375px viewport.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T16:20:02.117Z"
           },
           {
             "id": 4,
@@ -290,9 +293,10 @@
               3
             ],
             "details": "In search page, import Convex useMutation and useQuery hooks. Use papers.save mutation from convex/papers.ts (already implemented). On 'Save to Library' button click: (1) Call mutation with paper data (externalId, source, title, authors, journal, year, abstract, doi, url, isOpenAccess, metadata), (2) Handle success: show success toast (install sonner npm for toast notifications), disable button and show 'Saved' state. (3) Handle error: show error toast with message. Use papers.getByExternalId query to check if paper already saved on initial load, pre-mark buttons as 'Saved' if true. Button states: 'Save to Library' (default), 'Saving...' (loading), 'Saved ✓' (saved). Use shadcn/ui Button variant 'outline' for save button, 'ghost' for saved state. Implement optimistic UI update (immediately mark as saved, revert on error). Add optional collectionId param to save directly to a collection (for future library feature).",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Search for paper, click 'Save to Library', verify success toast appears and button shows 'Saved ✓'. (2) Reload page, search same query, verify button already shows 'Saved' state. (3) Try saving duplicate, verify mutation returns existing paper ID (no duplicate created). (4) Verify saved paper appears in Convex papers table with correct userId.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T16:20:02.787Z"
           },
           {
             "id": 5,
@@ -303,12 +307,13 @@
               4
             ],
             "details": "Pagination: Modify unified search endpoint to accept page param (default 1) and return paginated results (20 per page). Add totalResults count to response. In search UI, add pagination controls using shadcn/ui Button components: Previous, page numbers (show current ± 2), Next. Update URL query params on page change for shareable links (use next/navigation useRouter and searchParams). 'Find Related' button: Create `app/api/search/related/route.ts` that calls Semantic Scholar recommendations API endpoint `/recommendations/v1/papers/forpaper/{paper_id}`. Accept paperId (Semantic Scholar ID or DOI) as param, return same standardized format. In UI, clicking 'Find Related' opens new search results with related papers. Rate limiting: Implement client-side debounce on search input (300ms) to prevent excessive API calls. Add request throttling on API routes using simple in-memory counter (max 60 requests per minute per IP). If rate limit exceeded, return 429 status with retry-after header. Loading states: Show skeleton loader during pagination. Scroll to top on page change.",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Search query with >20 results, verify pagination controls appear. (2) Click page 2, verify next 20 results load and URL updates. (3) Click 'Find Related' on a paper, verify related papers load in new results view. (4) Test rate limiting by making 61 rapid requests, verify 429 response on 61st. (5) Test debounce by typing quickly, verify only one API call after 300ms pause.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T16:20:03.632Z"
           }
         ],
-        "updatedAt": "2026-02-07T05:51:16.016Z"
+        "updatedAt": "2026-02-07T16:20:03.632Z"
       },
       {
         "id": "5",
@@ -728,9 +733,10 @@
             "description": "Install Copyleaks Node.js SDK (plagiarism-checker), create API routes for plagiarism check and AI detection that submit text to Copyleaks, poll for results, and update Convex database records with scan results.",
             "dependencies": [],
             "details": "1. Install SDK: `npm install plagiarism-checker` (Copyleaks official Node.js SDK)\n2. Add COPYLEAKS_API_KEY to .env.local\n3. Create `app/api/plagiarism/route.ts`: POST endpoint that:\n   - Accepts { text, documentId? } from client\n   - Calls Convex plagiarismChecks.create mutation\n   - Submits text to Copyleaks API\n   - Polls for results (webhook or polling)\n   - Calls plagiarismChecks.updateResult mutation with overall similarity %, sources array, copyleaksScanId\n4. Create `app/api/ai-detection/route.ts`: POST endpoint that:\n   - Accepts { text, documentId? } from client\n   - Calls Convex aiDetectionChecks.create mutation\n   - Submits to Copyleaks AI detection endpoint\n   - Polls for results\n   - Calls aiDetectionChecks.updateResult mutation with overall AI score (0-100), sentence-level results\n5. Handle errors gracefully (API timeout, rate limits, network failures)\n6. Return checkId to client for status polling",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Unit test: Mock Copyleaks SDK responses for successful plagiarism check (15% similarity, 3 sources). Verify API route calls Convex mutations correctly. Test error handling with mock API failures. Integration test: Call API route with 500-word text, verify check record created in Convex with status 'pending', then 'completed' after polling.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T16:20:04.236Z"
           },
           {
             "id": 2,
@@ -740,9 +746,10 @@
               1
             ],
             "details": "1. Create `components/plagiarism/PlagiarismPanel.tsx` using shadcn/ui components\n2. Add 'Check Plagiarism' button to editor toolbar (icon: FileCheck2 from lucide-react)\n3. Side panel layout:\n   - Large similarity % badge with color coding: <10% = green (bg-green-100 text-green-800), 10-25% = yellow (bg-yellow-100 text-yellow-800), >25% = red (bg-red-100 text-red-800)\n   - Source list: Each source shows title, URL, matched text snippet, similarity %\n   - Click source → open SourceDetailsModal with full matched text comparison\n4. Editor highlights: Use Tiptap marks to highlight matching text inline (color-coded by similarity severity)\n5. Loading state: Show skeleton loader during scan (Loader2 icon)\n6. Empty state: 'No plagiarism detected' with green checkmark\n7. White-label: All UI says 'V1 Drafts Plagiarism Check' — zero mention of Copyleaks\n8. Mobile responsive: Side panel collapses to bottom sheet on <768px",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Open editor, click 'Check Plagiarism' button, verify loading state appears. (2) Mock API response with 15% similarity and 3 sources, verify yellow badge displayed. (3) Click on first source, verify modal opens with source details. (4) Verify highlighted text in editor matches source. (5) Test on mobile viewport (375px width), verify side panel converts to bottom sheet.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T16:20:05.070Z"
           },
           {
             "id": 3,
@@ -752,9 +759,10 @@
               1
             ],
             "details": "1. Create `components/ai-detection/AIDetectionPanel.tsx` using shadcn/ui\n2. Add 'AI Detection' button to editor toolbar (icon: ShieldCheck from lucide-react) — separate from plagiarism button\n3. Side panel layout:\n   - Overall AI probability score: Large number (0-100%) with progress bar\n   - Color coding: <30% green, 30-70% yellow, >70% red\n   - Sentence-level breakdown: List of sentences with individual AI probability scores\n   - Highlights in editor: Color-coded marks on sentences (green/yellow/red based on score)\n4. **MANDATORY DISCLAIMER** (always visible at top of panel):\n   'AI detection provides an estimate, not a definitive conclusion. Scientific and medical writing may show elevated scores due to standardized structure and specialized vocabulary. Non-native English writers may also see higher scores. Results should not be used as sole evidence of AI use.'\n5. Loading state during scan\n6. White-label: 'V1 Drafts AI Detection' branding\n7. Mobile responsive: Bottom sheet on <768px",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Open editor, click 'AI Detection' button, verify loading state. (2) Mock API response with 45% overall score and sentence-level results, verify yellow progress bar displayed. (3) Verify disclaimer text visible at all times. (4) Verify sentence highlights in editor match API response. (5) Click on high-score sentence (>70%), verify it's highlighted in red. (6) Test mobile view, verify disclaimer still visible.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T16:20:05.526Z"
           },
           {
             "id": 4,
@@ -765,9 +773,10 @@
               3
             ],
             "details": "1. Update plagiarismChecks.create and aiDetectionChecks.create mutations (already have checkUsageLimit call)\n2. Create `components/modals/UpgradeModal.tsx`:\n   - Triggered when usage limit exceeded\n   - Shows current tier, usage (e.g., '5/5 plagiarism checks used this month')\n   - Pricing comparison table: Free (2/2) → Basic (5/10) for INR 1,000/mo → Pro (20/unlimited)\n   - 'Upgrade to Basic' / 'Upgrade to Pro' buttons linking to /pricing\n3. Client-side usage check before API call:\n   - Fetch user tier and current usage from Convex\n   - If limit reached, show UpgradeModal immediately (no API call)\n4. Convex scheduled function `convex/crons.ts`:\n   - Create monthly cron job (runs 1st of every month at 00:00 UTC)\n   - Reset plagiarismChecksUsed and aiDetectionChecksUsed to 0 for all users\n   - Use Convex scheduler: export default defineSchedule({ monthly: { handler: resetUsageCounters } })\n5. Handle edge case: User upgrades mid-month → immediately grant new limits (no reset needed)",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Free account: Run 2 plagiarism checks successfully. (2) Attempt 3rd check, verify UpgradeModal appears with 'You've used 2/2 checks this month' message. (3) Click 'Upgrade to Basic', verify redirects to /pricing. (4) Basic account: Run 5 plagiarism checks, verify 6th blocked. (5) Pro account: Run 25 plagiarism checks, verify no limit (unlimited). Unit test: Mock cron job, verify all users' counters reset to 0 on 1st of month.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T16:20:06.240Z"
           },
           {
             "id": 5,
@@ -777,12 +786,13 @@
               4
             ],
             "details": "1. **Free Funnel Page** (`app/plagiarism-free/page.tsx`):\n   - Textarea input (max 1000 words) with character counter\n   - 'Check for Plagiarism' button (calls /api/plagiarism with no auth)\n   - After results, CTA: 'Sign up for 2 free checks per month + Learn Mode, Draft Mode, AI Detection'\n   - Link to /sign-up (Clerk signup page)\n2. **Razorpay Setup**:\n   - Sign up at razorpay.com, create test + live accounts\n   - Add RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET to .env.local\n   - Install SDK: `npm install razorpay`\n   - Create subscription plans in Razorpay dashboard: Basic (INR 1,000/month), Pro (INR 2,000/month)\n3. **Pricing Page** (`app/pricing/page.tsx`):\n   - Feature comparison table (3 columns: Free, Basic, Pro)\n   - 'Subscribe to Basic' / 'Subscribe to Pro' buttons\n   - Click → open Razorpay Checkout modal (embedded, no redirect)\n   - On payment success, redirect to /account/subscription with success message\n4. **Webhook Handler** (`app/api/razorpay/webhook/route.ts`):\n   - Verify webhook signature (Razorpay SDK)\n   - Handle events:\n     - subscription.activated → Call subscriptions.create Convex mutation\n     - subscription.cancelled → Call subscriptions.updateStatus mutation (status: 'cancelled')\n     - payment.failed → Mark subscription as 'paused' (grace period: 3 days before downgrade)\n   - Return 200 OK to Razorpay\n5. **Subscription Management Page** (`app/account/subscription/page.tsx`):\n   - Show current plan (Free/Basic/Pro)\n   - Renewal date (subscriptions.currentPeriodEnd)\n   - Payment history (fetch from Razorpay API)\n   - 'Cancel Subscription' button → calls Razorpay API to cancel, then updates Convex\n   - Grace period notice: 'Your subscription failed. Please update payment method within 3 days to avoid downgrade.'",
-            "status": "pending",
+            "status": "done",
             "testStrategy": "Playwright E2E: (1) Free funnel: Visit /plagiarism-free, enter 1000-word text, click 'Check for Plagiarism', verify results shown, CTA displayed. (2) Click CTA, verify redirects to /sign-up. (3) Pricing page: Click 'Subscribe to Basic', verify Razorpay modal opens. (4) Mock payment success, verify webhook creates subscription record in Convex with status 'active'. (5) Visit /account/subscription, verify current plan shows 'Basic', renewal date displayed. (6) Click 'Cancel Subscription', verify status updates to 'cancelled' in Convex and Razorpay.",
-            "parentId": "undefined"
+            "parentId": "undefined",
+            "updatedAt": "2026-02-07T16:20:14.202Z"
           }
         ],
-        "updatedAt": "2026-02-07T09:58:15.876Z"
+        "updatedAt": "2026-02-07T16:20:14.202Z"
       },
       {
         "id": "11",
@@ -806,20 +816,21 @@
         "description": "Implement autonomous Deep Research feature using deepagentsjs (TypeScript, MIT). Student enters a research topic, the agent autonomously searches papers and web sources, then synthesizes a structured research report with executive summary, key findings by theme, literature gaps, and cited sources with links. Papers cited can be added to user's library.",
         "details": "1. Install deepagentsjs:\n   - Run: `npm install deepagents @langchain/anthropic @langchain/core`\n   - deepagentsjs is MIT licensed, TypeScript-native, compatible with LangChain LLMs\n   - Configure Claude Sonnet via @langchain/anthropic for research agent (higher quality than GLM-4.7 for complex reasoning)\n\n2. Create Deep Research Agent (`lib/agents/deepResearch.ts`):\n   - Import `DeepAgent` from `deepagents` package\n   - Create LangChain Claude Sonnet model instance:\n     ```typescript\n     import { ChatAnthropic } from \"@langchain/anthropic\";\n     const model = new ChatAnthropic({\n       modelName: \"claude-sonnet-4\",\n       apiKey: process.env.ANTHROPIC_API_KEY,\n       temperature: 0.7,\n     });\n     ```\n   - Initialize DeepAgent with custom tools that wrap existing paper search APIs (see step 3)\n   - Configure agent system prompt: \"You are a medical research assistant conducting comprehensive literature research. Your goal is to search papers, evaluate relevance, identify key themes, and synthesize findings into a structured report. Always cite sources with titles and links.\"\n\n3. Create custom LangChain tools for paper search (`lib/agents/tools/paperSearch.ts`):\n   - Wrap existing `/api/search/pubmed`, `/api/search/semantic-scholar`, `/api/search/openalex` routes\n   - Create LangChain Tool instances:\n     ```typescript\n     import { DynamicStructuredTool } from \"@langchain/core/tools\";\n     \n     const pubmedSearchTool = new DynamicStructuredTool({\n       name: \"search_pubmed\",\n       description: \"Search PubMed for biomedical research papers. Returns title, authors, abstract, DOI, year.\",\n       schema: z.object({\n         query: z.string().describe(\"Search query\"),\n         yearFrom: z.number().optional(),\n         yearTo: z.number().optional(),\n       }),\n       func: async ({ query, yearFrom, yearTo }) => {\n         // Call internal API, return JSON results\n       },\n     });\n     ```\n   - Similarly create `search_semantic_scholar` and `search_openalex` tools\n   - Create a `get_related_papers` tool that wraps `/api/search/related` (Semantic Scholar recommendations)\n   - All tools return structured JSON with paper metadata (title, authors, abstract, DOI, year, URL, source)\n\n4. Create Deep Research API route (`app/api/deep-research/route.ts`):\n   - POST endpoint accepting: `{ topic: string, userId: string }`\n   - Verify user subscription tier and usage limits (Free: 0, Basic: 5/month, Pro: 15/month)\n   - Create pending record in Convex `deepResearchReports` table with status \"in_progress\"\n   - Invoke DeepAgent with topic and custom paper search tools\n   - Agent autonomously:\n     a. Generates initial search queries from topic\n     b. Searches PubMed, Semantic Scholar, OpenAlex in parallel\n     c. Evaluates paper relevance from abstracts\n     d. Identifies themes across papers\n     e. Searches for related papers to fill gaps\n     f. Iterates until sufficient coverage (max 20 papers or 5 search iterations)\n   - Agent synthesizes final report in markdown format:\n     ```markdown\n     # Deep Research Report: [Topic]\n     \n     ## Executive Summary\n     [2-3 paragraph overview of key findings]\n     \n     ## Key Findings\n     \n     ### Theme 1: [e.g., \"Surgical Techniques\"]\n     - Finding: [description with citation [1]]\n     - Finding: [description with citation [2]]\n     \n     ### Theme 2: [e.g., \"Patient Outcomes\"]\n     - Finding: [description with citation [3]]\n     \n     ## Identified Gaps in Literature\n     - [Gap 1 description]\n     - [Gap 2 description]\n     \n     ## Cited Sources\n     1. [Author et al.] - [Title] - [Journal, Year] - [DOI/URL]\n     2. ...\n     ```\n   - Store final report and cited papers metadata in `deepResearchReports` table\n   - Update status to \"completed\"\n   - Increment user's `deepResearchUsed` count in `users` table\n   - Return: `{ reportId, report, citedPapers }`\n\n5. Create Deep Research UI components:\n   - `components/deep-research/DeepResearchPanel.tsx`: Main interface\n     - Topic input field (textarea, placeholder: \"Enter research topic or question...\")\n     - \"Start Deep Research\" button (disabled if limit reached, shows upgrade modal)\n     - Real-time progress view during agent execution:\n       - \"Searching PubMed...\" / \"Evaluating papers...\" / \"Synthesizing report...\"\n       - Animated loading spinner\n     - Final report displayed as formatted markdown using `react-markdown`\n     - \"Add to Library\" buttons next to each cited paper\n     - \"Use for Paper\" button to import report into a new document in Draft Mode\n   - `components/deep-research/ReportViewer.tsx`: Displays saved reports\n     - Markdown rendering with proper typography\n     - Clickable citations linking to source URLs\n     - Copy-to-clipboard for entire report or sections\n   - `components/deep-research/DeepResearchHistory.tsx`: Dashboard widget\n     - List of past deep research reports (title = first 50 chars of topic)\n     - Click to view full report\n     - Delete button per report\n\n6. Create Convex mutations and queries:\n   - `convex/deepResearch.ts`:\n     ```typescript\n     export const createReport = mutation({\n       args: { userId: v.id(\"users\"), topic: v.string() },\n       handler: async (ctx, args) => {\n         // Check usage limits\n         // Create pending report\n         // Return reportId\n       },\n     });\n     \n     export const updateReport = mutation({\n       args: {\n         reportId: v.id(\"deepResearchReports\"),\n         report: v.string(),\n         citedPapers: v.any(),\n         status: v.string(),\n       },\n       handler: async (ctx, args) => {\n         // Update report record\n       },\n     });\n     \n     export const getUserReports = query({\n       args: { userId: v.id(\"users\") },\n       handler: async (ctx, args) => {\n         // Return all reports for user, sorted by createdAt desc\n       },\n     });\n     \n     export const addPapersToLibrary = mutation({\n       args: {\n         userId: v.id(\"users\"),\n         papers: v.array(v.any()),\n       },\n       handler: async (ctx, args) => {\n         // Deduplicate by externalId\n         // Insert into papers table\n       },\n     });\n     ```\n\n7. Integrate into Mastra framework (`lib/mastra/agents.ts`):\n   - Add `deepResearchAgent` export alongside existing agents\n   - Register in `lib/mastra/index.ts` agents config\n   - NOTE: deepagentsjs operates independently of Mastra's workflow system (it has its own agentic loop), so integration is minimal — just expose the agent for consistency\n\n8. Add usage tracking and enforcement:\n   - Before starting deep research, check `users.deepResearchUsed` vs tier limits\n   - If limit exceeded, return error and trigger `UpgradeModal` in UI\n   - After completion, increment `deepResearchUsed` via Convex mutation\n   - Reset usage counters monthly via scheduled Convex action (or on subscription renewal)\n\n9. Environment variables (add to `.env.local` and Vercel):\n   - `ANTHROPIC_API_KEY`: Claude Sonnet API key for deep research agent\n   - Existing keys (ZHIPU_API_KEY, PUBMED_API_KEY, etc.) remain unchanged\n\n10. Error handling and edge cases:\n    - If agent exceeds token limit (unlikely with Sonnet's 200K context), gracefully truncate and synthesize partial report\n    - If all search APIs fail, show error: \"Research services temporarily unavailable\"\n    - If agent produces malformed markdown, display raw text with warning\n    - If user closes browser during research, background task continues (store reportId in Convex, poll for completion)\n    - Max execution time: 5 minutes (deepagentsjs has built-in timeout), after which return partial results\n\n11. Cost optimization:\n    - Use Claude Sonnet (not Opus) for balance of quality and cost\n    - Limit agent to 20 papers and 5 search iterations to control API calls\n    - Cache search results in-memory during agent execution to avoid redundant API calls\n    - Estimated cost per report: $0.10-0.30 (depends on iterations and paper count)\n\nTECHNICAL NOTES:\n- deepagentsjs differs from GPT Researcher (mentioned in PRD): deepagentsjs is TypeScript-native and integrates directly into Next.js, whereas GPT Researcher is Python-only and requires separate microservice deployment. deepagentsjs is preferred for V1 to keep stack unified.\n- The agent uses LangChain's tool calling via Anthropic's native tool use API (not function calling — more reliable)\n- Papers cited in report use same metadata schema as Task 4's search results for seamless library integration\n- Real-time progress updates use Server-Sent Events (SSE) from API route to UI (Next.js streaming)\n- Report markdown includes numbered citations [1], [2] linked to \"Cited Sources\" section at bottom",
         "testStrategy": "Playwright E2E tests:\n\n1. **Deep Research - Free account blocked**:\n   - Login as free user\n   - Navigate to Deep Research page\n   - Enter topic: \"laparoscopic appendectomy outcomes\"\n   - Click \"Start Deep Research\"\n   - Verify UpgradeModal appears with feature: \"deep_research\"\n   - Verify modal shows \"Deep Research: 0/month\" for free tier\n   - Verify \"Basic plan\" shows \"5 reports/month\"\n\n2. **Deep Research - Basic account usage tracking**:\n   - Login as Basic plan user (via test subscription)\n   - Navigate to Deep Research\n   - Verify usage counter shows \"0/5 reports used this month\"\n   - Enter topic: \"TREM2 mutations in Alzheimer's disease\"\n   - Click \"Start Deep Research\"\n   - Verify loading states appear: \"Searching PubMed...\", \"Evaluating papers...\", \"Synthesizing report...\"\n   - Wait for completion (max 5 minutes)\n   - Verify final report displays with:\n     a. Executive Summary section (2+ paragraphs)\n     b. Key Findings section with at least 2 themes\n     c. Identified Gaps section with at least 1 gap\n     d. Cited Sources section with numbered references (5+ papers)\n   - Verify each cited paper has clickable link\n   - Verify usage counter increments to \"1/5 reports used this month\"\n\n3. **Add cited papers to library**:\n   - After report generation, click \"Add to Library\" on first cited paper\n   - Verify paper saved to Convex `papers` table with source marked as origin (pubmed/semantic_scholar/openalex)\n   - Navigate to Paper Library\n   - Verify paper appears in library with correct metadata (title, authors, year, journal, DOI)\n\n4. **Deep Research - Limit enforcement**:\n   - As Basic user, run 5 deep research reports consecutively (use short topics to speed up: \"diabetes\", \"hypertension\", etc.)\n   - After 5th report, verify usage shows \"5/5 reports used this month\"\n   - Attempt 6th report\n   - Verify UpgradeModal appears prompting upgrade to Pro plan (\"15 reports/month\")\n\n5. **Report history and retrieval**:\n   - Navigate to Deep Research history (dashboard widget or dedicated page)\n   - Verify all past reports listed with truncated topic as title\n   - Click on 2nd report from history\n   - Verify full report displays with original content intact\n   - Verify \"Use for Paper\" button creates new document in Draft Mode with report content as starting point\n\n6. **Agent tool usage verification** (unit test in `lib/agents/deepResearch.test.ts`):\n   - Mock internal search APIs (`/api/search/pubmed`, etc.)\n   - Invoke DeepAgent with topic: \"minimally invasive cardiac surgery\"\n   - Assert agent calls `search_pubmed` tool at least once\n   - Assert agent calls `search_semantic_scholar` or `search_openalex` at least once\n   - Assert agent calls `get_related_papers` tool at least once\n   - Verify final report contains citations in format [1], [2]\n   - Verify \"Cited Sources\" section matches cited numbers\n\n7. **Error handling**:\n   - Mock all search APIs to return errors\n   - Start deep research\n   - Verify error message: \"Research services temporarily unavailable\"\n   - Mock Anthropic API timeout\n   - Verify partial results returned with warning: \"Research timed out. Displaying partial results.\"\n\n8. **Real-time progress updates** (E2E test):\n   - Start deep research with complex topic\n   - Verify progress messages appear in sequence within 10 seconds of each other\n   - Verify UI does not freeze during agent execution\n   - Verify user can navigate away and return to see final report (reportId stored in URL or session)\n\nPASSING CRITERIA:\n- All 8 test scenarios pass\n- No console errors during agent execution\n- Reports generated in under 5 minutes for topics with <10 relevant papers\n- Cost per report under $0.50 (track via Anthropic API usage logs)\n- Citations in report match papers returned by search tools (no hallucinated references)\n- Free/Basic/Pro tier limits enforced correctly\n- Usage counters persist across sessions",
-        "status": "pending",
+        "status": "done",
         "dependencies": [
           "2",
           "4"
         ],
         "priority": "high",
-        "subtasks": []
+        "subtasks": [],
+        "updatedAt": "2026-02-07T12:01:29.508Z"
       }
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T11:22:45.287Z",
+      "lastModified": "2026-02-07T16:20:14.202Z",
       "taskCount": 12,
-      "completedCount": 11,
+      "completedCount": 12,
       "tags": [
         "master"
       ]

@@ -20,6 +20,7 @@ export default defineSchema({
     plagiarismChecksUsed: v.optional(v.number()),
     aiDetectionChecksUsed: v.optional(v.number()),
     deepResearchUsed: v.optional(v.number()),
+    learnModeSessionsUsed: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
