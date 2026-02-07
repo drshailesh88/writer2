@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import type { PlagiarismSource } from "@/lib/copyleaks";
@@ -40,6 +40,11 @@ export function usePlagiarismCheck(): UsePlagiarismCheckReturn {
       pollingRef.current = null;
     }
   }, []);
+
+  // Cleanup polling on unmount to prevent memory leaks
+  useEffect(() => {
+    return () => stopPolling();
+  }, [stopPolling]);
 
   const reset = useCallback(() => {
     stopPolling();

@@ -142,9 +142,9 @@ const FEATURES: FeatureRow[] = [
   },
   {
     label: "Deep Research",
-    free: "1/month",
-    basic: "3/month",
-    pro: "10/month",
+    free: false,
+    basic: "5/month",
+    pro: "15/month",
   },
   {
     label: "Learn Mode",

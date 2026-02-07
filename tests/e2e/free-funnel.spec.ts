@@ -10,8 +10,8 @@ test.describe("Free Plagiarism Check Page", () => {
   test("page loads with header, title, and description", async ({ page }) => {
     // Header navigation
     await expect(page.locator("header")).toBeVisible();
-    await expect(page.locator("text=V1")).toBeVisible();
-    await expect(page.locator("text=Drafts")).toBeVisible();
+    await expect(page.locator("header").locator("text=V1")).toBeVisible();
+    await expect(page.locator("header").locator("text=Drafts")).toBeVisible();
     await expect(page.locator("header >> text=Sign In")).toBeVisible();
     await expect(page.locator("header >> text=Get Started")).toBeVisible();
 
@@ -203,7 +203,7 @@ test.describe("Free Plagiarism Check Page", () => {
     await expect(page.locator("text=15%")).toBeVisible();
 
     // Should show similarity badge
-    await expect(page.locator("text=Moderate Similarity")).toBeVisible();
+    await expect(page.getByText("Moderate Similarity", { exact: true })).toBeVisible();
 
     // Should show matched sources
     await expect(page.locator("text=Matching Sources (1)")).toBeVisible();
@@ -244,7 +244,7 @@ test.describe("Free Plagiarism Check Page", () => {
     await button.click();
 
     // Should show celebration message
-    await expect(page.locator("text=No plagiarism detected")).toBeVisible({
+    await expect(page.locator("h3", { hasText: "No plagiarism detected" })).toBeVisible({
       timeout: 10000,
     });
     await expect(page.locator("text=0%")).toBeVisible();

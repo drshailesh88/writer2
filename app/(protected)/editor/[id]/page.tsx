@@ -46,6 +46,7 @@ export default function EditorPage() {
   } | null>(null);
 
   const [isExportLoading, setIsExportLoading] = useState(false);
+  const [exportToast, setExportToast] = useState<string | null>(null);
   const [upgradeModal, setUpgradeModal] = useState<{
     feature: "plagiarism" | "aiDetection" | "export";
     open: boolean;
@@ -230,7 +231,8 @@ export default function EditorPage() {
     // Check for content
     const content = document?.content as Record<string, unknown> | undefined;
     if (!content) {
-      alert("Nothing to export");
+      setExportToast("Nothing to export");
+      setTimeout(() => setExportToast(null), 3000);
       return;
     }
 
@@ -266,7 +268,8 @@ export default function EditorPage() {
       });
     } catch (err) {
       console.error("DOCX export failed:", err);
-      alert("Export failed. Please try again.");
+      setExportToast("Export failed. Please try again.");
+      setTimeout(() => setExportToast(null), 4000);
     } finally {
       setIsExportLoading(false);
     }
@@ -283,7 +286,8 @@ export default function EditorPage() {
     // Check for content
     const content = document?.content as Record<string, unknown> | undefined;
     if (!content) {
-      alert("Nothing to export");
+      setExportToast("Nothing to export");
+      setTimeout(() => setExportToast(null), 3000);
       return;
     }
 
@@ -319,7 +323,8 @@ export default function EditorPage() {
       });
     } catch (err) {
       console.error("PDF export failed:", err);
-      alert("Export failed. Please try again.");
+      setExportToast("Export failed. Please try again.");
+      setTimeout(() => setExportToast(null), 4000);
     } finally {
       setIsExportLoading(false);
     }
@@ -461,6 +466,22 @@ export default function EditorPage() {
         open={upgradeModal.open}
         onClose={() => setUpgradeModal((prev) => ({ ...prev, open: false }))}
       />
+
+      {/* Export toast notification */}
+      {exportToast && (
+        <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-5 py-3.5 shadow-lg dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+            <p className="text-sm font-medium text-red-800 dark:text-red-200">{exportToast}</p>
+            <button
+              onClick={() => setExportToast(null)}
+              className="ml-2 rounded-md p-1 hover:bg-black/5 dark:hover:bg-white/10"
+              aria-label="Dismiss"
+            >
+              &times;
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

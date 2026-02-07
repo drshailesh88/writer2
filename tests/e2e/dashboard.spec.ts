@@ -10,12 +10,13 @@ test.describe("Dashboard — Unauthenticated", () => {
     page,
   }) => {
     await page.goto("/dashboard");
-    // Should not see any dashboard elements
-    await expect(
-      page.locator("text=Welcome back")
-    ).not.toBeVisible();
+    // Should be redirected to sign-in, not see dashboard-specific elements
+    await expect(page).toHaveURL(/sign-in/);
     await expect(
       page.locator("text=Quick Actions")
+    ).not.toBeVisible();
+    await expect(
+      page.locator("text=Recent Drafts")
     ).not.toBeVisible();
   });
 });

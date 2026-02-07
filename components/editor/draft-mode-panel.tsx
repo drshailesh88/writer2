@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -111,9 +111,11 @@ export function DraftModePanel({
   };
 
   // When draft completes, notify parent
-  if (workflow.status === "completed" && workflow.completeDraft && onDraftComplete) {
-    onDraftComplete(workflow.completeDraft);
-  }
+  useEffect(() => {
+    if (workflow.status === "completed" && workflow.completeDraft && onDraftComplete) {
+      onDraftComplete(workflow.completeDraft);
+    }
+  }, [workflow.status, workflow.completeDraft, onDraftComplete]);
 
   const isIdle = workflow.status === "idle";
   const currentStep = workflow.currentStep;

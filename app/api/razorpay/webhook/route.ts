@@ -12,8 +12,11 @@ export async function POST(req: NextRequest) {
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
     if (!secret) {
-      console.error("RAZORPAY_WEBHOOK_SECRET not configured");
-      return NextResponse.json({ received: true }, { status: 200 });
+      console.error("RAZORPAY_WEBHOOK_SECRET not configured — rejecting webhook");
+      return NextResponse.json(
+        { error: "Webhook secret not configured" },
+        { status: 500 }
+      );
     }
 
     // Verify webhook signature
@@ -115,7 +118,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("Razorpay webhook error:", error);
-    // Still respond 200 to prevent infinite retries
-    return NextResponse.json({ received: true });
+    return NextResponse.json(
+      { error: "Internal webhook processing error" },
+      { status: 500 }
+    );
   }
 }

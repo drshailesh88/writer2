@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   GraduationCap,
   PenTool,
@@ -137,17 +137,8 @@ export default function DashboardPage() {
   const { isAuthenticated } = useConvexAuth();
   const user = useQuery(api.users.getCurrent);
   const documents = useQuery(api.documents.list, {});
-  const getOrCreateUser = useMutation(api.users.getOrCreate);
   const createDocument = useMutation(api.documents.create);
-  const hasTriedCreate = useRef(false);
   const [creatingMode, setCreatingMode] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (isAuthenticated && user === null && !hasTriedCreate.current) {
-      hasTriedCreate.current = true;
-      getOrCreateUser().catch(console.error);
-    }
-  }, [isAuthenticated, user, getOrCreateUser]);
 
   const handleCreate = async (
     mode: "learn" | "draft_guided" | "draft_handsoff"
@@ -323,6 +314,7 @@ export default function DashboardPage() {
                 variant="ghost"
                 size="sm"
                 className="min-h-[44px] font-mono text-xs text-muted-foreground"
+                onClick={() => router.push("/library")}
               >
                 View All
                 <ArrowRight className="ml-1 h-3 w-3" />
@@ -443,6 +435,7 @@ export default function DashboardPage() {
                             variant="outline"
                             size="sm"
                             className="min-h-[32px] w-full font-mono text-xs"
+                            onClick={() => router.push("/pricing")}
                           >
                             Upgrade to unlock
                           </Button>
@@ -515,6 +508,7 @@ export default function DashboardPage() {
                 <Button
                   variant="outline"
                   className="mt-5 min-h-[44px] w-full text-sm font-medium"
+                  onClick={() => router.push("/account")}
                 >
                   Edit Profile
                 </Button>
