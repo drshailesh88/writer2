@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { workflowRuns } from "../start/route";
 
 export async function POST(req: NextRequest) {
   try {
+    // Authenticate
+    const { getToken } = await auth();
+    if (!(await getToken())) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
     const { documentId } = await req.json();
 
     if (!documentId) {

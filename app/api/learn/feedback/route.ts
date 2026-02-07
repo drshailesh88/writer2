@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { feedbackAgent } from "@/lib/mastra/agents";
 import { validateFeedbackResponse } from "@/lib/mastra/learn-mode-guard";
 import { FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/lib/mastra/types";
 
 export async function POST(req: NextRequest) {
   try {
+    // Authenticate
+    const { getToken } = await auth();
+    if (!(await getToken())) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
     const { category, draftText, topic } = await req.json();
 
     if (!category || !draftText) {

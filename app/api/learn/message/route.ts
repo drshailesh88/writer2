@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { socraticCoachAgent } from "@/lib/mastra/agents";
 import { validateCoachResponse } from "@/lib/mastra/learn-mode-guard";
 import { formatExamplesForPrompt, getSentenceStarters } from "@/lib/examples/loader";
@@ -6,6 +7,12 @@ import type { ConversationMessage, LearnModeStage } from "@/lib/mastra/types";
 
 export async function POST(req: NextRequest) {
   try {
+    // Authenticate
+    const { getToken } = await auth();
+    if (!(await getToken())) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
     const { message, stage, conversationHistory, topic } = await req.json();
 
     if (!message || !stage) {

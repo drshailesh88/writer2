@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { mastra } from "@/lib/mastra";
 
 // In-memory store for workflow runs (keyed by documentId)
@@ -8,6 +9,12 @@ export { workflowRuns };
 
 export async function POST(req: NextRequest) {
   try {
+    // Authenticate
+    const { getToken } = await auth();
+    if (!(await getToken())) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
     const { topic, mode, documentId } = await req.json();
 
     if (!topic || !mode || !documentId) {

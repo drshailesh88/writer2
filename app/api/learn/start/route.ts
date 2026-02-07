@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
 import { mastra } from "@/lib/mastra";
+
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 // In-memory store for learn mode workflow runs (keyed by documentId)
 const learnWorkflowRuns = new Map<string, { run: unknown }>();
@@ -14,6 +19,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Missing required fields: topic, documentId" },
         { status: 400 }
+      );
+    }
+
+    // Authenticate via Clerk
+    const { getToken } = await auth();
+    const token = await getToken({ template: "convex" });
+    if (!token) {
+      return NextResponse.json(
+        { error: "Not authenticated" },
+        { status: 401 }
+      );
+    }
+
+    // Create Convex session record (enforces usage limits)
+    convex.setAuth(token);
+    try {
+      await convex.mutation(api.learnModeSessions.create, {
+        documentId: documentId as any,
+      });
+    } catch (convexError: any) {
+      // Return limit-reached errors as 403
+      const message =
+        convexError?.data ?? convexError?.message ?? "Usage limit reached";
+      return NextResponse.json(
+        { error: message },
+        { status: 403 }
       );
     }
 
