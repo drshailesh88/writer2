@@ -1,9 +1,8 @@
 "use client";
 
-import { useMutation } from "convex/react";
+import { useMutation, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
 import { NavShell } from "@/components/nav-shell";
 
 export default function ProtectedLayout({
@@ -11,16 +10,16 @@ export default function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isLoading, isAuthenticated } = useConvexAuth();
   const getOrCreateUser = useMutation(api.users.getOrCreate);
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) {
+    if (isAuthenticated) {
       getOrCreateUser().catch(console.error);
     }
-  }, [isLoaded, isSignedIn, getOrCreateUser]);
+  }, [isAuthenticated, getOrCreateUser]);
 
-  if (!isLoaded) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-muted-foreground">Loading...</div>

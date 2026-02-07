@@ -1,12 +1,23 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { useEffect, useRef } from "react";
 
 export default function DashboardPage() {
+  const { isAuthenticated } = useConvexAuth();
   const user = useQuery(api.users.getCurrent);
+  const getOrCreateUser = useMutation(api.users.getOrCreate);
+  const hasTriedCreate = useRef(false);
 
-  if (user === undefined) {
+  useEffect(() => {
+    if (isAuthenticated && user === null && !hasTriedCreate.current) {
+      hasTriedCreate.current = true;
+      getOrCreateUser().catch(console.error);
+    }
+  }, [isAuthenticated, user, getOrCreateUser]);
+
+  if (user === undefined || (user === null && isAuthenticated)) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <div className="text-muted-foreground">Loading your dashboard...</div>
@@ -18,7 +29,7 @@ export default function DashboardPage() {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <div className="text-muted-foreground">
-          Setting up your account...
+          Unable to load your account. Please try refreshing the page.
         </div>
       </div>
     );
