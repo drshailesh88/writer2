@@ -7,6 +7,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useCallback, useRef, useState } from "react";
 import { TiptapEditor, type TiptapEditorHandle } from "@/components/editor/tiptap-editor";
 import { CitationModal } from "@/components/editor/citation-modal";
+import { DraftSelector } from "@/components/editor/draft-selector";
 
 export default function EditorPage() {
   const params = useParams();
@@ -101,6 +102,7 @@ export default function EditorPage() {
         citationStyle={document.citationStyle}
         onSave={handleSave}
         onInsertCitation={() => setCitationModalOpen(true)}
+        draftSelector={<DraftSelector currentDocumentId={documentId} />}
       />
 
       <CitationModal

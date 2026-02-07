@@ -69,6 +69,7 @@ interface TiptapEditorProps {
     title?: string;
   }) => Promise<void>;
   onInsertCitation?: () => void;
+  draftSelector?: React.ReactNode;
 }
 
 export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
@@ -80,6 +81,7 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
       citationStyle = "vancouver",
       onSave,
       onInsertCitation,
+      draftSelector,
     },
     ref
   ) {
@@ -215,6 +217,7 @@ export const TiptapEditor = forwardRef<TiptapEditorHandle, TiptapEditorProps>(
           mode={mode}
           isFullscreen={isFullscreen}
           onToggleFullscreen={toggleFullscreen}
+          draftSelector={draftSelector}
         />
 
         <EditorToolbar editor={editor} onInsertCitation={onInsertCitation} />

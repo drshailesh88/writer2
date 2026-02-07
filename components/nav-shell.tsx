@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, Library } from "lucide-react";
+import { Search, Library, PenTool } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -53,6 +53,13 @@ export function NavShell() {
 
         {/* Desktop nav */}
         <div className="hidden items-center gap-4 sm:flex">
+          <Link
+            href="/dashboard"
+            className="flex min-h-[44px] items-center gap-1.5 px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <PenTool className="h-4 w-4" />
+            Write
+          </Link>
           <Link
             href="/search"
             className="flex min-h-[44px] items-center gap-1.5 px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -137,6 +144,14 @@ export function NavShell() {
                   </div>
                 </div>
                 <div className="border-t pt-4 space-y-1">
+                  <Link
+                    href="/dashboard"
+                    className="flex min-h-[44px] items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <PenTool className="h-4 w-4" />
+                    Write
+                  </Link>
                   <Link
                     href="/search"
                     className="flex min-h-[44px] items-center gap-2 rounded-md px-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"

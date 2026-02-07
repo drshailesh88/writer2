@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useEffect, useRef, useState } from "react";
@@ -132,6 +133,7 @@ const quickActions = [
 
 /* ── Component ── */
 export default function DashboardPage() {
+  const router = useRouter();
   const { isAuthenticated } = useConvexAuth();
   const user = useQuery(api.users.getCurrent);
   const documents = useQuery(api.documents.list, {});
@@ -155,7 +157,8 @@ export default function DashboardPage() {
     try {
       const title =
         mode === "learn" ? "Untitled Research Paper" : "Untitled Draft";
-      await createDocument({ title, mode, citationStyle: "vancouver" });
+      const docId = await createDocument({ title, mode, citationStyle: "vancouver" });
+      router.push(`/editor/${docId}`);
     } catch (err) {
       console.error("Failed to create document:", err);
     } finally {
@@ -355,6 +358,7 @@ export default function DashboardPage() {
                   <Card
                     key={doc._id}
                     className={`group cursor-pointer border-l-4 ${mode.borderCls} py-0 gap-0 transition-all duration-200 hover:shadow-sm`}
+                    onClick={() => router.push(`/editor/${doc._id}`)}
                   >
                     <CardContent className="flex items-center gap-4 py-3.5">
                       <div className="min-w-0 flex-1">

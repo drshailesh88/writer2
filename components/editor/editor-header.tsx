@@ -30,6 +30,7 @@ interface EditorHeaderProps {
   mode: DocumentMode;
   isFullscreen: boolean;
   onToggleFullscreen: () => void;
+  draftSelector?: React.ReactNode;
 }
 
 export function EditorHeader({
@@ -40,6 +41,7 @@ export function EditorHeader({
   mode,
   isFullscreen,
   onToggleFullscreen,
+  draftSelector,
 }: EditorHeaderProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(title);
@@ -124,6 +126,9 @@ export function EditorHeader({
           {modeLabels[mode]}
         </Badge>
       </div>
+
+      {/* Draft selector */}
+      {draftSelector}
 
       {/* Save status */}
       <div className="hidden items-center gap-1.5 text-xs text-muted-foreground sm:flex">
