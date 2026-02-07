@@ -122,6 +122,9 @@ async function callSource(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(params),
   });
+  if (!res.ok) {
+    throw new Error(`Source returned HTTP ${res.status}`);
+  }
   return await res.json();
 }
 

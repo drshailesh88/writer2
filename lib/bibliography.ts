@@ -80,7 +80,7 @@ function parseAuthorName(name: string): CSLAuthor {
  * Convert paper metadata from Convex papers table to CSL-JSON format.
  */
 export function convertPaperToCSL(paper: PaperData, index?: number): CSLItem {
-  const authors = paper.authors.map(parseAuthorName);
+  const authors = (paper.authors || []).map(parseAuthorName);
 
   const cslItem: CSLItem = {
     id: paper._id,

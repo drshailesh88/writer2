@@ -66,10 +66,11 @@ export async function POST(req: NextRequest) {
 async function runWorkflowAsync(
   reportId: string,
   topic: string,
-  token: string
+  _token: string
 ) {
+  // Use a client WITHOUT auth for status updates — updateResult mutation
+  // doesn't check auth and long-running workflows outlive Clerk token TTL
   const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-  client.setAuth(token);
 
   try {
     // Mark as in progress

@@ -200,7 +200,10 @@ export const updateFromWebhook = mutation({
         subscriptionTier: "free" as const,
         updatedAt: Date.now(),
       });
-    } else if (args.status === "active") {
+      return; // Early exit to prevent any subsequent overwrite
+    }
+
+    if (args.status === "active") {
       const sub = await ctx.db.get(subscription._id);
       if (sub) {
         await ctx.db.patch(subscription.userId, {
