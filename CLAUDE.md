@@ -86,6 +86,8 @@ Check what others are working on with `task-master list` before starting.
 ## Active Technologies
 - TypeScript 5.x (strict mode), Node.js 20+ + Next.js 14+ (App Router), Convex, @clerk/nextjs, shadcn/ui, Tailwind CSS 3.x (001-foundation-auth)
 - Convex (serverless database — TypeScript functions only, zero SQL) (001-foundation-auth)
+- TypeScript 5.x (strict mode) + Convex 1.31.7 (defineSchema, defineTable, v validators, mutation, query, internalMutation) (002-convex-database-schema)
+- Convex (serverless document database with built-in file storage) (002-convex-database-schema)
 
 ## Recent Changes
 - 001-foundation-auth: Added TypeScript 5.x (strict mode), Node.js 20+ + Next.js 14+ (App Router), Convex, @clerk/nextjs, shadcn/ui, Tailwind CSS 3.x

@@ -89,8 +89,70 @@
         "dependencies": [
           "1"
         ],
-        "status": "pending",
-        "subtasks": []
+        "status": "in-progress",
+        "subtasks": [
+          {
+            "id": 1,
+            "title": "Extend Convex schema with all core entity tables",
+            "description": "Expand convex/schema.ts to define all 9 remaining tables (documents, papers, collections, citations, plagiarismChecks, aiDetectionChecks, deepResearchReports, learnModeSessions, subscriptions) with proper field types, indexes, and relationships.",
+            "dependencies": [],
+            "details": "In convex/schema.ts, add defineTable for:\n- documents: userId (v.id('users'), indexed), title (v.string()), content (v.optional(v.any()) for JSON), mode (v.union('learn'|'draft')), currentStage (v.optional(v.string())), outlineData (v.optional(v.any())), approvedPapers (v.optional(v.array(v.string()))), citationStyle (v.union('vancouver'|'apa'|'ama'|'chicago')), wordCount (v.number()), status (v.union('draft'|'archived')), createdAt/updatedAt (v.number()). Index: by_user_id, by_status.\n- papers: userId, collectionId (v.optional(v.id('collections'))), externalId (v.string(), indexed), source (v.union('pubmed'|'semantic-scholar'|'openalex'|'uploaded')), title, authors (v.array(v.string())), journal (v.optional(v.string())), year (v.optional(v.number())), abstract (v.optional(v.string())), doi (v.optional(v.string())), url (v.optional(v.string())), pdfFileId (v.optional(v.id('_storage'))), isOpenAccess (v.boolean()), metadata (v.optional(v.any())), timestamps. Index: by_user_id, by_external_id, by_collection_id.\n- collections: userId, name (v.string()), description (v.optional(v.string())), timestamps. Index: by_user_id.\n- citations: documentId (v.id('documents'), indexed), paperId (v.id('papers')), sectionName (v.optional(v.string())), position (v.number()), citationText (v.string()). Index: by_document_id.\n- plagiarismChecks: userId, documentId (v.optional(v.id('documents'))), inputText (v.string()), wordCount (v.number()), overallSimilarity (v.optional(v.number())), sources (v.optional(v.any())), copyleaksScanId (v.optional(v.string())), status (v.union('pending'|'completed'|'failed')), timestamps. Index: by_user_id, by_status.\n- aiDetectionChecks: same structure as plagiarismChecks but overallAiScore (v.optional(v.number())) and sentenceResults (v.optional(v.any())). Index: by_user_id, by_status.\n- deepResearchReports: userId, topic (v.string()), report (v.optional(v.string())), citedPapers (v.optional(v.any())), status (v.union('pending'|'completed'|'failed')), timestamps. Index: by_user_id, by_status.\n- learnModeSessions: userId, documentId, currentStage (v.union('understand'|'literature'|'outline'|'drafting'|'feedback')), conversationHistory (v.optional(v.any())), feedbackGiven (v.optional(v.any())), timestamps. Index: by_user_id, by_document_id.\n- subscriptions: userId, razorpaySubscriptionId (v.optional(v.string())), planType (v.union('free'|'basic'|'pro')), status (v.union('active'|'cancelled'|'past_due')), currentPeriodStart (v.optional(v.number())), currentPeriodEnd (v.optional(v.number())), timestamps. Index: by_user_id, by_status.\n\nAlso update users table to add: institution (v.optional(v.string())), specialization (v.optional(v.string())), subscriptionStatus (v.union('none'|'active'|'cancelled'|'past_due')), subscriptionExpiry (v.optional(v.number())), razorpayCustomerId (v.optional(v.string())), plagiarismChecksUsed (v.number(), default 0), aiDetectionChecksUsed (v.number(), default 0), deepResearchUsed (v.number(), default 0).",
+            "status": "done",
+            "testStrategy": "Run `npx convex dev` and verify schema compilation succeeds with zero errors. Check that all 10 tables are visible in Convex dashboard. Verify indexes are created (check by_user_id, by_document_id, by_status, by_external_id, by_collection_id indexes). Use Convex dashboard to manually insert a test record in each table and verify field types are enforced.",
+            "updatedAt": "2026-02-07T03:01:36.959Z",
+            "parentId": "undefined"
+          },
+          {
+            "id": 2,
+            "title": "Create CRUD mutations and queries for documents table",
+            "description": "Implement Convex functions for creating, reading, updating, deleting, and listing documents. Support filtering by mode, status, userId, and sorting by updatedAt.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create convex/documents.ts with:\n- Mutation createDocument: args { title: v.string(), mode: v.union('learn'|'draft'), citationStyle: v.optional(v.string()) }. Gets authenticated user via ctx.auth.getUserIdentity(), inserts document with userId from users table lookup by clerkId, initial wordCount=0, status='draft', timestamps=Date.now(). Returns document ID.\n- Query getDocument: args { id: v.id('documents') }. Fetches document, verifies userId matches authenticated user. Returns document or throws 'Not authorized'.\n- Mutation updateDocument: args { id: v.id('documents'), title: v.optional(v.string()), content: v.optional(v.any()), wordCount: v.optional(v.number()), currentStage: v.optional(v.string()), outlineData: v.optional(v.any()), approvedPapers: v.optional(v.array(v.string())), citationStyle: v.optional(v.string()), status: v.optional(v.string()) }. Patches document with provided fields, updates updatedAt. Verifies ownership.\n- Mutation deleteDocument: args { id: v.id('documents') }. Verifies ownership, deletes document.\n- Query listDocuments: args { mode: v.optional(v.union('learn'|'draft')), status: v.optional(v.string()), limit: v.optional(v.number()) }. Gets userId from auth, queries documents table with by_user_id index, applies optional filters, orders by updatedAt descending, returns up to limit (default 20) documents.\n\nFollow existing pattern in convex/users.ts for auth checks and error handling using ConvexError.",
+            "status": "pending",
+            "testStrategy": "Unit tests via Convex testing tools: (1) createDocument as authenticated user, verify document created with correct userId and defaults. (2) getDocument returns correct document for owner, throws error for non-owner. (3) updateDocument modifies fields and updates updatedAt. (4) deleteDocument removes document. (5) listDocuments returns only user's documents, respects mode/status filters. Playwright E2E: Create document via UI, verify appears in dashboard recent drafts list.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 3,
+            "title": "Create CRUD mutations and queries for papers and collections tables",
+            "description": "Implement Convex functions for managing the personal paper library (papers table) and collections/folders (collections table) with relationship handling.",
+            "dependencies": [
+              1
+            ],
+            "details": "Create convex/papers.ts with:\n- Mutation createPaper: args { externalId: v.string(), source: v.string(), title: v.string(), authors: v.array(v.string()), journal: v.optional(v.string()), year: v.optional(v.number()), abstract: v.optional(v.string()), doi: v.optional(v.string()), url: v.optional(v.string()), isOpenAccess: v.boolean(), metadata: v.optional(v.any()), collectionId: v.optional(v.id('collections')) }. Gets userId from auth, checks if paper with same externalId already exists for user (to prevent duplicates), inserts paper. Enforces free tier limit (50 papers max - check count before insert).\n- Query getPaper: args { id: v.id('papers') }. Verifies ownership, returns paper.\n- Mutation updatePaper: args { id: v.id('papers'), collectionId: v.optional(v.id('collections')), pdfFileId: v.optional(v.id('_storage')) }. For moving papers to collections or attaching PDFs.\n- Mutation deletePaper: args { id: v.id('papers') }. Verifies ownership, also deletes related citations (query citations by_document_id, delete all).\n- Query listPapers: args { collectionId: v.optional(v.id('collections')), limit: v.optional(v.number()) }. Returns user's papers, optionally filtered by collection, sorted by createdAt descending.\n\nCreate convex/collections.ts with:\n- Mutation createCollection: args { name: v.string(), description: v.optional(v.string()) }. Inserts collection with userId.\n- Query listCollections: args {}. Returns all user's collections sorted by name.\n- Mutation updateCollection: args { id: v.id('collections'), name: v.optional(v.string()), description: v.optional(v.string()) }.\n- Mutation deleteCollection: args { id: v.id('collections') }. Before deleting, set collectionId=null for all papers in this collection.\n\nUse ConvexError for ownership checks and limit enforcement.",
+            "status": "pending",
+            "testStrategy": "Unit tests: (1) createPaper adds paper, prevents duplicate externalId. (2) Free tier user with 50 papers cannot add 51st (throws limit error). (3) updatePaper moves paper to collection. (4) deletePaper also deletes related citations. (5) listPapers filters by collection correctly. (6) createCollection/listCollections/deleteCollection work. (7) Deleting collection nullifies papers' collectionId. Playwright E2E: Save paper from search, verify in library. Create collection, move paper to collection, verify appears under collection.",
+            "parentId": "undefined"
+          },
+          {
+            "id": 4,
+            "title": "Implement Convex file storage for PDF uploads and helper functions",
+            "description": "Set up Convex file storage configuration for PDF uploads, create mutations for uploading/retrieving PDFs, and implement helper functions for subscription tier checking and usage limit enforcement.",
+            "dependencies": [
+              1
+            ],
+            "details": "Convex file storage setup (no config file needed - built-in):\n- Create convex/files.ts with:\n  - Mutation generateUploadUrl: args {}. Returns ctx.storage.generateUploadUrl() for client-side PDF upload (max 50MB).\n  - Mutation savePdfMetadata: args { storageId: v.id('_storage'), paperId: v.id('papers') }. After client uploads PDF, this mutation links storageId to paper record by updating paper.pdfFileId.\n  - Query getFileUrl: args { storageId: v.id('_storage') }. Returns ctx.storage.getUrl(storageId) for viewing/downloading PDF.\n\nCreate convex/helpers.ts with:\n- Function getUserTier: args { userId: v.id('users') }. Queries users table and subscriptions table, returns tier ('free'|'basic'|'pro') based on subscriptionStatus and subscriptionExpiry. If subscription expired, returns 'free'.\n- Function checkPlagiarismLimit: args { userId: v.id('users') }. Gets tier, checks plagiarismChecksUsed vs limits (free:2, basic:5, pro:20). Returns { allowed: boolean, remaining: number }.\n- Function checkAiDetectionLimit: args { userId: v.id('users') }. Same logic for aiDetectionChecksUsed (free:2, basic:10, pro:unlimited).\n- Function checkDeepResearchLimit: args { userId: v.id('users') }. Same logic for deepResearchUsed (free:0, basic:5, pro:15).\n- Function incrementUsage: args { userId: v.id('users'), type: v.union('plagiarism'|'ai_detection'|'deep_research') }. Increments appropriate counter in users table.\n- Function resetMonthlyUsage: args {}. Scheduled function (runs monthly) to reset all checksUsed counters to 0 for all users.\n\nAll helpers use internal mutations/queries (internalMutation, internalQuery) for use within other Convex functions.",
+            "status": "pending",
+            "testStrategy": "Unit tests: (1) generateUploadUrl returns valid URL. (2) savePdfMetadata links storageId to paper. (3) getFileUrl returns accessible URL. (4) getUserTier correctly identifies tier based on subscription. (5) checkPlagiarismLimit enforces limits (free user with 2 checks cannot do 3rd). (6) incrementUsage increases counter. (7) resetMonthlyUsage zeros out all counters. Playwright E2E: Upload PDF from library UI, verify file stored and viewable. Test with 51MB file, verify rejected (max 50MB).",
+            "parentId": "undefined"
+          },
+          {
+            "id": 5,
+            "title": "Create CRUD mutations and queries for remaining tables (citations, checks, reports, sessions, subscriptions)",
+            "description": "Implement Convex functions for the final 5 tables: citations (for bibliography), plagiarismChecks, aiDetectionChecks, deepResearchReports, learnModeSessions, and subscriptions with proper usage tracking integration.",
+            "dependencies": [
+              1,
+              4
+            ],
+            "details": "Create convex/citations.ts:\n- Mutation createCitation: args { documentId, paperId, sectionName, position, citationText }. Inserts citation, verifies user owns both document and paper.\n- Query listCitations: args { documentId }. Returns all citations for document, ordered by position, joins with papers table to include paper metadata for bibliography generation.\n- Mutation deleteCitation: args { id: v.id('citations') }. Verifies ownership via document lookup.\n\nCreate convex/plagiarismChecks.ts:\n- Mutation createCheck: args { documentId (optional), inputText, wordCount }. Uses checkPlagiarismLimit helper first. Gets userId, inserts with status='pending', incrementUsage('plagiarism'). Returns check ID.\n- Mutation updateCheckResults: args { id, overallSimilarity, sources, copyleaksScanId, status }. Updates check with Copyleaks results.\n- Query getCheck: args { id }. Verifies ownership.\n- Query listChecks: args { limit }. Returns user's checks sorted by createdAt descending.\n\nCreate convex/aiDetectionChecks.ts: Same structure as plagiarismChecks but with overallAiScore and sentenceResults fields.\n\nCreate convex/deepResearchReports.ts:\n- Mutation createReport: args { topic }. Uses checkDeepResearchLimit, inserts with status='pending', incrementUsage('deep_research').\n- Mutation updateReport: args { id, report, citedPapers, status }.\n- Query getReport/listReports: Standard ownership-verified queries.\n\nCreate convex/learnModeSessions.ts:\n- Mutation createSession: args { documentId }. Inserts with currentStage='understand', empty conversationHistory/feedbackGiven.\n- Mutation updateSession: args { id, currentStage, conversationHistory, feedbackGiven }. For persisting workflow state.\n- Query getSessionByDocument: args { documentId }. Returns active session for document.\n\nCreate convex/subscriptions.ts:\n- Mutation createSubscription: args { razorpaySubscriptionId, planType, currentPeriodStart, currentPeriodEnd }. Updates users table subscriptionStatus='active', subscriptionExpiry=currentPeriodEnd.\n- Mutation updateSubscriptionStatus: args { id, status }. For webhook handling (cancelled, past_due). Updates users table.\n- Query getCurrentSubscription: args {}. Gets userId, returns active subscription.\n\nAll functions use auth checks and ConvexError for unauthorized access.",
+            "status": "pending",
+            "testStrategy": "Unit tests for each table: (1) citations: Create citation, verify joins with paper data in listCitations. (2) plagiarismChecks: createCheck enforces limits, incrementUsage called, updateCheckResults stores Copyleaks data. (3) aiDetectionChecks: same as plagiarism. (4) deepResearchReports: createReport enforces limits. (5) learnModeSessions: createSession/updateSession persist workflow state correctly. (6) subscriptions: createSubscription updates users table, updateSubscriptionStatus downgrades access when cancelled. Playwright E2E: Insert citation in editor, verify appears in citations table. Run plagiarism check (Task 10 UI), verify record created with pending status, then completed after Copyleaks returns.",
+            "parentId": "undefined"
+          }
+        ],
+        "updatedAt": "2026-02-07T03:01:36.959Z"
       },
       {
         "id": "3",
@@ -204,7 +266,7 @@
     ],
     "metadata": {
       "version": "1.0.0",
-      "lastModified": "2026-02-07T00:30:41.662Z",
+      "lastModified": "2026-02-07T03:01:36.960Z",
       "taskCount": 10,
       "completedCount": 1,
       "tags": [

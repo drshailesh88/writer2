@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as lib_subscriptionLimits from "../lib/subscriptionLimits.js";
 import type * as users from "../users.js";
 
 import type {
@@ -17,6 +18,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "lib/subscriptionLimits": typeof lib_subscriptionLimits;
   users: typeof users;
 }>;
 
