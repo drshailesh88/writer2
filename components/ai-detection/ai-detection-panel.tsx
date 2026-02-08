@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   Loader2,
 } from "lucide-react";
+import { ErrorAlert } from "@/components/ui/error-alert";
 import { cn } from "@/lib/utils";
 
 interface SentenceResult {
@@ -32,6 +33,8 @@ interface AiDetectionResults {
 interface AiDetectionPanelProps {
   results: AiDetectionResults | null;
   isLoading: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   onClose: () => void;
 }
 
@@ -146,6 +149,8 @@ function DisclaimerAlert() {
 export function AiDetectionPanel({
   results,
   isLoading,
+  error,
+  onRetry,
   onClose,
 }: AiDetectionPanelProps) {
   const hasResults = results !== null;
@@ -175,7 +180,17 @@ export function AiDetectionPanel({
       </div>
 
       {/* Body */}
-      {isLoading ? (
+      {error && onRetry ? (
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <DisclaimerAlert />
+          <ErrorAlert
+            error={error}
+            onRetry={onRetry}
+            retryLabel="Run Again"
+            contactSupport
+          />
+        </div>
+      ) : isLoading ? (
         <div className="flex-1 overflow-y-auto">
           {/* Show disclaimer even while loading */}
           <div className="px-4 pt-4">

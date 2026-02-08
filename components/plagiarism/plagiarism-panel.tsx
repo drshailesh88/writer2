@@ -12,6 +12,7 @@ import {
   FileCheck2,
   Loader2,
 } from "lucide-react";
+import { ErrorAlert } from "@/components/ui/error-alert";
 import { cn } from "@/lib/utils";
 
 interface PlagiarismSource {
@@ -32,6 +33,8 @@ interface PlagiarismResults {
 interface PlagiarismPanelProps {
   results: PlagiarismResults | null;
   isLoading: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   onSourceClick: (source: PlagiarismSource) => void;
   onClose: () => void;
 }
@@ -126,6 +129,8 @@ function EmptyState() {
 export function PlagiarismPanel({
   results,
   isLoading,
+  error,
+  onRetry,
   onSourceClick,
   onClose,
 }: PlagiarismPanelProps) {
@@ -158,7 +163,16 @@ export function PlagiarismPanel({
       </div>
 
       {/* Body */}
-      {isLoading ? (
+      {error && onRetry ? (
+        <div className="p-4">
+          <ErrorAlert
+            error={error}
+            onRetry={onRetry}
+            retryLabel="Run Again"
+            contactSupport
+          />
+        </div>
+      ) : isLoading ? (
         <LoadingSkeleton />
       ) : !hasResults || !hasSources ? (
         <EmptyState />

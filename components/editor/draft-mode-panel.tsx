@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { DisclaimerModal } from "./disclaimer-modal";
 import { useDraftWorkflow } from "@/lib/hooks/use-draft-workflow";
 import type { Outline, ApprovedPaper } from "@/lib/mastra/types";
+import { ErrorAlert } from "@/components/ui/error-alert";
 import {
   PenTool,
   Search,
@@ -18,10 +19,8 @@ import {
   Circle,
   Loader2,
   RotateCcw,
-  AlertCircle,
   ChevronDown,
   ChevronUp,
-  X,
 } from "lucide-react";
 
 const WORKFLOW_STEPS = [
@@ -152,22 +151,13 @@ export function DraftModePanel({
 
       {/* Error banner */}
       {workflow.error && (
-        <div className="border-b bg-red-50/50 px-4 py-2 dark:bg-red-950/20">
-          <div className="flex items-start gap-2">
-            <AlertCircle className="h-3.5 w-3.5 text-red-600 mt-0.5 shrink-0" />
-            <p className="text-[11px] text-red-700 dark:text-red-400 leading-relaxed">
-              {workflow.error}
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-1 h-7 text-[11px]"
-            onClick={workflow.reset}
-          >
-            <RotateCcw className="h-3 w-3 mr-1" />
-            Start Over
-          </Button>
+        <div className="border-b px-4 py-3">
+          <ErrorAlert
+            error={workflow.error}
+            onRetry={workflow.reset}
+            retryLabel="Start Over"
+            contactSupport
+          />
         </div>
       )}
 
