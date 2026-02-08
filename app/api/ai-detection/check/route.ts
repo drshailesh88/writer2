@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
       const result = await submitAiDetection(text, scanId);
 
       // Store results in Convex
-      await convex.mutation(api.aiDetectionChecks.updateResult, {
+      await convex.action(api.aiDetectionChecks.updateResult, {
         checkId: checkId as never,
         overallAiScore: result.summary.aiContent,
         sentenceResults: result.sections,
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
 
       // Mark check as failed
       try {
-        await convex.mutation(api.aiDetectionChecks.updateResult, {
+        await convex.action(api.aiDetectionChecks.updateResult, {
           checkId: checkId as never,
           overallAiScore: 0,
           sentenceResults: [],

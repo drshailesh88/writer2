@@ -80,7 +80,7 @@ export async function POST(
       if (isPlagiarism) {
         const result = parsePlagiarismResult(payload);
 
-        await convex.mutation(api.plagiarismChecks.updateResult, {
+        await convex.action(api.plagiarismChecks.updateResult, {
           checkId: checkId as never,
           overallSimilarity: result.overallSimilarity,
           sources: result.sources,
@@ -92,7 +92,7 @@ export async function POST(
     } else if (status === "error" || status === "creditsChecked") {
       if (status === "error") {
         if (isPlagiarism) {
-          await convex.mutation(api.plagiarismChecks.updateResult, {
+          await convex.action(api.plagiarismChecks.updateResult, {
             checkId: checkId as never,
             overallSimilarity: 0,
             sources: [],

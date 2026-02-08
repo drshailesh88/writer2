@@ -1,4 +1,5 @@
-import { mutation, query } from "./_generated/server";
+import { action, mutation, query, internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
 import { checkUsageLimit } from "./lib/subscriptionLimits";
 
@@ -50,7 +51,8 @@ export const create = mutation({
   },
 });
 
-export const updateResult = mutation({
+// Internal mutation — only callable from server-side actions, not from clients
+export const updateResultInternal = internalMutation({
   args: {
     checkId: v.id("aiDetectionChecks"),
     overallAiScore: v.number(),
@@ -70,6 +72,20 @@ export const updateResult = mutation({
       copyleaksScanId: args.copyleaksScanId,
       status: args.status,
     });
+  },
+});
+
+// Public action wrapper for webhook/API calls
+export const updateResult = action({
+  args: {
+    checkId: v.id("aiDetectionChecks"),
+    overallAiScore: v.number(),
+    sentenceResults: v.any(),
+    copyleaksScanId: v.string(),
+    status: v.union(v.literal("completed"), v.literal("failed")),
+  },
+  handler: async (ctx, args) => {
+    await ctx.runMutation(internal.aiDetectionChecks.updateResultInternal, args);
   },
 });
 

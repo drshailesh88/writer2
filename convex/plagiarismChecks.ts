@@ -1,4 +1,5 @@
-import { mutation, query } from "./_generated/server";
+import { action, mutation, query, internalMutation } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
 import { checkUsageLimit } from "./lib/subscriptionLimits";
 
@@ -59,7 +60,8 @@ export const create = mutation({
   },
 });
 
-export const updateResult = mutation({
+// Internal mutation — only callable from server-side actions, not from clients
+export const updateResultInternal = internalMutation({
   args: {
     checkId: v.id("plagiarismChecks"),
     overallSimilarity: v.number(),
@@ -78,6 +80,37 @@ export const updateResult = mutation({
       sources: args.sources,
       copyleaksScanId: args.copyleaksScanId,
       status: args.status,
+    });
+  },
+});
+
+// Public action wrapper for webhook calls (actions can invoke internalMutation)
+export const updateResult = action({
+  args: {
+    checkId: v.id("plagiarismChecks"),
+    overallSimilarity: v.number(),
+    sources: v.any(),
+    copyleaksScanId: v.string(),
+    status: v.union(v.literal("completed"), v.literal("failed")),
+  },
+  handler: async (ctx, args) => {
+    await ctx.runMutation(internal.plagiarismChecks.updateResultInternal, args);
+  },
+});
+
+// Set the Copyleaks scanId on a pending check (called after submission)
+export const setScanId = mutation({
+  args: {
+    checkId: v.id("plagiarismChecks"),
+    copyleaksScanId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const check = await ctx.db.get(args.checkId);
+    if (!check) {
+      throw new ConvexError("Check not found");
+    }
+    await ctx.db.patch(args.checkId, {
+      copyleaksScanId: args.copyleaksScanId,
     });
   },
 });

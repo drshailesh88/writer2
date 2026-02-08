@@ -77,12 +77,9 @@ export async function POST(req: NextRequest) {
       await submitPlagiarismScan(text, scanId, webhookUrl);
 
       // Store scanId mapping for webhook processing
-      await convex.mutation(api.plagiarismChecks.updateResult, {
+      await convex.mutation(api.plagiarismChecks.setScanId, {
         checkId: checkId as never,
-        overallSimilarity: 0,
-        sources: [],
         copyleaksScanId: scanId,
-        status: "pending" as never,
       });
     } catch (copyleaksError) {
       // Copyleaks submission failed — reverse usage counter
