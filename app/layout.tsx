@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import { Providers } from "@/components/providers";
 import "./globals.css";
 
@@ -14,9 +15,43 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "V1 Drafts — All research needs met under one single roof",
+  title: {
+    default: "V1 Drafts — Free Plagiarism Check for Medical Research Papers",
+    template: "%s | V1 Drafts",
+  },
   description:
-    "AI-powered research writing assistant for medical students. Learn to write research papers with guided coaching or draft them faster with AI assistance.",
+    "AI-powered research writing tool for medical students in India. Free plagiarism checker, thesis writing software, paper search, citations, and AI detection.",
+  keywords: [
+    "free plagiarism check medical papers",
+    "research paper writing tool",
+    "thesis writing software India",
+    "medical research assistant",
+    "paper citation generator",
+    "AI writing coach",
+    "academic plagiarism checker",
+  ],
+  authors: [{ name: "V1 Drafts" }],
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    siteName: "V1 Drafts",
+    title: "V1 Drafts — Free Plagiarism Check for Medical Research Papers",
+    description:
+      "AI-powered research writing tool for medical students in India. Free plagiarism checker, thesis writing software, paper search, citations, and AI detection.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "V1 Drafts — Free Plagiarism Check for Medical Research Papers",
+    description:
+      "AI-powered research writing tool for medical students in India. Free plagiarism checker, thesis writing software, paper search, citations, and AI detection.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://v1drafts.com"
+  ),
 };
 
 export default function RootLayout({
@@ -36,6 +71,7 @@ export default function RootLayout({
           </div>
         </noscript>
         <Providers>{children}</Providers>
+        <Toaster position="bottom-right" richColors closeButton />
       </body>
     </html>
   );

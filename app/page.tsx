@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   GraduationCap,
@@ -148,6 +149,17 @@ const steps = [
       "Run plagiarism and AI detection checks. Export your polished manuscript.",
   },
 ];
+
+export const metadata: Metadata = {
+  title: "V1 Drafts — Your Research Thesis, From Blank Page to Submission",
+  description:
+    "AI-powered research writing assistant for medical students in India. Learn research writing with AI coaching, or draft your thesis faster with AI assistance. Paper search, citations, plagiarism check — all under one roof.",
+  openGraph: {
+    title: "V1 Drafts — Your Research Thesis, From Blank Page to Submission",
+    description:
+      "AI-powered research writing assistant for medical students in India. Paper search, citations, plagiarism check — all under one roof.",
+  },
+};
 
 export default function LandingPage() {
   return (
