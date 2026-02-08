@@ -2,26 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { mastra } from "@/lib/mastra";
+import { cacheRun } from "@/lib/workflow-cache";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-
-// In-memory store for learn mode workflow runs (keyed by documentId) with TTL cleanup
-const LEARN_WORKFLOW_TTL_MS = 30 * 60 * 1000; // 30 minutes
-
-const learnWorkflowRuns = new Map<string, { run: unknown; createdAt: number }>();
-
-// Periodic cleanup of stale workflow runs to prevent memory leaks
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of learnWorkflowRuns) {
-    if (now - entry.createdAt > LEARN_WORKFLOW_TTL_MS) {
-      learnWorkflowRuns.delete(key);
-    }
-  }
-}, 5 * 60 * 1000); // Check every 5 minutes
-
-export { learnWorkflowRuns };
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,9 +27,9 @@ export async function POST(req: NextRequest) {
     }
 
     // Authenticate via Clerk
-    const { getToken } = await auth();
+    const { userId: clerkUserId, getToken } = await auth();
     const token = await getToken({ template: "convex" });
-    if (!token) {
+    if (!token || !clerkUserId) {
       return NextResponse.json(
         { error: "Not authenticated" },
         { status: 401 }
@@ -55,23 +40,38 @@ export async function POST(req: NextRequest) {
     convex.setAuth(token);
     try {
       await convex.mutation(api.learnModeSessions.create, {
-        documentId: documentId as any,
+        documentId: documentId as Id<"documents">,
       });
-    } catch (convexError: any) {
-      // Return limit-reached errors as 403
+    } catch (convexError: unknown) {
       const message =
-        convexError?.data ?? convexError?.message ?? "Usage limit reached";
+        (convexError as { data?: string })?.data ??
+        (convexError as Error)?.message ??
+        "Usage limit reached";
       return NextResponse.json(
         { error: message },
         { status: 403 }
       );
     }
 
+    // Get Convex user for workflow persistence
+    const convexUser = await convex.query(api.users.getByClerkId, { clerkId: clerkUserId });
+    if (!convexUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     const workflow = mastra.getWorkflow("learnModeWorkflow");
     const run = await workflow.createRun();
 
-    // Store the run reference for later resume/advance
-    learnWorkflowRuns.set(documentId, { run, createdAt: Date.now() });
+    // Cache run object in memory (needed for Mastra resume)
+    cacheRun(documentId, run);
+
+    // Persist workflow run to Convex
+    const workflowRunId = await convex.mutation(api.workflowRuns.create, {
+      userId: convexUser._id,
+      documentId: documentId as Id<"documents">,
+      workflowType: "learn" as const,
+      currentStep: "understand",
+    });
 
     // Start the workflow
     const result = await run.start({
@@ -79,6 +79,26 @@ export async function POST(req: NextRequest) {
     });
 
     const response = buildResponse(result);
+
+    // Update workflow status based on result
+    if (result.status === "suspended") {
+      await convex.mutation(api.workflowRuns.update, {
+        workflowRunId,
+        status: "suspended",
+        currentStep: result.suspended?.[0]?.[0] ?? result.suspended?.[0] ?? "understand",
+      });
+    } else if (result.status === "success") {
+      await convex.mutation(api.workflowRuns.update, {
+        workflowRunId,
+        status: "completed",
+      });
+    } else if (result.status === "failed") {
+      await convex.mutation(api.workflowRuns.update, {
+        workflowRunId,
+        status: "failed",
+        error: result.error?.message ?? "Workflow failed",
+      });
+    }
 
     return NextResponse.json(response);
   } catch (error) {
