@@ -133,8 +133,19 @@ export default function EditorPage() {
   // Not found
   if (document === null) {
     return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="text-muted-foreground">Document not found</div>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
+        <div className="rounded-full bg-muted p-4">
+          <PanelRight className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <div>
+          <h2 className="text-lg font-semibold">Document not found</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            This document may have been deleted or you don&apos;t have access.
+          </p>
+        </div>
+        <Button variant="outline" className="min-h-[44px]" asChild>
+          <a href="/dashboard">Go to Dashboard</a>
+        </Button>
       </div>
     );
   }

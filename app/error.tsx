@@ -37,13 +37,24 @@ export default function ErrorPage({
         </div>
 
         <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Button onClick={reset} size="lg">
+          <Button onClick={reset} size="lg" className="min-h-[44px]">
             Try Again
           </Button>
-          <Button variant="outline" size="lg" asChild>
+          <Button variant="outline" size="lg" className="min-h-[44px]" asChild>
             <Link href="/dashboard">Go to Dashboard</Link>
           </Button>
         </div>
+
+        <p className="mt-4 text-xs text-muted-foreground">
+          If this keeps happening,{" "}
+          <a
+            href="mailto:support@v1drafts.com"
+            className="underline hover:text-foreground"
+          >
+            contact support
+          </a>
+          .
+        </p>
       </div>
     </div>
   );
