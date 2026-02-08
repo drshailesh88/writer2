@@ -17,4 +17,11 @@ crons.hourly(
   internal.workflowRuns.cleanExpiredRuns
 );
 
+// Clean up expired search cache entries every hour at minute 30
+crons.hourly(
+  "clean expired search cache",
+  { minuteUTC: 30 },
+  internal.searchCache.cleanExpiredCache
+);
+
 export default crons;
