@@ -78,20 +78,39 @@ export function SearchResults({
   }
 
   // Source status notices
+  const sourceDisplayNames: Record<string, string> = {
+    pubmed: "PubMed",
+    semanticScholar: "Semantic Scholar",
+    openAlex: "OpenAlex",
+  };
   const failedSources = response
     ? Object.entries(response.sources)
         .filter(([, s]) => !s.success)
-        .map(([name]) => name)
+        .map(([name]) => sourceDisplayNames[name] ?? name)
+    : [];
+  const workingSources = response
+    ? Object.entries(response.sources)
+        .filter(([, s]) => s.success)
+        .map(([name]) => sourceDisplayNames[name] ?? name)
     : [];
 
   return (
     <div className="space-y-4">
-      {/* Source notice */}
-      {failedSources.length > 0 && (
-        <div className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-200">
-          <AlertCircle className="mr-1 inline h-3 w-3" />
-          Some sources unavailable: {failedSources.join(", ")}. Showing
-          results from available sources.
+      {/* Source degradation notice */}
+      {failedSources.length > 0 && failedSources.length < 3 && (
+        <div className="rounded-md border border-amber-200 bg-amber-50/80 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+          <AlertCircle className="mr-1.5 inline h-3.5 w-3.5" />
+          {failedSources.join(" and ")} temporarily unavailable.
+          {workingSources.length > 0 &&
+            ` Showing results from ${workingSources.join(" and ")}.`}
+        </div>
+      )}
+      {/* All sources failed notice */}
+      {failedSources.length === 3 && (
+        <div className="rounded-md border border-red-200 bg-red-50/80 px-3 py-2 text-xs text-red-800 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200">
+          <AlertCircle className="mr-1.5 inline h-3.5 w-3.5" />
+          All search sources are temporarily unavailable.
+          {response?.cached && " Showing cached results."}
         </div>
       )}
 
