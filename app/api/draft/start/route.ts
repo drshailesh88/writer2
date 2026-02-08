@@ -1,29 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { mastra } from "@/lib/mastra";
 
-// In-memory store for workflow runs (keyed by documentId) with TTL cleanup
-const WORKFLOW_TTL_MS = 30 * 60 * 1000; // 30 minutes
-
-const workflowRuns = new Map<string, { run: unknown; mode: string; createdAt: number }>();
-
-// Periodic cleanup of stale workflow runs to prevent memory leaks
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of workflowRuns) {
-    if (now - entry.createdAt > WORKFLOW_TTL_MS) {
-      workflowRuns.delete(key);
-    }
-  }
-}, 5 * 60 * 1000); // Check every 5 minutes
-
-export { workflowRuns };
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function POST(req: NextRequest) {
   try {
     // Authenticate
-    const { getToken } = await auth();
-    if (!(await getToken())) {
+    const { userId: clerkUserId, getToken } = await auth();
+    if (!clerkUserId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
@@ -43,6 +31,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Get Convex user for persistence
+    const convexUser = await convex.query(api.users.getByClerkId, { clerkId: clerkUserId });
+    if (!convexUser) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     const workflowKey =
       mode === "draft_handsoff"
         ? "draftHandsOffWorkflow"
@@ -51,8 +45,13 @@ export async function POST(req: NextRequest) {
     const workflow = mastra.getWorkflow(workflowKey as "draftGuidedWorkflow" | "draftHandsOffWorkflow");
     const run = await workflow.createRun();
 
-    // Store the run reference for later resume
-    workflowRuns.set(documentId, { run, mode, createdAt: Date.now() });
+    // Persist workflow run to Convex (survives serverless container switches)
+    const workflowRunId = await convex.mutation(api.workflowRuns.create, {
+      userId: convexUser._id,
+      documentId: documentId as Id<"documents">,
+      workflowType: mode as "draft_guided" | "draft_handsoff",
+      currentStep: "start",
+    });
 
     // Start the workflow
     const result = await run.start({
@@ -61,9 +60,27 @@ export async function POST(req: NextRequest) {
 
     const response = buildResponse(result);
 
-    // Clean up if completed
+    // Update workflow status based on result
+    const token = await getToken({ template: "convex" });
+    if (token) convex.setAuth(token);
+
     if (result.status === "success") {
-      workflowRuns.delete(documentId);
+      await convex.mutation(api.workflowRuns.update, {
+        workflowRunId,
+        status: "completed",
+      });
+    } else if (result.status === "suspended") {
+      await convex.mutation(api.workflowRuns.update, {
+        workflowRunId,
+        status: "suspended",
+        currentStep: result.suspended?.[0]?.[0] ?? result.suspended?.[0] ?? "unknown",
+      });
+    } else if (result.status === "failed") {
+      await convex.mutation(api.workflowRuns.update, {
+        workflowRunId,
+        status: "failed",
+        error: result.error?.message ?? "Workflow failed",
+      });
     }
 
     return NextResponse.json(response);
