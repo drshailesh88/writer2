@@ -21,6 +21,9 @@ export default defineSchema({
     aiDetectionChecksUsed: v.optional(v.number()),
     deepResearchUsed: v.optional(v.number()),
     learnModeSessionsUsed: v.optional(v.number()),
+    tokensUsed: v.optional(v.number()),
+    tokensLimit: v.optional(v.number()),
+    lastTokenReset: v.optional(v.number()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

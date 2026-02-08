@@ -28,6 +28,9 @@ export const getOrCreate = mutation({
       aiDetectionChecksUsed: 0,
       deepResearchUsed: 0,
       learnModeSessionsUsed: 0,
+      tokensUsed: 0,
+      tokensLimit: 200, // Free tier default
+      lastTokenReset: Date.now(),
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -88,6 +91,8 @@ export const resetMonthlyUsage = internalMutation({
       aiDetectionChecksUsed: 0,
       deepResearchUsed: 0,
       learnModeSessionsUsed: 0,
+      tokensUsed: 0,
+      lastTokenReset: Date.now(),
       updatedAt: Date.now(),
     });
   },
@@ -96,6 +101,13 @@ export const resetMonthlyUsage = internalMutation({
 // ─── Usage Queries & Mutations (Task 10) ───
 
 import { SUBSCRIPTION_LIMITS } from "./lib/subscriptionLimits";
+
+const TOKEN_LIMITS: Record<string, number> = {
+  none: 0,
+  free: 200,
+  basic: 5000,
+  pro: 15000,
+};
 
 export const getUsage = query({
   args: {},
@@ -127,6 +139,8 @@ export const getUsage = query({
       deepResearchLimit: limits.deepResearch,
       learnModeUsed: user.learnModeSessionsUsed ?? 0,
       learnModeLimit: limits.learnMode,
+      tokensUsed: user.tokensUsed ?? 0,
+      tokensLimit: user.tokensLimit ?? TOKEN_LIMITS[tier],
     };
   },
 });
@@ -187,6 +201,8 @@ export const resetAllUsageCounters = internalMutation({
         aiDetectionChecksUsed: 0,
         deepResearchUsed: 0,
         learnModeSessionsUsed: 0,
+        tokensUsed: 0,
+        lastTokenReset: Date.now(),
         updatedAt: Date.now(),
       });
     }
