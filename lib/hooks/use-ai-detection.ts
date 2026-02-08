@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useQuery } from "convex/react";
+import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import type { AiDetectionSection } from "@/lib/copyleaks";
 
@@ -73,6 +74,9 @@ export function useAiDetection(): UseAiDetectionReturn {
             humanScore: data.result.humanScore,
             sentences: data.result.sentences || [],
           });
+          toast.success("AI detection complete", {
+            description: `AI score: ${data.result.overallAiScore}%`,
+          });
         } else {
           // Fallback: poll for results if somehow async
           setStatus("completed");
@@ -81,6 +85,7 @@ export function useAiDetection(): UseAiDetectionReturn {
             humanScore: data.result?.humanScore ?? 100,
             sentences: data.result?.sentences || [],
           });
+          toast.success("AI detection complete");
         }
       } catch (err) {
         setStatus("failed");
@@ -92,6 +97,7 @@ export function useAiDetection(): UseAiDetectionReturn {
               ? err.message
               : "An unexpected error occurred. Please try again.";
         setError(message);
+        toast.error("AI detection failed", { description: message });
       }
     },
     [reset]

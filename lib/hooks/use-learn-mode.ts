@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
 import type {
   LearnModeStage,
   ConversationMessage,
@@ -72,11 +73,13 @@ export function useLearnMode(documentId: string, topic: string) {
         }));
       }
     } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to start session";
       setState((prev) => ({
         ...prev,
         status: "error",
-        error: err instanceof Error ? err.message : "Failed to start session",
+        error: message,
       }));
+      toast.error("Learn mode failed", { description: message });
     }
   }, [documentId, topic]);
 

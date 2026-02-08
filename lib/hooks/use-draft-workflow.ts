@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { toast } from "sonner";
 import type { Outline, ApprovedPaper, SectionDraft } from "../mastra/types";
 
 export type DraftWorkflowStatus =
@@ -73,11 +74,13 @@ export function useDraftWorkflow(documentId: string) {
         const data = await res.json();
         handleWorkflowResponse(data, mode);
       } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to start workflow";
         setState((prev) => ({
           ...prev,
           status: "error",
-          error: err instanceof Error ? err.message : "Failed to start workflow",
+          error: message,
         }));
+        toast.error("Draft workflow failed", { description: message });
       }
     },
     [documentId]
@@ -113,11 +116,13 @@ export function useDraftWorkflow(documentId: string) {
         const data = await res.json();
         handleWorkflowResponse(data, state.mode ?? "draft_guided");
       } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to resume workflow";
         setState((prev) => ({
           ...prev,
           status: "error",
-          error: err instanceof Error ? err.message : "Failed to resume workflow",
+          error: message,
         }));
+        toast.error("Draft workflow failed", { description: message });
       }
     },
     [documentId, state.suspendedStep, state.status, state.mode]
@@ -153,6 +158,9 @@ export function useDraftWorkflow(documentId: string) {
           completeDraft: data.completeDraft as string | null,
           suspendedStep: null,
         }));
+        toast.success("Draft complete", {
+          description: "Your draft has been inserted into the editor.",
+        });
       } else {
         setState((prev) => ({
           ...prev,

@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useQuery } from "convex/react";
+import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 
@@ -36,14 +37,21 @@ export function useDeepResearch() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to start research");
+        const message = data.error || "Failed to start research";
+        setError(message);
+        toast.error("Deep research failed", { description: message });
         return null;
       }
 
       setReportId(data.reportId);
+      toast.success("Deep research started", {
+        description: "You'll be notified when the report is ready.",
+      });
       return data.reportId as string;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Network error");
+      const message = err instanceof Error ? err.message : "Network error";
+      setError(message);
+      toast.error("Deep research failed", { description: message });
       return null;
     } finally {
       setIsStarting(false);
