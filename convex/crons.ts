@@ -10,4 +10,11 @@ crons.monthly(
   internal.users.resetAllUsageCounters
 );
 
+// Clean up expired workflow runs every hour at minute 0
+crons.hourly(
+  "clean expired workflow runs",
+  { minuteUTC: 0 },
+  internal.workflowRuns.cleanExpiredRuns
+);
+
 export default crons;
