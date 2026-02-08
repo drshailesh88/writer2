@@ -84,7 +84,7 @@ export function SaveToLibrary({ paper }: SaveToLibraryProps) {
           value={selectedCollection}
           onValueChange={setSelectedCollection}
         >
-          <SelectTrigger className="min-h-[44px] w-[140px] text-xs sm:min-h-0">
+          <SelectTrigger className="min-h-[44px] w-full max-w-[140px] text-xs sm:min-h-0">
             <SelectValue placeholder="Collection" />
           </SelectTrigger>
           <SelectContent>

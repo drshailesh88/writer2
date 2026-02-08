@@ -30,7 +30,7 @@ export function SearchSort({ sort, onSortChange }: SearchSortProps) {
         value={sort}
         onValueChange={(v) => onSortChange(v as SortOption)}
       >
-        <SelectTrigger className="min-h-[44px] w-[160px] sm:min-h-0">
+        <SelectTrigger className="min-h-[44px] w-full max-w-[160px] sm:min-h-0">
           <SelectValue />
         </SelectTrigger>
         <SelectContent>

@@ -802,7 +802,7 @@ export default function LibraryPage() {
               value={sortKey}
               onValueChange={(v) => setSortKey(v as SortKey)}
             >
-              <SelectTrigger className="min-h-[44px] w-[150px] text-xs sm:min-h-0">
+              <SelectTrigger className="min-h-[44px] w-full max-w-[150px] text-xs sm:min-h-0">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>

@@ -99,7 +99,7 @@ export function DraftSelector({ currentDocumentId }: DraftSelectorProps) {
             <ChevronDown className="h-3 w-3" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-72">
+        <DropdownMenuContent align="start" className="w-72 max-w-[calc(100vw-2rem)]">
           {activeDocuments.map((doc) => (
             <DropdownMenuItem
               key={doc._id}
