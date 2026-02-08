@@ -278,8 +278,8 @@ test.describe("Bibliography — Authenticated", () => {
     await page.getByLabel("Citation style").click();
     await page.getByRole("option", { name: "AMA" }).click();
 
-    // Wait for save
-    await page.waitForTimeout(3000);
+    // Wait for AMA to be reflected in the selector before reloading
+    await expect(page.getByLabel("Citation style")).toContainText("AMA");
 
     // Reload
     await page.reload();

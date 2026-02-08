@@ -40,8 +40,10 @@ test.describe("Search Cache — Persistence", () => {
     const searchButton = page.locator('button:has-text("Search")');
     await searchButton.click();
 
-    // Wait for results to load (or error state — either is fine for cache test)
-    await page.waitForTimeout(5000);
+    // Wait for results to load or error state (either is fine for cache test)
+    await page
+      .waitForSelector('[data-testid="search-results"], [data-testid="search-error"], text=/results|No results|error|unavailable/i', { timeout: 10000 })
+      .catch(() => {});
 
     // Note: actual cache behavior depends on live Convex + API availability.
     // This test structure verifies the API returns the `cached` field.

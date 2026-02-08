@@ -454,8 +454,8 @@ test.describe("Learn Mode — Authenticated", () => {
     // "Ask for Help" button should be visible in non-feedback stages
     const helpButton = page.locator("text=Ask for Help");
 
-    // Wait for coach message to load first
-    await page.waitForTimeout(2000);
+    // Wait for coach panel content to settle
+    await page.waitForSelector('[data-testid="coach-message"], .coach-message, text=/Coach|help|question/i', { timeout: 8000 }).catch(() => {});
 
     const isVisible = await helpButton.isVisible();
     if (isVisible) {
