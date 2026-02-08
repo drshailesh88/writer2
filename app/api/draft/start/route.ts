@@ -6,6 +6,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { mastra } from "@/lib/mastra";
 import { cacheRun, removeCachedRun } from "@/lib/workflow-cache";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { captureApiError } from "@/lib/sentry-helpers";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -111,6 +112,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
+    captureApiError(error, "/api/draft/start");
     console.error("Draft workflow start error:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to start workflow" },

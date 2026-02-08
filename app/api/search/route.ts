@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { captureApiError } from "@/lib/sentry-helpers";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { deduplicateResults } from "@/lib/search/deduplicate";
 import {
@@ -109,7 +110,8 @@ export async function POST(req: NextRequest) {
     setCachedResponse(cacheKey, response).catch(() => {});
 
     return NextResponse.json(response);
-  } catch {
+  } catch (error) {
+    captureApiError(error, "/api/search");
     return NextResponse.json(
       { error: "Search temporarily unavailable" },
       { status: 500 }

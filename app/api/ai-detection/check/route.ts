@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { api } from "@/convex/_generated/api";
 import { submitAiDetection } from "@/lib/copyleaks";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { captureApiError } from "@/lib/sentry-helpers";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -128,6 +129,7 @@ export async function POST(req: NextRequest) {
       );
     }
   } catch (error) {
+    captureApiError(error, "/api/ai-detection/check");
     console.error("AI detection check error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },
