@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 
@@ -6,6 +7,13 @@ const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function GET(req: NextRequest) {
   try {
+    // Set auth if available (anonymous plagiarism checks don't require it)
+    const { getToken } = await auth();
+    const token = await getToken({ template: "convex" });
+    if (token) {
+      convex.setAuth(token);
+    }
+
     const checkId = req.nextUrl.searchParams.get("checkId");
 
     if (!checkId) {

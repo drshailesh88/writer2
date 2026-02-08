@@ -85,7 +85,26 @@ export const updateResult = mutation({
 export const get = query({
   args: { checkId: v.id("plagiarismChecks") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.checkId);
+    const check = await ctx.db.get(args.checkId);
+    if (!check) return null;
+
+    // Ownership check: if check has a userId, verify caller owns it
+    // Anonymous checks (no userId) are accessible by checkId (acts as a token)
+    if (check.userId) {
+      const identity = await ctx.auth.getUserIdentity();
+      if (!identity) {
+        throw new ConvexError("Not authenticated");
+      }
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+        .unique();
+      if (!user || check.userId !== user._id) {
+        throw new ConvexError("Not authorized");
+      }
+    }
+
+    return check;
   },
 });
 

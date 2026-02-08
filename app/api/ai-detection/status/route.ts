@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 
@@ -6,6 +7,14 @@ const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function GET(req: NextRequest) {
   try {
+    // AI detection requires auth
+    const { getToken } = await auth();
+    const token = await getToken({ template: "convex" });
+    if (!token) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+    convex.setAuth(token);
+
     const checkId = req.nextUrl.searchParams.get("checkId");
 
     if (!checkId) {

@@ -74,7 +74,22 @@ export const updateResult = mutation({
 export const get = query({
   args: { reportId: v.id("deepResearchReports") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.reportId);
+    const report = await ctx.db.get(args.reportId);
+    if (!report) return null;
+
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (!user || report.userId !== user._id) {
+      throw new ConvexError("Not authorized");
+    }
+
+    return report;
   },
 });
 

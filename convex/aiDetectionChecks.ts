@@ -76,7 +76,22 @@ export const updateResult = mutation({
 export const get = query({
   args: { checkId: v.id("aiDetectionChecks") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.checkId);
+    const check = await ctx.db.get(args.checkId);
+    if (!check) return null;
+
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (!user || check.userId !== user._id) {
+      throw new ConvexError("Not authorized");
+    }
+
+    return check;
   },
 });
 
