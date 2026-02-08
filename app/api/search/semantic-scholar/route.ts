@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { normalizeS2Paper } from "@/lib/search/normalize";
 import type { S2SearchResponse, SourceSearchResult } from "@/lib/search/types";
 
@@ -8,6 +9,9 @@ const FIELDS =
   "paperId,title,authors,year,abstract,citationCount,isOpenAccess,externalIds,journal,url,publicationTypes";
 
 export async function POST(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, "search");
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = await req.json();
     const result = await searchSemanticScholar(body);

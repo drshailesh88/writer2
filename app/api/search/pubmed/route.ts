@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { normalizePubMedArticle } from "@/lib/search/normalize";
 import type {
   PubMedESearchResult,
@@ -11,6 +12,9 @@ const EUTILS_BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils";
 const TIMEOUT_MS = 10_000;
 
 export async function POST(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, "search");
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = await req.json();
     const result = await searchPubMed(body);

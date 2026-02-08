@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { deduplicateResults } from "@/lib/search/deduplicate";
 import {
   buildCacheKey,
@@ -16,6 +17,9 @@ import type {
 const PAGE_SIZE = 20;
 
 export async function POST(req: NextRequest) {
+  const rateLimitResponse = enforceRateLimit(req, "search");
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = await req.json();
     const {
