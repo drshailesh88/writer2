@@ -316,6 +316,12 @@ export default function AccountPage() {
     .toUpperCase()
     .slice(0, 2);
 
+  // Token data
+  const tokensUsed = usage?.tokensUsed ?? 0;
+  const tokensLimit = usage?.tokensLimit ?? 200;
+  const tokensRemaining = Math.max(0, tokensLimit - tokensUsed);
+  const tokenPercent = tokensLimit > 0 ? Math.min(Math.round((tokensUsed / tokensLimit) * 100), 100) : 0;
+
   // Usage data
   const learnModeUsed = usage?.learnModeUsed ?? 0;
   const learnModeLimit = usage?.learnModeLimit ?? 0;
@@ -516,6 +522,28 @@ export default function AccountPage() {
 
           <CardContent>
             <div className="space-y-6">
+              {/* Token Balance — highlighted */}
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="font-semibold text-blue-900 dark:text-blue-100">
+                    Tokens Remaining
+                  </span>
+                  <span className="font-mono text-sm font-bold text-blue-700 dark:text-blue-300">
+                    {tokensRemaining.toLocaleString()} / {tokensLimit.toLocaleString()}
+                  </span>
+                </div>
+                <Progress
+                  value={tokenPercent}
+                  className={`mt-2 h-3 ${getProgressColor(tokenPercent)}`}
+                  aria-label={`Tokens: ${tokensRemaining.toLocaleString()} of ${tokensLimit.toLocaleString()} remaining`}
+                />
+                <p className="mt-2 text-xs text-blue-600 dark:text-blue-400">
+                  Tokens are consumed by each operation. Resets monthly.
+                </p>
+              </div>
+
+              <Separator />
+
               {/* Learn Mode sessions */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">

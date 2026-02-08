@@ -24,4 +24,11 @@ crons.hourly(
   internal.searchCache.cleanExpiredCache
 );
 
+// Clean up expired session presence entries every hour at minute 15
+crons.hourly(
+  "clean expired session presence",
+  { minuteUTC: 15 },
+  internal.sessionPresence.cleanExpiredSessions
+);
+
 export default crons;

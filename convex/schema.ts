@@ -218,6 +218,15 @@ export default defineSchema({
     .index("by_query_hash", ["queryHash"])
     .index("by_expires_at", ["expiresAt"]),
 
+  // ─── Session Presence (concurrent session limit) ───
+  sessionPresence: defineTable({
+    userId: v.id("users"),
+    sessionId: v.string(),
+    lastActive: v.number(),
+  })
+    .index("by_user_id", ["userId"])
+    .index("by_session_id", ["sessionId"]),
+
   // ─── Subscriptions ───
   subscriptions: defineTable({
     userId: v.id("users"),
