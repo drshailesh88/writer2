@@ -6,17 +6,22 @@ import { socraticCoachAgent } from "@/lib/mastra/agents";
 import { validateCoachResponse } from "@/lib/mastra/learn-mode-guard";
 import { formatExamplesForPrompt, getSentenceStarters } from "@/lib/examples/loader";
 import type { ConversationMessage, LearnModeStage } from "@/lib/mastra/types";
+import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function POST(req: NextRequest) {
   try {
     // Authenticate
-    const { getToken } = await auth();
+    const { getToken, userId: clerkUserId } = await auth();
     const token = await getToken({ template: "convex" });
-    if (!token) {
+    if (!token || !clerkUserId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+
+    // Rate limit: 10/min per user
+    const rateLimitResponse = enforceRateLimit(req, "learnMode", clerkUserId);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { message, stage, conversationHistory, topic, documentId } = await req.json();
 

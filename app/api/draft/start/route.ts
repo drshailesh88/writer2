@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { mastra } from "@/lib/mastra";
 import { cacheRun, removeCachedRun } from "@/lib/workflow-cache";
+import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -15,6 +16,10 @@ export async function POST(req: NextRequest) {
     if (!clerkUserId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+
+    // Rate limit: 10/min per user
+    const rateLimitResponse = enforceRateLimit(req, "draftMode", clerkUserId);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { topic, mode, documentId } = await req.json();
 

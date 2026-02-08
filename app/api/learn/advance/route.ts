@@ -4,16 +4,21 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { getCachedRun, removeCachedRun } from "@/lib/workflow-cache";
+import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function POST(req: NextRequest) {
   try {
     // Authenticate
-    const { getToken } = await auth();
-    if (!(await getToken())) {
+    const { getToken, userId: clerkUserId } = await auth();
+    if (!(await getToken()) || !clerkUserId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+
+    // Rate limit: 10/min per user
+    const rateLimitResponse = enforceRateLimit(req, "learnMode", clerkUserId);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const { documentId, currentStage } = await req.json();
 
