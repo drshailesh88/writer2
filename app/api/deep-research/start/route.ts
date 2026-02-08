@@ -4,6 +4,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { mastra } from "@/lib/mastra";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { trackServerEvent } from "@/lib/analytics";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -65,6 +66,9 @@ export async function POST(req: NextRequest) {
       }
       throw error;
     }
+
+    // Track deep research start
+    trackServerEvent(clerkUserId, "deep_research_started", { topic: topic.trim().slice(0, 100) });
 
     // Fire workflow asynchronously — don't await
     runWorkflowAsync(reportId, topic.trim(), token);

@@ -7,6 +7,7 @@ import { validateCoachResponse } from "@/lib/mastra/learn-mode-guard";
 import { formatExamplesForPrompt, getSentenceStarters } from "@/lib/examples/loader";
 import type { ConversationMessage, LearnModeStage } from "@/lib/mastra/types";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { trackServerEvent } from "@/lib/analytics";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -60,6 +61,9 @@ export async function POST(req: NextRequest) {
         { status: 402 }
       );
     }
+
+    // Track learn mode message
+    trackServerEvent(clerkUserId, "learn_message_sent", { stage, topic: topic?.slice(0, 100) });
 
     const agent = socraticCoachAgent;
 

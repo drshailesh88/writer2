@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { submitAiDetection } from "@/lib/copyleaks";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { captureApiError } from "@/lib/sentry-helpers";
+import { trackServerEvent } from "@/lib/analytics";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -86,6 +87,12 @@ export async function POST(req: NextRequest) {
         sentenceResults: result.sections,
         copyleaksScanId: scanId,
         status: "completed",
+      });
+
+      // Track AI detection check
+      trackServerEvent(clerkUserId, "ai_detection_completed", {
+        wordCount,
+        aiScore: result.summary.aiContent,
       });
 
       return NextResponse.json({

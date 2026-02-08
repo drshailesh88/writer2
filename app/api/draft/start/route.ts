@@ -7,6 +7,7 @@ import { mastra } from "@/lib/mastra";
 import { cacheRun, removeCachedRun } from "@/lib/workflow-cache";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { captureApiError } from "@/lib/sentry-helpers";
+import { trackServerEvent } from "@/lib/analytics";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -78,6 +79,9 @@ export async function POST(req: NextRequest) {
       workflowType: mode as "draft_guided" | "draft_handsoff",
       currentStep: "start",
     });
+
+    // Track workflow start
+    trackServerEvent(clerkUserId, "draft_started", { mode, topic: topic.slice(0, 100) });
 
     // Start the workflow
     const result = await run.start({

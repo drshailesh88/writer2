@@ -5,6 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { submitPlagiarismScan } from "@/lib/copyleaks";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { captureApiError } from "@/lib/sentry-helpers";
+import { trackServerEvent } from "@/lib/analytics";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -123,6 +124,12 @@ export async function POST(req: NextRequest) {
         { status: 503 }
       );
     }
+
+    // Track plagiarism check
+    trackServerEvent(clerkUserId ?? "anonymous", "plagiarism_check_started", {
+      wordCount,
+      authenticated: !!clerkUserId,
+    });
 
     return NextResponse.json(
       { checkId, status: "pending", estimatedSeconds: 30 },
