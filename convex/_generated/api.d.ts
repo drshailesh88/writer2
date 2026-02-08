@@ -19,7 +19,10 @@ import type * as learnModeSessions from "../learnModeSessions.js";
 import type * as lib_subscriptionLimits from "../lib/subscriptionLimits.js";
 import type * as papers from "../papers.js";
 import type * as plagiarismChecks from "../plagiarismChecks.js";
+import type * as searchCache from "../searchCache.js";
+import type * as sessionPresence from "../sessionPresence.js";
 import type * as subscriptions from "../subscriptions.js";
+import type * as usageTokens from "../usageTokens.js";
 import type * as users from "../users.js";
 import type * as workflowRuns from "../workflowRuns.js";
 
@@ -41,7 +44,10 @@ declare const fullApi: ApiFromModules<{
   "lib/subscriptionLimits": typeof lib_subscriptionLimits;
   papers: typeof papers;
   plagiarismChecks: typeof plagiarismChecks;
+  searchCache: typeof searchCache;
+  sessionPresence: typeof sessionPresence;
   subscriptions: typeof subscriptions;
+  usageTokens: typeof usageTokens;
   users: typeof users;
   workflowRuns: typeof workflowRuns;
 }>;

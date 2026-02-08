@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { verifyWebhookSignature } from "@/lib/razorpay";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -48,10 +49,10 @@ export async function POST(req: NextRequest) {
           break;
         }
 
-        // Look up user by Clerk ID
-        const user = await convex.query(api.users.getByClerkId, {
+        // Look up user by Clerk ID (action returns unknown, cast to typed result)
+        const user = await convex.action(api.users.getByClerkId, {
           clerkId: clerkUserId,
-        });
+        }) as { _id: Id<"users"> } | null;
 
         if (!user) {
           console.error("User not found for clerkId:", clerkUserId);
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
           ? subscriptionEntity.current_end * 1000
           : startAt + 30 * 24 * 60 * 60 * 1000;
 
-        await convex.mutation(api.subscriptions.activateFromWebhook, {
+        await convex.action(api.subscriptions.activateFromWebhook, {
           userId: user._id,
           razorpaySubscriptionId,
           planType,
@@ -84,7 +85,7 @@ export async function POST(req: NextRequest) {
           ? subscriptionEntity.current_end * 1000
           : startAt + 30 * 24 * 60 * 60 * 1000;
 
-        await convex.mutation(api.subscriptions.updateFromWebhook, {
+        await convex.action(api.subscriptions.updateFromWebhook, {
           razorpaySubscriptionId,
           status: "active",
           currentPeriodStart: startAt,
@@ -94,7 +95,7 @@ export async function POST(req: NextRequest) {
       }
 
       case "subscription.cancelled": {
-        await convex.mutation(api.subscriptions.updateFromWebhook, {
+        await convex.action(api.subscriptions.updateFromWebhook, {
           razorpaySubscriptionId,
           status: "cancelled",
         });
@@ -103,7 +104,7 @@ export async function POST(req: NextRequest) {
 
       case "payment.failed": {
         // Payment failed — set subscription to paused (3-day grace period)
-        await convex.mutation(api.subscriptions.updateFromWebhook, {
+        await convex.action(api.subscriptions.updateFromWebhook, {
           razorpaySubscriptionId,
           status: "paused",
         });

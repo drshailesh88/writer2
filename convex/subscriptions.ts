@@ -1,4 +1,5 @@
-import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
+import { mutation, query, internalMutation, internalQuery, action } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
 
 export const create = mutation({
@@ -102,10 +103,10 @@ export const updateStatus = mutation({
   },
 });
 
-// --- Functions for webhook handler (no Clerk auth context) ---
-// Security: Razorpay signature is verified in the API route before calling these.
+// ─── Internal functions for webhook handler (no Clerk auth context) ───
+// Called via action wrappers. Razorpay signature is verified in the API route.
 
-export const getByRazorpayId = query({
+export const getByRazorpayIdInternal = internalQuery({
   args: { razorpaySubscriptionId: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
@@ -117,7 +118,7 @@ export const getByRazorpayId = query({
   },
 });
 
-export const activateFromWebhook = mutation({
+export const activateFromWebhookInternal = internalMutation({
   args: {
     userId: v.id("users"),
     razorpaySubscriptionId: v.string(),
@@ -126,6 +127,8 @@ export const activateFromWebhook = mutation({
     currentPeriodEnd: v.number(),
   },
   handler: async (ctx, args) => {
+    const { TOKEN_LIMITS_BY_TIER } = await import("./usageTokens");
+
     // Check for existing subscription with this Razorpay ID (idempotency)
     const existing = await ctx.db
       .query("subscriptions")
@@ -135,20 +138,21 @@ export const activateFromWebhook = mutation({
       .unique();
 
     if (existing) {
-      // Already processed — update status if needed
       if (existing.status !== "active") {
         await ctx.db.patch(existing._id, { status: "active" });
         await ctx.db.patch(args.userId, {
           subscriptionTier: args.planType,
+          tokensLimit: TOKEN_LIMITS_BY_TIER[args.planType] ?? 5000,
           updatedAt: Date.now(),
         });
       }
       return existing._id;
     }
 
-    // Update user's subscription tier
+    // Update user's subscription tier AND token limit
     await ctx.db.patch(args.userId, {
       subscriptionTier: args.planType,
+      tokensLimit: TOKEN_LIMITS_BY_TIER[args.planType] ?? 5000,
       updatedAt: Date.now(),
     });
 
@@ -164,7 +168,7 @@ export const activateFromWebhook = mutation({
   },
 });
 
-export const updateFromWebhook = mutation({
+export const updateFromWebhookInternal = internalMutation({
   args: {
     razorpaySubscriptionId: v.string(),
     status: v.union(
@@ -177,6 +181,8 @@ export const updateFromWebhook = mutation({
     currentPeriodEnd: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const { TOKEN_LIMITS_BY_TIER } = await import("./usageTokens");
+
     const subscription = await ctx.db
       .query("subscriptions")
       .withIndex("by_razorpay_id", (q) =>
@@ -194,13 +200,13 @@ export const updateFromWebhook = mutation({
 
     await ctx.db.patch(subscription._id, updates);
 
-    // Update user subscription tier based on status
     if (args.status === "cancelled" || args.status === "expired") {
       await ctx.db.patch(subscription.userId, {
         subscriptionTier: "free" as const,
+        tokensLimit: TOKEN_LIMITS_BY_TIER["free"] ?? 200,
         updatedAt: Date.now(),
       });
-      return; // Early exit to prevent any subsequent overwrite
+      return;
     }
 
     if (args.status === "active") {
@@ -208,9 +214,58 @@ export const updateFromWebhook = mutation({
       if (sub) {
         await ctx.db.patch(subscription.userId, {
           subscriptionTier: sub.planType,
+          tokensLimit: TOKEN_LIMITS_BY_TIER[sub.planType] ?? 5000,
           updatedAt: Date.now(),
         });
       }
     }
+  },
+});
+
+// ─── Action wrappers (callable from API routes via ConvexHttpClient) ───
+
+export const getByRazorpayId = action({
+  args: { razorpaySubscriptionId: v.string() },
+  handler: async (ctx, args): Promise<unknown> => {
+    return await ctx.runQuery(
+      internal.subscriptions.getByRazorpayIdInternal,
+      args
+    );
+  },
+});
+
+export const activateFromWebhook = action({
+  args: {
+    userId: v.id("users"),
+    razorpaySubscriptionId: v.string(),
+    planType: v.union(v.literal("basic"), v.literal("pro")),
+    currentPeriodStart: v.number(),
+    currentPeriodEnd: v.number(),
+  },
+  handler: async (ctx, args): Promise<unknown> => {
+    return await ctx.runMutation(
+      internal.subscriptions.activateFromWebhookInternal,
+      args
+    );
+  },
+});
+
+export const updateFromWebhook = action({
+  args: {
+    razorpaySubscriptionId: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("paused"),
+      v.literal("cancelled"),
+      v.literal("expired")
+    ),
+    currentPeriodStart: v.optional(v.number()),
+    currentPeriodEnd: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.runMutation(
+      internal.subscriptions.updateFromWebhookInternal,
+      args
+    );
   },
 });

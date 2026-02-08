@@ -6,8 +6,8 @@ const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function GET() {
   try {
-    // Lightweight Convex connectivity check — public query, returns null for unknown IDs
-    await convex.query(api.users.getByClerkId, { clerkId: "__health_check__" });
+    // Lightweight Convex connectivity check — action wrapper, returns null for unknown IDs
+    await convex.action(api.users.getByClerkId, { clerkId: "__health_check__" });
 
     return NextResponse.json({
       status: "healthy",

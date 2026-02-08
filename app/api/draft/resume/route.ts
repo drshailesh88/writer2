@@ -12,9 +12,13 @@ export async function POST(req: NextRequest) {
   try {
     // Authenticate
     const { getToken, userId: clerkUserId } = await auth();
-    if (!(await getToken()) || !clerkUserId) {
+    const token = await getToken({ template: "convex" });
+    if (!token || !clerkUserId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+
+    // Set auth on Convex client
+    convex.setAuth(token);
 
     // Rate limit: 10/min per user
     const rateLimitResponse = enforceRateLimit(req, "draftMode", clerkUserId);

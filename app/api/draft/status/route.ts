@@ -11,9 +11,13 @@ export async function POST(req: NextRequest) {
   try {
     // Authenticate
     const { getToken } = await auth();
-    if (!(await getToken())) {
+    const token = await getToken({ template: "convex" });
+    if (!token) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+
+    // Set auth on Convex client for ownership checks
+    convex.setAuth(token);
 
     const { documentId } = await req.json();
 
@@ -24,7 +28,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check Convex for persistent workflow state
+    // Check Convex for persistent workflow state (auth-gated — only returns user's own runs)
     const workflowRun = await convex.query(api.workflowRuns.getByDocument, {
       documentId: documentId as Id<"documents">,
     });

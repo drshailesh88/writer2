@@ -58,21 +58,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get Convex user for workflow persistence
-    const convexUser = await convex.query(api.users.getByClerkId, { clerkId: clerkUserId });
-    if (!convexUser) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
     const workflow = mastra.getWorkflow("learnModeWorkflow");
     const run = await workflow.createRun();
 
     // Cache run object in memory (needed for Mastra resume)
     cacheRun(documentId, run);
 
-    // Persist workflow run to Convex
+    // Persist workflow run to Convex (auth already set — uses identity for ownership)
     const workflowRunId = await convex.mutation(api.workflowRuns.create, {
-      userId: convexUser._id,
       documentId: documentId as Id<"documents">,
       workflowType: "learn" as const,
       currentStep: "understand",

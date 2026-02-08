@@ -1,9 +1,10 @@
-import { mutation, query, internalMutation } from "./_generated/server";
+import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
 import { ConvexError, v } from "convex/values";
+
+// ─── Auth-gated mutations (called from API routes with Clerk token) ───
 
 export const create = mutation({
   args: {
-    userId: v.id("users"),
     documentId: v.id("documents"),
     workflowType: v.union(
       v.literal("draft_guided"),
@@ -15,11 +16,30 @@ export const create = mutation({
     runObject: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (!user) {
+      throw new ConvexError("User not found");
+    }
+
+    // Verify document ownership
+    const doc = await ctx.db.get(args.documentId);
+    if (!doc || doc.userId !== user._id) {
+      throw new ConvexError("Document not found or access denied");
+    }
+
     const now = Date.now();
     const WORKFLOW_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
     return await ctx.db.insert("workflowRuns", {
-      userId: args.userId,
+      userId: user._id,
       documentId: args.documentId,
       workflowType: args.workflowType,
       status: "running",
@@ -50,9 +70,23 @@ export const update = mutation({
     error: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
     const run = await ctx.db.get(args.workflowRunId);
     if (!run) {
       throw new ConvexError("Workflow run not found");
+    }
+
+    // Verify the authenticated user owns this workflow run
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (!user || run.userId !== user._id) {
+      throw new ConvexError("Access denied");
     }
 
     const updates: Record<string, unknown> = { updatedAt: Date.now() };
@@ -69,15 +103,28 @@ export const update = mutation({
 export const getByDocument = query({
   args: { documentId: v.id("documents") },
   handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (!user) return null;
+
     const runs = await ctx.db
       .query("workflowRuns")
       .filter((q) => q.eq(q.field("documentId"), args.documentId))
       .order("desc")
       .collect();
 
-    // Return the most recent active run (not completed/failed)
+    // Only return runs owned by this user
+    const userRuns = runs.filter((r) => r.userId === user._id);
+
     return (
-      runs.find(
+      userRuns.find(
         (r) => r.status === "running" || r.status === "suspended"
       ) ?? null
     );
@@ -87,18 +134,62 @@ export const getByDocument = query({
 export const getById = query({
   args: { workflowRunId: v.id("workflowRuns") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.workflowRunId);
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const run = await ctx.db.get(args.workflowRunId);
+    if (!run) return null;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (!user || run.userId !== user._id) return null;
+
+    return run;
   },
 });
 
 export const listByUser = query({
-  args: { userId: v.id("users") },
-  handler: async (ctx, args) => {
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new ConvexError("Not authenticated");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_clerk_id", (q) => q.eq("clerkId", identity.subject))
+      .unique();
+    if (!user) return [];
+
     return await ctx.db
       .query("workflowRuns")
-      .withIndex("by_user_and_document", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user_and_document", (q) => q.eq("userId", user._id))
       .order("desc")
       .collect();
+  },
+});
+
+// ─── Internal functions (called from within Convex only) ───
+
+export const internalGetByDocument = internalQuery({
+  args: { documentId: v.id("documents") },
+  handler: async (ctx, args) => {
+    const runs = await ctx.db
+      .query("workflowRuns")
+      .filter((q) => q.eq(q.field("documentId"), args.documentId))
+      .order("desc")
+      .collect();
+
+    return (
+      runs.find(
+        (r) => r.status === "running" || r.status === "suspended"
+      ) ?? null
+    );
   },
 });
 

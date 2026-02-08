@@ -97,7 +97,7 @@ async function runWorkflowAsync(
 
   try {
     // Mark as in progress
-    await client.mutation(api.deepResearchReports.updateResult, {
+    await client.action(api.deepResearchReports.updateResult, {
       reportId: reportId as never,
       status: "in_progress",
     });
@@ -108,14 +108,14 @@ async function runWorkflowAsync(
     const result = await run.start({ inputData: { topic } });
 
     if (result.status === "success") {
-      await client.mutation(api.deepResearchReports.updateResult, {
+      await client.action(api.deepResearchReports.updateResult, {
         reportId: reportId as never,
         report: result.result?.report ?? "Report generation completed but no content was produced.",
         citedPapers: result.result?.citedPapers ?? [],
         status: "completed",
       });
     } else {
-      await client.mutation(api.deepResearchReports.updateResult, {
+      await client.action(api.deepResearchReports.updateResult, {
         reportId: reportId as never,
         status: "failed",
       });
@@ -123,7 +123,7 @@ async function runWorkflowAsync(
   } catch (error) {
     console.error("Deep research workflow error:", error);
     try {
-      await client.mutation(api.deepResearchReports.updateResult, {
+      await client.action(api.deepResearchReports.updateResult, {
         reportId: reportId as never,
         status: "failed",
       });

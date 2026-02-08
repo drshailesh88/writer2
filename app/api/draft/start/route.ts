@@ -40,15 +40,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get Convex user for persistence
-    const convexUser = await convex.query(api.users.getByClerkId, { clerkId: clerkUserId });
+    // Set auth for Convex calls
+    const convexToken = await getToken({ template: "convex" });
+    if (convexToken) convex.setAuth(convexToken);
+
+    // Check subscription tier — free users cannot use Draft Mode
+    const convexUser = await convex.query(api.users.getCurrent, {});
     if (!convexUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+    if (convexUser.subscriptionTier === "free" || convexUser.subscriptionTier === "none") {
+      return NextResponse.json(
+        { error: "Draft Mode requires a Basic or Pro subscription. Please upgrade.", upgradeRequired: true },
+        { status: 403 }
+      );
+    }
 
     // Deduct tokens before starting workflow
-    const convexToken = await getToken({ template: "convex" });
-    if (convexToken) convex.setAuth(convexToken);
     try {
       await convex.mutation(api.usageTokens.deductTokens, {
         cost: TOKEN_COSTS.DRAFT_SECTION,
@@ -72,9 +80,8 @@ export async function POST(req: NextRequest) {
     // Cache the run object in memory (needed for Mastra resume)
     cacheRun(documentId, run);
 
-    // Persist workflow run to Convex (survives serverless container switches)
+    // Persist workflow run to Convex (auth set — uses identity for ownership)
     const workflowRunId = await convex.mutation(api.workflowRuns.create, {
-      userId: convexUser._id,
       documentId: documentId as Id<"documents">,
       workflowType: mode as "draft_guided" | "draft_handsoff",
       currentStep: "start",

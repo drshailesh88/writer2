@@ -1,4 +1,5 @@
-import { mutation, query, internalMutation, internalQuery } from "./_generated/server";
+import { mutation, query, internalMutation, internalQuery, action } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
 
 export const getOrCreate = mutation({
@@ -101,13 +102,7 @@ export const resetMonthlyUsage = internalMutation({
 // ─── Usage Queries & Mutations (Task 10) ───
 
 import { SUBSCRIPTION_LIMITS } from "./lib/subscriptionLimits";
-
-const TOKEN_LIMITS: Record<string, number> = {
-  none: 0,
-  free: 200,
-  basic: 5000,
-  pro: 15000,
-};
+import { TOKEN_LIMITS_BY_TIER } from "./usageTokens";
 
 export const getUsage = query({
   args: {},
@@ -140,7 +135,7 @@ export const getUsage = query({
       learnModeUsed: user.learnModeSessionsUsed ?? 0,
       learnModeLimit: limits.learnMode,
       tokensUsed: user.tokensUsed ?? 0,
-      tokensLimit: user.tokensLimit ?? TOKEN_LIMITS[tier],
+      tokensLimit: user.tokensLimit ?? TOKEN_LIMITS_BY_TIER[tier],
     };
   },
 });
@@ -209,12 +204,21 @@ export const resetAllUsageCounters = internalMutation({
   },
 });
 
-export const getByClerkId = query({
+// Internal query — only callable from within Convex
+export const getByClerkIdInternal = internalQuery({
   args: { clerkId: v.string() },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("users")
       .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.clerkId))
       .unique();
+  },
+});
+
+// Action wrapper — callable from API routes (e.g., webhooks without Clerk auth)
+export const getByClerkId = action({
+  args: { clerkId: v.string() },
+  handler: async (ctx, args): Promise<unknown> => {
+    return await ctx.runQuery(internal.users.getByClerkIdInternal, args);
   },
 });

@@ -21,7 +21,7 @@ export async function getCachedResponse(
   key: string
 ): Promise<SearchResponse | null> {
   try {
-    const entry = await convex.query(api.searchCache.getCachedSearch, {
+    const entry = await convex.action(api.searchCache.getCachedSearch, {
       queryHash: key,
     });
     if (!entry) return null;
@@ -54,7 +54,7 @@ export async function setCachedResponse(
   data: SearchResponse
 ): Promise<void> {
   try {
-    await convex.mutation(api.searchCache.setCachedSearch, {
+    await convex.action(api.searchCache.setCachedSearch, {
       queryHash: key,
       results: data.results,
       totalResults: data.totalResults,

@@ -1,4 +1,5 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation, action } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
 import { checkUsageLimit } from "./lib/subscriptionLimits";
 
@@ -46,7 +47,8 @@ export const create = mutation({
   },
 });
 
-export const updateResult = mutation({
+// Internal mutation — only callable from within Convex (actions, other mutations)
+export const updateResultInternal = internalMutation({
   args: {
     reportId: v.id("deepResearchReports"),
     report: v.optional(v.string()),
@@ -68,6 +70,23 @@ export const updateResult = mutation({
     if (args.citedPapers !== undefined) updates.citedPapers = args.citedPapers;
 
     await ctx.db.patch(args.reportId, updates);
+  },
+});
+
+// Action wrapper — callable from API routes, delegates to internal mutation
+export const updateResult = action({
+  args: {
+    reportId: v.id("deepResearchReports"),
+    report: v.optional(v.string()),
+    citedPapers: v.optional(v.any()),
+    status: v.union(
+      v.literal("in_progress"),
+      v.literal("completed"),
+      v.literal("failed")
+    ),
+  },
+  handler: async (ctx, args) => {
+    await ctx.runMutation(internal.deepResearchReports.updateResultInternal, args);
   },
 });
 

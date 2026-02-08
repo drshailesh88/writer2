@@ -1,10 +1,11 @@
 import { v } from "convex/values";
-import { query, mutation, internalMutation } from "./_generated/server";
+import { internalQuery, internalMutation, action } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
-/** Look up a cached search response by query hash. Returns null if not found or expired. */
-export const getCachedSearch = query({
+/** Internal: look up a cached search response by query hash. */
+export const getCachedSearchInternal = internalQuery({
   args: { queryHash: v.string() },
   handler: async (ctx, args) => {
     const entry = await ctx.db
@@ -14,7 +15,6 @@ export const getCachedSearch = query({
 
     if (!entry) return null;
 
-    // Check expiry
     if (entry.expiresAt < Date.now()) {
       return null;
     }
@@ -27,8 +27,8 @@ export const getCachedSearch = query({
   },
 });
 
-/** Store or update a cached search response. */
-export const setCachedSearch = mutation({
+/** Internal: store or update a cached search response. */
+export const setCachedSearchInternal = internalMutation({
   args: {
     queryHash: v.string(),
     results: v.any(),
@@ -38,7 +38,6 @@ export const setCachedSearch = mutation({
   handler: async (ctx, args) => {
     const now = Date.now();
 
-    // Check if entry already exists
     const existing = await ctx.db
       .query("searchCache")
       .withIndex("by_query_hash", (q) => q.eq("queryHash", args.queryHash))
@@ -63,6 +62,27 @@ export const setCachedSearch = mutation({
         expiresAt: now + CACHE_TTL_MS,
       });
     }
+  },
+});
+
+// ─── Action wrappers (callable from API routes/lib via ConvexHttpClient) ───
+
+export const getCachedSearch = action({
+  args: { queryHash: v.string() },
+  handler: async (ctx, args): Promise<{ results: unknown; totalResults: number; sourceStatus: unknown } | null> => {
+    return await ctx.runQuery(internal.searchCache.getCachedSearchInternal, args);
+  },
+});
+
+export const setCachedSearch = action({
+  args: {
+    queryHash: v.string(),
+    results: v.any(),
+    totalResults: v.number(),
+    sourceStatus: v.optional(v.any()),
+  },
+  handler: async (ctx, args) => {
+    await ctx.runMutation(internal.searchCache.setCachedSearchInternal, args);
   },
 });
 
