@@ -398,7 +398,8 @@ test.describe("Free Plagiarism Check Page", () => {
     await expect(
       footer.locator("text=All research needs met under one single roof")
     ).toBeVisible();
+    await expect(footer.locator("text=Privacy")).toBeVisible();
+    await expect(footer.locator("text=Terms")).toBeVisible();
     await expect(footer.locator("text=Sign In")).toBeVisible();
-    await expect(footer.locator("text=Sign Up")).toBeVisible();
   });
 });

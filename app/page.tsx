@@ -585,18 +585,30 @@ export default function LandingPage() {
             &copy; {new Date().getFullYear()} V1 Drafts. All research needs met
             under one single roof.
           </p>
-          <div className="flex gap-4">
+          <div className="flex items-center gap-4">
+            <Link
+              href="/privacy"
+              className="flex min-h-[44px] items-center text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              className="flex min-h-[44px] items-center text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Terms
+            </Link>
+            <a
+              href="mailto:support@v1drafts.com"
+              className="flex min-h-[44px] items-center text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Contact
+            </a>
             <Link
               href="/sign-in"
               className="flex min-h-[44px] items-center text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               Sign In
-            </Link>
-            <Link
-              href="/sign-up"
-              className="flex min-h-[44px] items-center text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              Sign Up
             </Link>
           </div>
         </div>

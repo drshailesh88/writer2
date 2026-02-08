@@ -45,6 +45,10 @@ export function DisclaimerModal({ open, onAccept, onDecline }: DisclaimerModalPr
             academic integrity of content submitted to journals or universities.
             You are solely responsible for your submissions.
           </p>
+          <p className="text-sm leading-relaxed font-medium text-amber-700 dark:text-amber-400">
+            Do not upload patient-identifiable medical data without proper
+            consent and IRB/Ethics Committee approval.
+          </p>
         </div>
         <DialogFooter className="gap-2 sm:gap-0">
           <Button variant="outline" onClick={onDecline} className="min-h-[44px]">
