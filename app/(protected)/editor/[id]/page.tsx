@@ -4,22 +4,21 @@ import { useParams } from "next/navigation";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, lazy, Suspense } from "react";
 import { TiptapEditor, type TiptapEditorHandle } from "@/components/editor/tiptap-editor";
-import { CitationModal } from "@/components/editor/citation-modal";
 import { DraftSelector } from "@/components/editor/draft-selector";
 import { LearnModePanel } from "@/components/editor/learn-mode-panel";
 import { DraftModePanel } from "@/components/editor/draft-mode-panel";
-import { PlagiarismPanel } from "@/components/plagiarism/plagiarism-panel";
-import { SourceDetailModal } from "@/components/plagiarism/source-detail-modal";
-import { AiDetectionPanel } from "@/components/ai-detection/ai-detection-panel";
-import { UpgradeModal } from "@/components/modals/upgrade-modal";
 import { usePlagiarismCheck, usePlagiarismUsage } from "@/lib/hooks/use-plagiarism-check";
 import { useAiDetection } from "@/lib/hooks/use-ai-detection";
-import { tiptapToBlocks } from "@/lib/export/tiptap-to-blocks";
-import { exportAsDocx } from "@/lib/export/docx-exporter";
-import { exportAsPdf } from "@/lib/export/pdf-exporter";
-import { generateBibliography, type PaperData } from "@/lib/bibliography";
+import type { PaperData } from "@/lib/bibliography";
+
+// Lazy-load heavy modals and panels (only needed on user action)
+const CitationModal = lazy(() => import("@/components/editor/citation-modal").then(m => ({ default: m.CitationModal })));
+const PlagiarismPanel = lazy(() => import("@/components/plagiarism/plagiarism-panel").then(m => ({ default: m.PlagiarismPanel })));
+const SourceDetailModal = lazy(() => import("@/components/plagiarism/source-detail-modal").then(m => ({ default: m.SourceDetailModal })));
+const AiDetectionPanel = lazy(() => import("@/components/ai-detection/ai-detection-panel").then(m => ({ default: m.AiDetectionPanel })));
+const UpgradeModal = lazy(() => import("@/components/modals/upgrade-modal").then(m => ({ default: m.UpgradeModal })));
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { PanelRight } from "lucide-react";
@@ -267,6 +266,13 @@ export default function EditorPage() {
 
     setIsExportLoading(true);
     try {
+      // Dynamic imports — docx/bibliography are heavy, load on demand
+      const [{ tiptapToBlocks }, { exportAsDocx }, { generateBibliography }] = await Promise.all([
+        import("@/lib/export/tiptap-to-blocks"),
+        import("@/lib/export/docx-exporter"),
+        import("@/lib/bibliography"),
+      ]);
+
       const blocks = tiptapToBlocks(content);
       const citationStyle = document?.citationStyle ?? "vancouver";
 
@@ -329,6 +335,13 @@ export default function EditorPage() {
 
     setIsExportLoading(true);
     try {
+      // Dynamic imports — jspdf/bibliography are heavy, load on demand
+      const [{ tiptapToBlocks }, { exportAsPdf }, { generateBibliography }] = await Promise.all([
+        import("@/lib/export/tiptap-to-blocks"),
+        import("@/lib/export/pdf-exporter"),
+        import("@/lib/bibliography"),
+      ]);
+
       const blocks = tiptapToBlocks(content);
       const citationStyle = document?.citationStyle ?? "vancouver";
 
@@ -450,61 +463,70 @@ export default function EditorPage() {
         </Sheet>
       )}
 
-      {/* Plagiarism panel (right side) */}
-      {plagiarismPanelOpen && (
-        <PlagiarismPanel
-          results={plagiarism.result}
-          isLoading={plagiarism.isLoading}
-          onSourceClick={(source) => setSelectedSource(source)}
-          onClose={handleClosePlagiarismPanel}
-        />
-      )}
+      {/* Lazy-loaded panels and modals (Suspense with null fallback — panels have their own loading states) */}
+      <Suspense fallback={null}>
+        {/* Plagiarism panel (right side) */}
+        {plagiarismPanelOpen && (
+          <PlagiarismPanel
+            results={plagiarism.result}
+            isLoading={plagiarism.isLoading}
+            onSourceClick={(source) => setSelectedSource(source)}
+            onClose={handleClosePlagiarismPanel}
+          />
+        )}
 
-      {/* AI Detection panel (right side) */}
-      {aiDetectionPanelOpen && (
-        <AiDetectionPanel
-          results={aiDetection.result}
-          isLoading={aiDetection.isLoading}
-          onClose={handleCloseAiDetectionPanel}
-        />
-      )}
+        {/* AI Detection panel (right side) */}
+        {aiDetectionPanelOpen && (
+          <AiDetectionPanel
+            results={aiDetection.result}
+            isLoading={aiDetection.isLoading}
+            onClose={handleCloseAiDetectionPanel}
+          />
+        )}
 
-      {/* Citation modal */}
-      <CitationModal
-        open={citationModalOpen}
-        onOpenChange={setCitationModalOpen}
-        papers={papers ?? []}
-        onSelect={handleCitationSelect}
-      />
+        {/* Citation modal */}
+        {citationModalOpen && (
+          <CitationModal
+            open={citationModalOpen}
+            onOpenChange={setCitationModalOpen}
+            papers={papers ?? []}
+            onSelect={handleCitationSelect}
+          />
+        )}
 
-      {/* Source detail modal */}
-      <SourceDetailModal
-        source={selectedSource}
-        open={selectedSource !== null}
-        onClose={() => setSelectedSource(null)}
-      />
+        {/* Source detail modal */}
+        {selectedSource !== null && (
+          <SourceDetailModal
+            source={selectedSource}
+            open={selectedSource !== null}
+            onClose={() => setSelectedSource(null)}
+          />
+        )}
 
-      {/* Upgrade modal */}
-      <UpgradeModal
-        feature={upgradeModal.feature}
-        currentUsage={
-          upgradeModal.feature === "plagiarism"
-            ? (usage?.plagiarismUsed ?? 0)
-            : upgradeModal.feature === "aiDetection"
-              ? (usage?.aiDetectionUsed ?? 0)
-              : 0
-        }
-        limit={
-          upgradeModal.feature === "plagiarism"
-            ? (usage?.plagiarismLimit ?? 0)
-            : upgradeModal.feature === "aiDetection"
-              ? (usage?.aiDetectionLimit ?? 0)
-              : 0
-        }
-        tier={usage?.tier ?? "free"}
-        open={upgradeModal.open}
-        onClose={() => setUpgradeModal((prev) => ({ ...prev, open: false }))}
-      />
+        {/* Upgrade modal */}
+        {upgradeModal.open && (
+          <UpgradeModal
+            feature={upgradeModal.feature}
+            currentUsage={
+              upgradeModal.feature === "plagiarism"
+                ? (usage?.plagiarismUsed ?? 0)
+                : upgradeModal.feature === "aiDetection"
+                  ? (usage?.aiDetectionUsed ?? 0)
+                  : 0
+            }
+            limit={
+              upgradeModal.feature === "plagiarism"
+                ? (usage?.plagiarismLimit ?? 0)
+                : upgradeModal.feature === "aiDetection"
+                  ? (usage?.aiDetectionLimit ?? 0)
+                  : 0
+            }
+            tier={usage?.tier ?? "free"}
+            open={upgradeModal.open}
+            onClose={() => setUpgradeModal((prev) => ({ ...prev, open: false }))}
+          />
+        )}
+      </Suspense>
 
       {/* Export toast notification */}
       {exportToast && (
