@@ -119,6 +119,26 @@ export interface FeedbackItem {
   addressed: boolean;
 }
 
+// ─── Convex Workflow Run Record ───
+
+export type WorkflowRunType = "draft_guided" | "draft_handsoff" | "learn";
+export type WorkflowRunStatus = "running" | "suspended" | "completed" | "failed";
+
+export interface WorkflowRunRecord {
+  _id: string;
+  userId: string;
+  documentId: string;
+  workflowType: WorkflowRunType;
+  status: WorkflowRunStatus;
+  currentStep: string | null;
+  stepData: unknown | null;
+  runObject: unknown | null;
+  error: string | null;
+  createdAt: number;
+  updatedAt: number;
+  expiresAt: number;
+}
+
 export interface LearnModeState {
   sessionId: string;
   documentId: string;
