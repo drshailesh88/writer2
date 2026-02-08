@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     // Check cache
     const cacheKey = buildCacheKey(query, filters, sort, page);
-    const cached = getCachedResponse(cacheKey);
+    const cached = await getCachedResponse(cacheKey);
     if (cached) {
       return NextResponse.json({ ...cached, cached: true });
     }
@@ -105,8 +105,8 @@ export async function POST(req: NextRequest) {
       cached: false,
     };
 
-    // Cache the response
-    setCachedResponse(cacheKey, response);
+    // Cache the response (fire-and-forget — don't block response)
+    setCachedResponse(cacheKey, response).catch(() => {});
 
     return NextResponse.json(response);
   } catch {
