@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { workflowRuns } from "../start/route";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { getCachedRun, removeCachedRun } from "@/lib/workflow-cache";
+
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,8 +24,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const entry = workflowRuns.get(documentId);
-    if (!entry) {
+    // Check in-memory cache for the run object
+    const run = getCachedRun(documentId);
+    if (!run) {
+      // Check Convex to give a better error message
+      const workflowRun = await convex.query(api.workflowRuns.getByDocument, {
+        documentId: documentId as Id<"documents">,
+      });
+
+      if (workflowRun) {
+        return NextResponse.json(
+          { error: "Workflow session was lost due to a server restart. Please start a new workflow." },
+          { status: 410 }
+        );
+      }
+
       return NextResponse.json(
         { error: "No active workflow found for this document. Please start a new one." },
         { status: 404 }
@@ -28,19 +46,39 @@ export async function POST(req: NextRequest) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const run = entry.run as any;
-
-    // Resume the workflow with user's data
-    const result = await run.resume({
+    const result = await (run as any).resume({
       step: stepId,
       resumeData: resumeData || { approved: true },
     });
 
     const response = buildResponse(result);
 
-    // Clean up if completed
-    if (result.status === "success") {
-      workflowRuns.delete(documentId);
+    // Update Convex state
+    const workflowRun = await convex.query(api.workflowRuns.getByDocument, {
+      documentId: documentId as Id<"documents">,
+    });
+
+    if (workflowRun) {
+      if (result.status === "success") {
+        removeCachedRun(documentId);
+        await convex.mutation(api.workflowRuns.update, {
+          workflowRunId: workflowRun._id,
+          status: "completed",
+        });
+      } else if (result.status === "suspended") {
+        await convex.mutation(api.workflowRuns.update, {
+          workflowRunId: workflowRun._id,
+          status: "suspended",
+          currentStep: result.suspended?.[0]?.[0] ?? result.suspended?.[0] ?? "unknown",
+        });
+      } else if (result.status === "failed") {
+        removeCachedRun(documentId);
+        await convex.mutation(api.workflowRuns.update, {
+          workflowRunId: workflowRun._id,
+          status: "failed",
+          error: result.error?.message ?? "Workflow failed",
+        });
+      }
     }
 
     return NextResponse.json(response);

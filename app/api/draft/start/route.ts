@@ -4,6 +4,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { mastra } from "@/lib/mastra";
+import { cacheRun, removeCachedRun } from "@/lib/workflow-cache";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -45,6 +46,9 @@ export async function POST(req: NextRequest) {
     const workflow = mastra.getWorkflow(workflowKey as "draftGuidedWorkflow" | "draftHandsOffWorkflow");
     const run = await workflow.createRun();
 
+    // Cache the run object in memory (needed for Mastra resume)
+    cacheRun(documentId, run);
+
     // Persist workflow run to Convex (survives serverless container switches)
     const workflowRunId = await convex.mutation(api.workflowRuns.create, {
       userId: convexUser._id,
@@ -65,6 +69,7 @@ export async function POST(req: NextRequest) {
     if (token) convex.setAuth(token);
 
     if (result.status === "success") {
+      removeCachedRun(documentId);
       await convex.mutation(api.workflowRuns.update, {
         workflowRunId,
         status: "completed",
