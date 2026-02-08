@@ -176,6 +176,33 @@ export default defineSchema({
     .index("by_user_id", ["userId"])
     .index("by_document_id", ["documentId"]),
 
+  // ─── Workflow Runs (Persistent state for Draft/Learn mode workflows) ───
+  workflowRuns: defineTable({
+    userId: v.id("users"),
+    documentId: v.id("documents"),
+    workflowType: v.union(
+      v.literal("draft_guided"),
+      v.literal("draft_handsoff"),
+      v.literal("learn")
+    ),
+    status: v.union(
+      v.literal("running"),
+      v.literal("suspended"),
+      v.literal("completed"),
+      v.literal("failed")
+    ),
+    currentStep: v.optional(v.string()),
+    stepData: v.optional(v.any()),
+    runObject: v.optional(v.any()),
+    error: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_user_and_document", ["userId", "documentId"])
+    .index("by_status", ["status"])
+    .index("by_expires_at", ["expiresAt"]),
+
   // ─── Subscriptions ───
   subscriptions: defineTable({
     userId: v.id("users"),
