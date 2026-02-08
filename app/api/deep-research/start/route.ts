@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { mastra } from "@/lib/mastra";
+import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -18,14 +19,18 @@ export async function POST(req: NextRequest) {
     }
 
     // Authenticate
-    const { getToken } = await auth();
+    const { getToken, userId: clerkUserId } = await auth();
     const token = await getToken({ template: "convex" });
-    if (!token) {
+    if (!token || !clerkUserId) {
       return NextResponse.json(
         { error: "Not authenticated" },
         { status: 401 }
       );
     }
+
+    // Rate limit: 3/min per user
+    const rateLimitResponse = enforceRateLimit(req, "deepResearch", clerkUserId);
+    if (rateLimitResponse) return rateLimitResponse;
 
     convex.setAuth(token);
 

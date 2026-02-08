@@ -3,6 +3,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { auth } from "@clerk/nextjs/server";
 import { api } from "@/convex/_generated/api";
 import { submitPlagiarismScan } from "@/lib/copyleaks";
+import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -21,6 +22,10 @@ export async function POST(req: NextRequest) {
 
     // Check authentication
     const { getToken, userId: clerkUserId } = await auth();
+
+    // Rate limit: 5/min, keyed by userId or IP for anonymous
+    const rateLimitResponse = enforceRateLimit(req, "plagiarism", clerkUserId);
+    if (rateLimitResponse) return rateLimitResponse;
 
     if (!clerkUserId) {
       // Anonymous flow — enforce 1000 word limit

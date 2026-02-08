@@ -3,6 +3,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { auth } from "@clerk/nextjs/server";
 import { api } from "@/convex/_generated/api";
 import { submitAiDetection } from "@/lib/copyleaks";
+import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -25,6 +26,10 @@ export async function POST(req: NextRequest) {
         { status: 401 }
       );
     }
+
+    // Rate limit: 5/min per user
+    const rateLimitResponse = enforceRateLimit(req, "aiDetection", clerkUserId);
+    if (rateLimitResponse) return rateLimitResponse;
 
     const token = await getToken({ template: "convex" });
     if (token) {
