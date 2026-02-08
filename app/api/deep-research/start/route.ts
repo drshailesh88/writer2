@@ -4,6 +4,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { mastra } from "@/lib/mastra";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -33,6 +34,19 @@ export async function POST(req: NextRequest) {
     if (rateLimitResponse) return rateLimitResponse;
 
     convex.setAuth(token);
+
+    // Deduct tokens before starting research
+    try {
+      await convex.mutation(api.usageTokens.deductTokens, {
+        cost: TOKEN_COSTS.DEEP_RESEARCH,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Insufficient tokens";
+      return NextResponse.json(
+        { error: message, upgradeRequired: true },
+        { status: 402 }
+      );
+    }
 
     // Create report in Convex (also checks subscription limits)
     let reportId: string;

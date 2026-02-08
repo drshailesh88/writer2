@@ -4,6 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { api } from "@/convex/_generated/api";
 import { submitPlagiarismScan } from "@/lib/copyleaks";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -50,6 +51,21 @@ export async function POST(req: NextRequest) {
       }
     } else {
       convex.clearAuth();
+    }
+
+    // Deduct tokens for authenticated users (anonymous free funnel is exempt)
+    if (clerkUserId) {
+      try {
+        await convex.mutation(api.usageTokens.deductTokens, {
+          cost: TOKEN_COSTS.PLAGIARISM,
+        });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "Insufficient tokens";
+        return NextResponse.json(
+          { error: message, upgradeRequired: true },
+          { status: 402 }
+        );
+      }
     }
 
     // Create check record in Convex (handles usage limit enforcement)

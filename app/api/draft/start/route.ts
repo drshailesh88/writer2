@@ -6,6 +6,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { mastra } from "@/lib/mastra";
 import { cacheRun, removeCachedRun } from "@/lib/workflow-cache";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -41,6 +42,21 @@ export async function POST(req: NextRequest) {
     const convexUser = await convex.query(api.users.getByClerkId, { clerkId: clerkUserId });
     if (!convexUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Deduct tokens before starting workflow
+    const convexToken = await getToken({ template: "convex" });
+    if (convexToken) convex.setAuth(convexToken);
+    try {
+      await convex.mutation(api.usageTokens.deductTokens, {
+        cost: TOKEN_COSTS.DRAFT_SECTION,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Insufficient tokens";
+      return NextResponse.json(
+        { error: message, upgradeRequired: true },
+        { status: 402 }
+      );
     }
 
     const workflowKey =

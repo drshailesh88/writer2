@@ -7,6 +7,7 @@ import { validateCoachResponse } from "@/lib/mastra/learn-mode-guard";
 import { formatExamplesForPrompt, getSentenceStarters } from "@/lib/examples/loader";
 import type { ConversationMessage, LearnModeStage } from "@/lib/mastra/types";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -44,6 +45,20 @@ export async function POST(req: NextRequest) {
           { status: 403 }
         );
       }
+    }
+
+    // Deduct tokens before processing message
+    convex.setAuth(token);
+    try {
+      await convex.mutation(api.usageTokens.deductTokens, {
+        cost: TOKEN_COSTS.LEARN_MESSAGE,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Insufficient tokens";
+      return NextResponse.json(
+        { error: message, upgradeRequired: true },
+        { status: 402 }
+      );
     }
 
     const agent = socraticCoachAgent;
