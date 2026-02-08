@@ -1,4 +1,4 @@
-type SubscriptionTier = "none" | "free" | "basic" | "pro";
+export type SubscriptionTier = "none" | "free" | "basic" | "pro";
 type Feature = "plagiarism" | "aiDetection" | "deepResearch" | "draftMode" | "learnMode" | "export";
 
 // -1 means unlimited, 0 means not available
@@ -36,6 +36,20 @@ export const SUBSCRIPTION_LIMITS: Record<SubscriptionTier, Record<Feature, numbe
     export: -1,
   },
 };
+
+// ─── Monthly Token Allocations ───
+
+export const TOKEN_ALLOCATIONS: Record<SubscriptionTier, number> = {
+  none: 0,
+  free: 200,
+  basic: 5000,
+  pro: 15000,
+};
+
+/** Get the monthly token limit for a given tier. */
+export function getTokenLimit(tier: SubscriptionTier): number {
+  return TOKEN_ALLOCATIONS[tier];
+}
 
 export function checkUsageLimit(
   tier: SubscriptionTier,
