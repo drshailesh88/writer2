@@ -2,16 +2,57 @@ import { NextRequest, NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { parsePlagiarismResult } from "@/lib/copyleaks";
+import crypto from "crypto";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+
+function verifyCopyleaksSignature(
+  rawBody: string,
+  signature: string | null
+): boolean {
+  const secret = process.env.COPYLEAKS_WEBHOOK_SECRET || process.env.COPYLEAKS_API_KEY;
+  if (!secret || !signature) return false;
+
+  try {
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(rawBody)
+      .digest("hex");
+
+    return crypto.timingSafeEqual(
+      Buffer.from(signature),
+      Buffer.from(expectedSignature)
+    );
+  } catch {
+    return false;
+  }
+}
 
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ status: string }> }
 ) {
   try {
+    // Read raw body for signature verification
+    const rawBody = await req.text();
+
+    // Verify webhook signature if secret is configured
+    const webhookSecret = process.env.COPYLEAKS_WEBHOOK_SECRET || process.env.COPYLEAKS_API_KEY;
+    if (webhookSecret) {
+      const signature = req.headers.get("x-copyleaks-signature")
+        || req.headers.get("authorization");
+
+      if (!verifyCopyleaksSignature(rawBody, signature)) {
+        console.error("Copyleaks webhook: Invalid or missing signature");
+        return NextResponse.json(
+          { error: "Unauthorized: Invalid webhook signature" },
+          { status: 401 }
+        );
+      }
+    }
+
     const { status } = await params;
-    const payload = await req.json();
+    const payload = JSON.parse(rawBody);
     const scanId =
       payload?.scannedDocument?.scanId || payload?.scanId || "";
 
@@ -59,11 +100,6 @@ export async function POST(
             status: "failed",
           });
         }
-        // Note: Usage counter decrement would need user context
-        // which we don't have in webhook. The counter was already
-        // incremented on submission. For failed scans, we accept
-        // the slight over-count as a tradeoff. The user can contact
-        // support for manual adjustment if needed.
       }
     }
 
