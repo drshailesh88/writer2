@@ -203,6 +203,18 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_expires_at", ["expiresAt"]),
 
+  // ─── Search Cache (persistent, survives cold starts) ───
+  searchCache: defineTable({
+    queryHash: v.string(),
+    results: v.any(),
+    totalResults: v.number(),
+    sourceStatus: v.optional(v.any()),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_query_hash", ["queryHash"])
+    .index("by_expires_at", ["expiresAt"]),
+
   // ─── Subscriptions ───
   subscriptions: defineTable({
     userId: v.id("users"),
