@@ -337,15 +337,23 @@ test.describe("Navigation — Authenticated Shell", () => {
 /* ── Navigation Accessibility ── */
 
 test.describe("Navigation — Accessibility", () => {
+  test.skip(
+    !process.env.CLERK_TESTING_TOKEN,
+    "Requires CLERK_TESTING_TOKEN"
+  );
+
+  test.beforeEach(async ({ page }) => {
+    if (process.env.CLERK_TESTING_TOKEN) {
+      await page.goto("/");
+      await page.evaluate((token) => {
+        document.cookie = `__session=${token}; path=/`;
+      }, process.env.CLERK_TESTING_TOKEN);
+    }
+  });
+
   test("mobile menu button has aria-label", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 667 });
     await page.goto("/dashboard");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
 
     const menuButton = page.locator('button[aria-label="Open menu"]');
     await expect(menuButton).toBeVisible();
@@ -353,12 +361,6 @@ test.describe("Navigation — Accessibility", () => {
 
   test("navigation has semantic header element", async ({ page }) => {
     await page.goto("/dashboard");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
 
     await expect(page.locator("header")).toBeVisible();
   });

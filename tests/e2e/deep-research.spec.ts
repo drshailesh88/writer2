@@ -16,7 +16,9 @@ test.describe("Deep Research — Unauthenticated", () => {
  *
  * To enable, remove .skip and set up test fixtures.
  */
-test.describe.skip("Deep Research — Authenticated", () => {
+test.describe("Deep Research — Authenticated", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("page loads with topic input and heading", async ({ page }) => {
     await page.goto("/deep-research");
 
@@ -92,7 +94,9 @@ test.describe.skip("Deep Research — Authenticated", () => {
 /**
  * Subscription gating tests.
  */
-test.describe.skip("Deep Research — Subscription Gating", () => {
+test.describe("Deep Research — Subscription Gating", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("free-tier user sees upgrade modal", async ({ page }) => {
     await page.goto("/deep-research");
 
@@ -124,7 +128,9 @@ test.describe.skip("Deep Research — Subscription Gating", () => {
 /**
  * Mobile responsiveness tests.
  */
-test.describe.skip("Deep Research — Mobile", () => {
+test.describe("Deep Research — Mobile", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("responsive layout on mobile viewport", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/deep-research");
@@ -150,7 +156,9 @@ test.describe.skip("Deep Research — Mobile", () => {
 /**
  * Navigation tests.
  */
-test.describe.skip("Deep Research — Navigation", () => {
+test.describe("Deep Research — Navigation", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("Deep Research link is visible in desktop nav", async ({ page }) => {
     await page.goto("/dashboard");
 

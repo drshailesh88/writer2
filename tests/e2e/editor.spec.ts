@@ -16,7 +16,9 @@ test.describe("Editor — Unauthenticated", () => {
  *
  * To enable, remove .skip and set up test fixtures.
  */
-test.describe.skip("Editor — Authenticated", () => {
+test.describe("Editor — Authenticated", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("loads editor with IMRAD template for new document", async ({
     page,
   }) => {
@@ -167,7 +169,9 @@ test.describe.skip("Editor — Authenticated", () => {
  * Requires authenticated session with citations in the document.
  * To enable, remove .skip and set up test fixtures.
  */
-test.describe.skip("Bibliography — Authenticated", () => {
+test.describe("Bibliography — Authenticated", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("no bibliography shown when document has 0 citations", async ({
     page,
   }) => {

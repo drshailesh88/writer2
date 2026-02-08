@@ -15,21 +15,9 @@ test.describe("AI Detection — Editor Integration", () => {
   /* ── Toolbar Button Presence ── */
 
   test.describe("Authenticated — Toolbar Buttons", () => {
-    test.beforeEach(async ({ page }) => {
-      const url = page.url();
-      if (url.includes("sign-in")) {
-        test.skip();
-        return;
-      }
-    });
+    test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
 
     test("AI Detection button exists in toolbar", async ({ page }) => {
-      const url = page.url();
-      if (url.includes("sign-in")) {
-        test.skip();
-        return;
-      }
-
       const editorExists = await page.locator(".tiptap").isVisible();
       if (!editorExists) {
         test.skip();
@@ -45,12 +33,6 @@ test.describe("AI Detection — Editor Integration", () => {
     });
 
     test("AI Detection button has correct icon", async ({ page }) => {
-      const url = page.url();
-      if (url.includes("sign-in")) {
-        test.skip();
-        return;
-      }
-
       const editorExists = await page.locator(".tiptap").isVisible();
       if (!editorExists) {
         test.skip();
@@ -67,12 +49,6 @@ test.describe("AI Detection — Editor Integration", () => {
     test("AI Detection button shows loading state when clicked", async ({
       page,
     }) => {
-      const url = page.url();
-      if (url.includes("sign-in")) {
-        test.skip();
-        return;
-      }
-
       const editorExists = await page.locator(".tiptap").isVisible();
       if (!editorExists) {
         test.skip();
@@ -101,12 +77,6 @@ test.describe("AI Detection — Editor Integration", () => {
     test("both plagiarism and AI Detection buttons are visible", async ({
       page,
     }) => {
-      const url = page.url();
-      if (url.includes("sign-in")) {
-        test.skip();
-        return;
-      }
-
       const editorExists = await page.locator(".tiptap").isVisible();
       if (!editorExists) {
         test.skip();
@@ -124,89 +94,71 @@ test.describe("AI Detection — Editor Integration", () => {
 
   /* ── Mobile Viewport ── */
 
-  test("AI Detection button has 44px minimum touch target on mobile", async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto("/editor/test-document-id");
+  test.describe("Mobile Viewport", () => {
+    test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
 
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
+    test("AI Detection button has 44px minimum touch target on mobile", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.goto("/editor/test-document-id");
 
-    const editorExists = await page.locator(".tiptap").isVisible();
-    if (!editorExists) {
-      test.skip();
-      return;
-    }
-
-    const aiDetectionButton = page.locator('button[aria-label="AI Detection"]');
-    const box = await aiDetectionButton.boundingBox();
-
-    if (box) {
-      expect(box.height).toBeGreaterThanOrEqual(44);
-    }
-  });
-
-  test("AI Detection button visible on mobile viewport", async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto("/editor/test-document-id");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
-
-    const editorExists = await page.locator(".tiptap").isVisible();
-    if (!editorExists) {
-      test.skip();
-      return;
-    }
-
-    // On mobile, button text might be hidden but icon should be visible
-    const aiDetectionButton = page.locator('button[aria-label="AI Detection"]');
-    await expect(aiDetectionButton).toBeVisible();
-  });
-
-  test("toolbar buttons don't overflow on mobile", async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto("/editor/test-document-id");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
-
-    const toolbar = page.locator('[role="toolbar"]');
-    const editorExists = await page.locator(".tiptap").isVisible();
-
-    if (editorExists) {
-      await expect(toolbar).toBeVisible();
-
-      // No horizontal overflow
-      const toolbarBox = await toolbar.boundingBox();
-      if (toolbarBox) {
-        expect(toolbarBox.width).toBeLessThanOrEqual(375);
+      const editorExists = await page.locator(".tiptap").isVisible();
+      if (!editorExists) {
+        test.skip();
+        return;
       }
-    }
+
+      const aiDetectionButton = page.locator('button[aria-label="AI Detection"]');
+      const box = await aiDetectionButton.boundingBox();
+
+      if (box) {
+        expect(box.height).toBeGreaterThanOrEqual(44);
+      }
+    });
+
+    test("AI Detection button visible on mobile viewport", async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.goto("/editor/test-document-id");
+
+      const editorExists = await page.locator(".tiptap").isVisible();
+      if (!editorExists) {
+        test.skip();
+        return;
+      }
+
+      // On mobile, button text might be hidden but icon should be visible
+      const aiDetectionButton = page.locator('button[aria-label="AI Detection"]');
+      await expect(aiDetectionButton).toBeVisible();
+    });
+
+    test("toolbar buttons don't overflow on mobile", async ({ page }) => {
+      await page.setViewportSize({ width: 375, height: 812 });
+      await page.goto("/editor/test-document-id");
+
+      const toolbar = page.locator('[role="toolbar"]');
+      const editorExists = await page.locator(".tiptap").isVisible();
+
+      if (editorExists) {
+        await expect(toolbar).toBeVisible();
+
+        // No horizontal overflow
+        const toolbarBox = await toolbar.boundingBox();
+        if (toolbarBox) {
+          expect(toolbarBox.width).toBeLessThanOrEqual(375);
+        }
+      }
+    });
   });
 });
 
 /* ── AI Detection Panel Tests ── */
 
 test.describe("AI Detection — Results Panel", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("AI Detection panel renders after check completes", async ({ page }) => {
     await page.goto("/editor/test-document-id");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
 
     const editorExists = await page.locator(".tiptap").isVisible();
     if (!editorExists) {
@@ -254,14 +206,10 @@ test.describe("AI Detection — Results Panel", () => {
 /* ── Accessibility ── */
 
 test.describe("AI Detection — Accessibility", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("AI Detection button has proper aria-label", async ({ page }) => {
     await page.goto("/editor/test-document-id");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
 
     const editorExists = await page.locator(".tiptap").isVisible();
     if (!editorExists) {
@@ -275,12 +223,6 @@ test.describe("AI Detection — Accessibility", () => {
 
   test("toolbar maintains keyboard navigation", async ({ page }) => {
     await page.goto("/editor/test-document-id");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
 
     const editorExists = await page.locator(".tiptap").isVisible();
     if (!editorExists) {

@@ -18,7 +18,9 @@ test.describe("Export — Unauthenticated", () => {
  *
  * To enable, remove .skip and set up test fixtures.
  */
-test.describe.skip("Export — Authenticated", () => {
+test.describe("Export — Authenticated", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("export dropdown is visible in toolbar with Export label", async ({
     page,
   }) => {
@@ -78,7 +80,9 @@ test.describe.skip("Export — Authenticated", () => {
  * Requires authenticated session with a document that has content.
  * To enable, remove .skip and set up test fixtures.
  */
-test.describe.skip("Export Flow — Authenticated", () => {
+test.describe("Export Flow — Authenticated", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("clicking Export as DOCX triggers a file download with .docx extension", async ({
     page,
   }) => {
@@ -120,7 +124,9 @@ test.describe.skip("Export Flow — Authenticated", () => {
  * Requires authenticated session as a free-tier user.
  * To enable, remove .skip and set up test fixtures.
  */
-test.describe.skip("Export — Subscription Gating", () => {
+test.describe("Export — Subscription Gating", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("free-tier user sees upgrade modal when clicking export", async ({
     page,
   }) => {

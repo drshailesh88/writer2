@@ -12,21 +12,13 @@ test.describe("Search Page — Unauthenticated", () => {
 /* ── Search Page — Structure & Layout ── */
 
 test.describe("Search Page — Layout", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test.beforeEach(async ({ page }) => {
-    // Navigate to search page — will redirect if not authenticated
-    // For unauthenticated structural tests, we verify the redirect above
-    // These tests verify the page structure when accessible
     await page.goto("/search");
   });
 
   test("search page has correct heading and description", async ({ page }) => {
-    // If redirected to sign-in, skip structural tests
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
-
     await expect(page.locator("h1")).toContainText("Search Papers");
     await expect(
       page.locator("text=Search across PubMed, Semantic Scholar, and OpenAlex")
@@ -34,34 +26,16 @@ test.describe("Search Page — Layout", () => {
   });
 
   test("search page has search input and button", async ({ page }) => {
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
-
     await expect(page.locator('input[aria-label="Search papers"]')).toBeVisible();
     await expect(page.locator('button:has-text("Search")')).toBeVisible();
   });
 
   test("search button is disabled when input is empty", async ({ page }) => {
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
-
     const searchButton = page.locator('button:has-text("Search")');
     await expect(searchButton).toBeDisabled();
   });
 
   test("shows empty state before searching", async ({ page }) => {
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
-
     await expect(
       page.locator("text=Search across 200M+ academic papers")
     ).toBeVisible();
@@ -71,32 +45,17 @@ test.describe("Search Page — Layout", () => {
 /* ── Navigation — Search Link ── */
 
 test.describe("Navigation — Search Link", () => {
-  test("navigation includes Search Papers link on desktop", async ({
-    page,
-  }) => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
+  test("navigation includes Search Papers link on desktop", async ({ page }) => {
     await page.goto("/dashboard");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
-
     await expect(page.locator('a[href="/search"]')).toBeVisible();
     await expect(page.locator("text=Search Papers")).toBeVisible();
   });
 
-  test("navigation includes Search Papers link on mobile", async ({
-    page,
-  }) => {
+  test("navigation includes Search Papers link on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/dashboard");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
 
     // Open mobile menu
     await page.locator('button[aria-label="Open menu"]').click();
@@ -107,15 +66,11 @@ test.describe("Navigation — Search Link", () => {
 /* ── Mobile Responsiveness ── */
 
 test.describe("Search Page — Mobile Responsiveness", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("no horizontal scroll on iPhone SE viewport", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/search");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
 
     const scrollWidth = await page.evaluate(
       () => document.documentElement.scrollWidth
@@ -127,12 +82,6 @@ test.describe("Search Page — Mobile Responsiveness", () => {
   test("touch targets are at least 44px on mobile", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto("/search");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
 
     // Check search button
     const searchButton = page.locator('button:has-text("Search")');
@@ -153,15 +102,10 @@ test.describe("Search Page — Mobile Responsiveness", () => {
 /* ── Accessibility ── */
 
 test.describe("Search Page — Accessibility", () => {
+  test.skip(!process.env.CLERK_TESTING_TOKEN, "Requires CLERK_TESTING_TOKEN");
+
   test("search input has proper aria-label", async ({ page }) => {
     await page.goto("/search");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
-
     await expect(
       page.locator('input[aria-label="Search papers"]')
     ).toBeVisible();
@@ -169,13 +113,6 @@ test.describe("Search Page — Accessibility", () => {
 
   test("page has correct heading hierarchy", async ({ page }) => {
     await page.goto("/search");
-
-    const url = page.url();
-    if (url.includes("sign-in")) {
-      test.skip();
-      return;
-    }
-
     const h1Count = await page.locator("h1").count();
     expect(h1Count).toBe(1);
   });
