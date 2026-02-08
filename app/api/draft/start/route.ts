@@ -1,0 +1,107 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { mastra } from "@/lib/mastra";
+
+// In-memory store for workflow runs (keyed by documentId) with TTL cleanup
+const WORKFLOW_TTL_MS = 30 * 60 * 1000; // 30 minutes
+
+const workflowRuns = new Map<string, { run: unknown; mode: string; createdAt: number }>();
+
+// Periodic cleanup of stale workflow runs to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of workflowRuns) {
+    if (now - entry.createdAt > WORKFLOW_TTL_MS) {
+      workflowRuns.delete(key);
+    }
+  }
+}, 5 * 60 * 1000); // Check every 5 minutes
+
+export { workflowRuns };
+
+export async function POST(req: NextRequest) {
+  try {
+    // Authenticate
+    const { getToken } = await auth();
+    if (!(await getToken())) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    const { topic, mode, documentId } = await req.json();
+
+    if (!topic || !mode || !documentId) {
+      return NextResponse.json(
+        { error: "Missing required fields: topic, mode, documentId" },
+        { status: 400 }
+      );
+    }
+
+    if (typeof topic === "string" && topic.length > 500) {
+      return NextResponse.json(
+        { error: "Topic must be under 500 characters" },
+        { status: 400 }
+      );
+    }
+
+    const workflowKey =
+      mode === "draft_handsoff"
+        ? "draftHandsOffWorkflow"
+        : "draftGuidedWorkflow";
+
+    const workflow = mastra.getWorkflow(workflowKey as "draftGuidedWorkflow" | "draftHandsOffWorkflow");
+    const run = await workflow.createRun();
+
+    // Store the run reference for later resume
+    workflowRuns.set(documentId, { run, mode, createdAt: Date.now() });
+
+    // Start the workflow
+    const result = await run.start({
+      inputData: { topic },
+    });
+
+    const response = buildResponse(result);
+
+    // Clean up if completed
+    if (result.status === "success") {
+      workflowRuns.delete(documentId);
+    }
+
+    return NextResponse.json(response);
+  } catch (error) {
+    console.error("Draft workflow start error:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to start workflow" },
+      { status: 500 }
+    );
+  }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function buildResponse(result: any) {
+  if (result.status === "suspended") {
+    // `suspended` is an array of arrays of step IDs
+    const suspendedStepId = result.suspended?.[0]?.[0] ?? result.suspended?.[0];
+
+    return {
+      status: "suspended",
+      suspendedStep: suspendedStepId,
+      suspendPayload: result.suspendPayload,
+    };
+  }
+
+  if (result.status === "success") {
+    return {
+      status: "completed",
+      completeDraft: result.result?.completeDraft ?? null,
+    };
+  }
+
+  if (result.status === "failed") {
+    return {
+      status: "error",
+      error: result.error?.message ?? "Workflow failed",
+    };
+  }
+
+  return { status: result.status };
+}
