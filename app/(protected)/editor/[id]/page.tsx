@@ -12,6 +12,7 @@ import { DraftModePanel } from "@/components/editor/draft-mode-panel";
 import { usePlagiarismCheck, usePlagiarismUsage } from "@/lib/hooks/use-plagiarism-check";
 import { useAiDetection } from "@/lib/hooks/use-ai-detection";
 import type { PaperData } from "@/lib/bibliography";
+import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 // Lazy-load heavy modals and panels (only needed on user action)
 const CitationModal = lazy(() => import("@/components/editor/citation-modal").then(m => ({ default: m.CitationModal })));
@@ -62,6 +63,7 @@ export default function EditorPage() {
   const updateDocument = useMutation(api.documents.update);
   const insertCitationMutation = useMutation(api.citations.insert);
   const removeCitationMutation = useMutation(api.citations.remove);
+  const deductTokens = useMutation(api.usageTokens.deductTokens);
 
   const papers = useQuery(api.papers.list, {});
   const citations = useQuery(api.citations.listByDocument, {
@@ -266,6 +268,15 @@ export default function EditorPage() {
 
     setIsExportLoading(true);
     try {
+      // Deduct export tokens
+      try {
+        await deductTokens({ cost: TOKEN_COSTS.EXPORT });
+      } catch {
+        setIsExportLoading(false);
+        setUpgradeModal({ feature: "export", open: true });
+        return;
+      }
+
       // Dynamic imports — docx/bibliography are heavy, load on demand
       const [{ tiptapToBlocks }, { exportAsDocx }, { generateBibliography }] = await Promise.all([
         import("@/lib/export/tiptap-to-blocks"),
@@ -308,7 +319,7 @@ export default function EditorPage() {
     } finally {
       setIsExportLoading(false);
     }
-  }, [document, citations, papers, usage]);
+  }, [document, citations, papers, usage, deductTokens]);
 
   const handleExportPdf = useCallback(async () => {
     // Check subscription tier — free/none users cannot export
@@ -335,6 +346,15 @@ export default function EditorPage() {
 
     setIsExportLoading(true);
     try {
+      // Deduct export tokens
+      try {
+        await deductTokens({ cost: TOKEN_COSTS.EXPORT });
+      } catch {
+        setIsExportLoading(false);
+        setUpgradeModal({ feature: "export", open: true });
+        return;
+      }
+
       // Dynamic imports — jspdf/bibliography are heavy, load on demand
       const [{ tiptapToBlocks }, { exportAsPdf }, { generateBibliography }] = await Promise.all([
         import("@/lib/export/tiptap-to-blocks"),
@@ -377,7 +397,7 @@ export default function EditorPage() {
     } finally {
       setIsExportLoading(false);
     }
-  }, [document, citations, papers, usage]);
+  }, [document, citations, papers, usage, deductTokens]);
 
   const sidebarContent = isLearnMode ? (
     <LearnModePanel
