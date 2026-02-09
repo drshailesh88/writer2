@@ -82,3 +82,18 @@ Check what others are working on with `task-master list` before starting.
 
 ## Task Master AI Instructions
 @./.taskmaster/CLAUDE.md
+
+## Active Technologies
+- TypeScript 5.x (strict mode), Node.js 20+ + Next.js 14+ (App Router), Convex, @clerk/nextjs, shadcn/ui, Tailwind CSS 3.x (001-foundation-auth)
+- Convex (serverless database — TypeScript functions only, zero SQL) (001-foundation-auth)
+- TypeScript 5.x (strict mode) + Convex 1.31.7 (defineSchema, defineTable, v validators, mutation, query, internalMutation) (002-convex-database-schema)
+- Convex (serverless document database with built-in file storage) (002-convex-database-schema)
+- TypeScript 5.x, Next.js 16.1.6 (App Router) + Next.js API routes (search aggregation), Convex (persistence), Clerk (auth), shadcn/ui + Tailwind CSS (UI), lucide-react (icons) (004-paper-search)
+- Convex (papers, collections tables — already exist) (004-paper-search)
+- TypeScript 5.x (strict mode) + Next.js 14+ (App Router), Convex 1.31.7, Clerk, plagiarism-checker (Copyleaks SDK), razorpay, shadcn/ui, Tailwind CSS, Tiptap, lucide-reac (007-plagiarism-detection)
+- Convex (plagiarismChecks, aiDetectionChecks, subscriptions, users tables — all pre-existing) (007-plagiarism-detection)
+- TypeScript 5.x (strict mode) + Next.js 14+ (App Router), docx (npm, MIT), jspdf (npm, MIT), shadcn/ui, Tailwind CSS, Tiptap (011-document-export)
+- Convex (existing documents, citations, papers, users tables — no schema changes) (011-document-export)
+
+## Recent Changes
+- 001-foundation-auth: Added TypeScript 5.x (strict mode), Node.js 20+ + Next.js 14+ (App Router), Convex, @clerk/nextjs, shadcn/ui, Tailwind CSS 3.x

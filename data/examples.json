@@ -1,0 +1,162 @@
+[
+  {
+    "id": 1,
+    "category": "methodology",
+    "section": "Study Design",
+    "text": "This was a prospective, randomized, double-blind, placebo-controlled trial conducted at a single tertiary care center between January 2019 and December 2021.",
+    "source": "PMID:35124567",
+    "paperTitle": "Efficacy of early mobilization after laparoscopic cholecystectomy"
+  },
+  {
+    "id": 2,
+    "category": "methodology",
+    "section": "Study Design",
+    "text": "We performed a retrospective cohort analysis using electronic health records from three urban teaching hospitals, identifying all adult patients (age >=18 years) admitted with a primary diagnosis of acute myocardial infarction.",
+    "source": "PMID:34987234",
+    "paperTitle": "Predictors of 30-day readmission following acute myocardial infarction"
+  },
+  {
+    "id": 3,
+    "category": "methodology",
+    "section": "Inclusion/Exclusion Criteria",
+    "text": "Patients were included if they were aged 18-65 years, had a confirmed diagnosis of type 2 diabetes mellitus (HbA1c > 6.5%), and had been on stable medication for at least 3 months. Exclusion criteria included pregnancy, chronic kidney disease (eGFR < 30 mL/min), and history of diabetic ketoacidosis within the past year.",
+    "source": "PMID:36234890",
+    "paperTitle": "Continuous glucose monitoring in type 2 diabetes management"
+  },
+  {
+    "id": 4,
+    "category": "methodology",
+    "section": "Inclusion/Exclusion Criteria",
+    "text": "We excluded patients with incomplete follow-up data (n=47), those who underwent emergency surgery (n=12), and those with pre-existing neurological conditions that could confound outcome assessment (n=8).",
+    "source": "PMID:35567123",
+    "paperTitle": "Post-operative cognitive decline in elderly surgical patients"
+  },
+  {
+    "id": 5,
+    "category": "methodology",
+    "section": "Data Collection",
+    "text": "Data were collected prospectively using a standardized case report form. Two trained research assistants independently abstracted data from electronic health records, with discrepancies resolved by a senior investigator.",
+    "source": "PMID:34123456",
+    "paperTitle": "Surgical site infections in laparoscopic versus open appendectomy"
+  },
+  {
+    "id": 6,
+    "category": "methodology",
+    "section": "Data Collection",
+    "text": "Patient-reported outcomes were assessed using the SF-36 Health Survey at baseline, 3 months, and 6 months post-intervention. Adherence to the intervention was monitored through weekly telephone follow-ups and electronic pill counts.",
+    "source": "PMID:36890234",
+    "paperTitle": "Impact of structured exercise programs on cardiovascular outcomes"
+  },
+  {
+    "id": 7,
+    "category": "methodology",
+    "section": "Statistical Analysis",
+    "text": "Continuous variables were expressed as mean +/- standard deviation or median (interquartile range) based on normality testing using the Shapiro-Wilk test. Categorical variables were compared using the chi-square test or Fisher's exact test as appropriate.",
+    "source": "PMID:35678901",
+    "paperTitle": "Risk factors for post-operative complications in bariatric surgery"
+  },
+  {
+    "id": 8,
+    "category": "methodology",
+    "section": "Statistical Analysis",
+    "text": "A multivariable logistic regression model was constructed to identify independent predictors of the primary outcome, adjusting for age, sex, BMI, and Charlson Comorbidity Index. A p-value < 0.05 was considered statistically significant. All analyses were performed using SPSS version 28.0.",
+    "source": "PMID:36012345",
+    "paperTitle": "Diabetes management and cardiovascular event reduction"
+  },
+  {
+    "id": 9,
+    "category": "discussion",
+    "section": "Interpretation",
+    "text": "Our findings demonstrate that early mobilization within 6 hours of laparoscopic surgery significantly reduced hospital length of stay without increasing complication rates. This is consistent with the Enhanced Recovery After Surgery (ERAS) protocol recommendations.",
+    "source": "PMID:35124567",
+    "paperTitle": "Efficacy of early mobilization after laparoscopic cholecystectomy"
+  },
+  {
+    "id": 10,
+    "category": "discussion",
+    "section": "Interpretation",
+    "text": "The observed 15% reduction in HbA1c levels in the intervention group exceeds the clinically meaningful threshold of 0.5%, suggesting that the combined approach of continuous glucose monitoring with structured lifestyle modification produces synergistic effects.",
+    "source": "PMID:36234890",
+    "paperTitle": "Continuous glucose monitoring in type 2 diabetes management"
+  },
+  {
+    "id": 11,
+    "category": "discussion",
+    "section": "Comparison with Literature",
+    "text": "Our results align with those reported by Smith et al. (2020) and Johnson et al. (2021), who found similar reductions in readmission rates following implementation of structured discharge protocols. However, unlike the meta-analysis by Chen et al. (2022), we did not observe a significant difference in mortality outcomes.",
+    "source": "PMID:34987234",
+    "paperTitle": "Predictors of 30-day readmission following acute myocardial infarction"
+  },
+  {
+    "id": 12,
+    "category": "discussion",
+    "section": "Limitations",
+    "text": "This study has several limitations. First, the retrospective design precludes establishing causality. Second, the single-center setting may limit generalizability to other healthcare systems. Third, we were unable to control for unmeasured confounders such as patient socioeconomic status and medication adherence.",
+    "source": "PMID:35567123",
+    "paperTitle": "Post-operative cognitive decline in elderly surgical patients"
+  },
+  {
+    "id": 13,
+    "category": "discussion",
+    "section": "Limitations",
+    "text": "Our study was limited by a relatively small sample size (n=124), which may have resulted in insufficient statistical power to detect smaller effect sizes. Additionally, the 6-month follow-up period may not capture long-term outcomes.",
+    "source": "PMID:36890234",
+    "paperTitle": "Impact of structured exercise programs on cardiovascular outcomes"
+  },
+  {
+    "id": 14,
+    "category": "discussion",
+    "section": "Future Directions",
+    "text": "Future studies should employ multicenter, randomized controlled designs with longer follow-up periods to validate these findings. Additionally, cost-effectiveness analyses would help inform clinical decision-making regarding the implementation of this intervention in resource-limited settings.",
+    "source": "PMID:36012345",
+    "paperTitle": "Diabetes management and cardiovascular event reduction"
+  },
+  {
+    "id": 15,
+    "category": "sentence_starter",
+    "section": "Objective",
+    "text": "The primary objective of this study was to...",
+    "source": "general",
+    "paperTitle": "Common research paper phrasing"
+  },
+  {
+    "id": 16,
+    "category": "sentence_starter",
+    "section": "Objective",
+    "text": "We aimed to investigate the association between...",
+    "source": "general",
+    "paperTitle": "Common research paper phrasing"
+  },
+  {
+    "id": 17,
+    "category": "sentence_starter",
+    "section": "Hypothesis",
+    "text": "We hypothesized that patients receiving...",
+    "source": "general",
+    "paperTitle": "Common research paper phrasing"
+  },
+  {
+    "id": 18,
+    "category": "sentence_starter",
+    "section": "Primary Finding",
+    "text": "The most significant finding of this study was...",
+    "source": "general",
+    "paperTitle": "Common research paper phrasing"
+  },
+  {
+    "id": 19,
+    "category": "sentence_starter",
+    "section": "Clinical Implication",
+    "text": "These findings suggest that clinicians should consider...",
+    "source": "general",
+    "paperTitle": "Common research paper phrasing"
+  },
+  {
+    "id": 20,
+    "category": "sentence_starter",
+    "section": "Clinical Implication",
+    "text": "From a clinical perspective, our results indicate that...",
+    "source": "general",
+    "paperTitle": "Common research paper phrasing"
+  }
+]

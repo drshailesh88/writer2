@@ -1,0 +1,126 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
+import { feedbackAgent } from "@/lib/mastra/agents";
+import { validateFeedbackResponse } from "@/lib/mastra/learn-mode-guard";
+import { FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/lib/mastra/types";
+import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { TOKEN_COSTS } from "@/convex/usageTokens";
+import { captureApiError } from "@/lib/sentry-helpers";
+
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+
+export async function POST(req: NextRequest) {
+  try {
+    // Authenticate
+    const { getToken, userId: clerkUserId } = await auth();
+    const token = await getToken({ template: "convex" });
+    if (!token || !clerkUserId) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    }
+
+    // Rate limit: 10/min per user
+    const rateLimitResponse = await enforceRateLimit(req, "learnMode", clerkUserId);
+    if (rateLimitResponse) return rateLimitResponse;
+
+    convex.setAuth(token);
+
+    const { category, draftText, topic } = await req.json();
+
+    if (!category || !draftText) {
+      return NextResponse.json(
+        { error: "Missing required fields: category, draftText" },
+        { status: 400 }
+      );
+    }
+
+    const categoryInfo = FEEDBACK_CATEGORIES.find(
+      (c) => c.id === category
+    );
+    if (!categoryInfo) {
+      return NextResponse.json(
+        { error: `Invalid feedback category: ${category}` },
+        { status: 400 }
+      );
+    }
+
+    const agent = feedbackAgent;
+
+    try {
+      await convex.mutation(api.usageTokens.deductTokens, {
+        cost: TOKEN_COSTS.LEARN_MESSAGE,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Insufficient tokens";
+      return NextResponse.json(
+        { error: message, upgradeRequired: true },
+        { status: 402 }
+      );
+    }
+
+    const prompt = `Analyze the following student draft in the category: ${categoryInfo.label} (${categoryInfo.description}).
+
+Topic: "${topic || "research paper"}"
+
+Student's draft text:
+"""
+${draftText}
+"""
+
+Provide exactly ONE specific, actionable suggestion for improvement in the "${categoryInfo.label}" category. If helpful, include a brief example from published medical literature.
+
+Return ONLY valid JSON in this format:
+{
+  "category": "${category}",
+  "suggestion": "your specific suggestion here",
+  "example": "optional example from published literature or null"
+}`;
+
+    const result = await agent.generate(prompt);
+
+    let feedback: {
+      category: FeedbackCategory;
+      suggestion: string;
+      example?: string;
+    };
+    try {
+      const text = result.text;
+      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/) || [
+        null,
+        text,
+      ];
+      feedback = JSON.parse(jsonMatch[1]!.trim());
+    } catch {
+      // Fallback if JSON parsing fails
+      feedback = {
+        category: category as FeedbackCategory,
+        suggestion: result.text,
+      };
+    }
+
+    // Enforce single-suggestion constraint
+    const validated = validateFeedbackResponse(feedback);
+
+    return NextResponse.json({
+      feedback: {
+        category: validated.category || category,
+        suggestion: validated.suggestion,
+        example: validated.example || null,
+        addressed: false,
+      },
+    });
+  } catch (error) {
+    captureApiError(error, "/api/learn/feedback");
+    console.error("Learn mode feedback error:", error);
+    return NextResponse.json(
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : "Failed to generate feedback",
+      },
+      { status: 500 }
+    );
+  }
+}
