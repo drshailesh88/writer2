@@ -4,6 +4,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { getCachedRun } from "@/lib/workflow-cache";
+import { captureApiError } from "@/lib/sentry-helpers";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
       canResume: hasRunInMemory,
     });
   } catch (error) {
+    captureApiError(error, "/api/draft/status");
     console.error("Draft status error:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to check status" },

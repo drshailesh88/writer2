@@ -108,9 +108,16 @@ export async function POST(req: NextRequest) {
         },
       });
     } catch (copyleaksError) {
-      // Copyleaks submission failed — reverse usage counter
+      // Copyleaks submission failed — reverse usage counter and refund tokens
       try {
         await convex.mutation(api.users.decrementAiDetectionUsage, {});
+      } catch {
+        // Best effort
+      }
+      try {
+        await convex.mutation(api.usageTokens.refundTokens, {
+          cost: TOKEN_COSTS.AI_DETECTION,
+        });
       } catch {
         // Best effort
       }

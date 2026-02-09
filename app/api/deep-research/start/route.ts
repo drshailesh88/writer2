@@ -7,6 +7,7 @@ import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { trackServerEvent } from "@/lib/analytics";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
 import { requireConvexActionSecret } from "@/lib/convex-action-secret";
+import { captureApiError } from "@/lib/sentry-helpers";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -81,10 +82,11 @@ export async function POST(req: NextRequest) {
     trackServerEvent(clerkUserId, "deep_research_started", { topicLength: topic.trim().length });
 
     // Fire workflow asynchronously — don't await
-    runWorkflowAsync(reportId, topic.trim(), actionSecret);
+    runWorkflowAsync(reportId, topic.trim(), actionSecret, token);
 
     return NextResponse.json({ reportId });
   } catch (error) {
+    captureApiError(error, "/api/deep-research/start");
     console.error("Deep research start error:", error);
     return NextResponse.json(
       {
@@ -99,9 +101,10 @@ export async function POST(req: NextRequest) {
 async function runWorkflowAsync(
   reportId: string,
   topic: string,
-  actionSecret: string
+  actionSecret: string,
+  convexAuthToken: string
 ) {
-  // Use a client WITHOUT auth for status updates.
+  // Use a client WITHOUT auth for status updates via action secret.
   const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
   try {
@@ -126,6 +129,16 @@ async function runWorkflowAsync(
         actionSecret,
       });
     } else {
+      // Workflow ran but failed — refund tokens
+      try {
+        const refundClient = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+        refundClient.setAuth(convexAuthToken);
+        await refundClient.mutation(api.usageTokens.refundTokens, {
+          cost: TOKEN_COSTS.DEEP_RESEARCH,
+        });
+      } catch {
+        // Best effort
+      }
       await client.action(api.deepResearchReports.updateResult, {
         reportId: reportId as never,
         status: "failed",
@@ -134,6 +147,16 @@ async function runWorkflowAsync(
     }
   } catch (error) {
     console.error("Deep research workflow error:", error);
+    // Workflow threw — refund tokens
+    try {
+      const refundClient = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+      refundClient.setAuth(convexAuthToken);
+      await refundClient.mutation(api.usageTokens.refundTokens, {
+        cost: TOKEN_COSTS.DEEP_RESEARCH,
+      });
+    } catch {
+      // Best effort
+    }
     try {
       await client.action(api.deepResearchReports.updateResult, {
         reportId: reportId as never,

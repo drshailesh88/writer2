@@ -112,6 +112,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     captureApiError(error, "/api/search");
+    console.error("Search aggregation error:", error);
     return NextResponse.json(
       { error: "Search temporarily unavailable" },
       { status: 500 }

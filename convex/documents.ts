@@ -168,6 +168,15 @@ export const update = mutation({
       throw new ConvexError("Not authorized");
     }
 
+    // Size guard: reject excessively large opaque JSON payloads (> 2MB serialized)
+    const MAX_JSON_SIZE = 2 * 1024 * 1024;
+    for (const field of ["content", "outlineData", "approvedPapers"] as const) {
+      const val = args[field];
+      if (val !== undefined && JSON.stringify(val).length > MAX_JSON_SIZE) {
+        throw new ConvexError(`${field} exceeds maximum allowed size`);
+      }
+    }
+
     const { documentId, ...updates } = args;
     await ctx.db.patch(documentId, {
       ...updates,

@@ -9,6 +9,7 @@ import type { ConversationMessage, LearnModeStage } from "@/lib/mastra/types";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { trackServerEvent } from "@/lib/analytics";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
+import { captureApiError } from "@/lib/sentry-helpers";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -105,6 +106,7 @@ Respond as the Socratic writing coach. Remember: NEVER write complete sentences 
       stage,
     });
   } catch (error) {
+    captureApiError(error, "/api/learn/message");
     console.error("Learn mode message error:", error);
     return NextResponse.json(
       {

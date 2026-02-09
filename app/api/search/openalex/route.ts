@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { captureApiError } from "@/lib/sentry-helpers";
 import { normalizeOpenAlexWork } from "@/lib/search/normalize";
 import type { OpenAlexSearchResponse, SourceSearchResult } from "@/lib/search/types";
 
@@ -14,7 +15,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const result = await searchOpenAlex(body);
     return NextResponse.json(result);
-  } catch {
+  } catch (error) {
+    captureApiError(error, "/api/search/openalex");
+    console.error("OpenAlex search error:", error);
     return NextResponse.json(
       {
         success: false,

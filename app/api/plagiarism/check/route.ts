@@ -118,10 +118,17 @@ export async function POST(req: NextRequest) {
         actionSecret,
       });
     } catch (copyleaksError) {
-      // Copyleaks submission failed — reverse usage counter
+      // Copyleaks submission failed — reverse usage counter and refund tokens
       if (clerkUserId) {
         try {
           await convex.mutation(api.users.decrementPlagiarismUsage, {});
+        } catch {
+          // Best effort — don't fail the whole request
+        }
+        try {
+          await convex.mutation(api.usageTokens.refundTokens, {
+            cost: TOKEN_COSTS.PLAGIARISM,
+          });
         } catch {
           // Best effort — don't fail the whole request
         }

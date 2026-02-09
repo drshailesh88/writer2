@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
+import { captureApiError } from "@/lib/sentry-helpers";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -45,6 +46,7 @@ export async function GET(req: NextRequest) {
           : undefined,
     });
   } catch (error) {
+    captureApiError(error, "/api/ai-detection/status");
     console.error("AI detection status error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred" },

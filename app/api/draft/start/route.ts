@@ -69,59 +69,74 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const workflowKey =
-      mode === "draft_handsoff"
-        ? "draftHandsOffWorkflow"
-        : "draftGuidedWorkflow";
+    let workflowRunId: Id<"workflowRuns"> | undefined;
+    try {
+      const workflowKey =
+        mode === "draft_handsoff"
+          ? "draftHandsOffWorkflow"
+          : "draftGuidedWorkflow";
 
-    const workflow = mastra.getWorkflow(workflowKey as "draftGuidedWorkflow" | "draftHandsOffWorkflow");
-    const run = await workflow.createRun();
+      const workflow = mastra.getWorkflow(workflowKey as "draftGuidedWorkflow" | "draftHandsOffWorkflow");
+      const run = await workflow.createRun();
 
-    // Cache the run object in memory (needed for Mastra resume)
-    cacheRun(documentId, run);
+      // Cache the run object in memory (needed for Mastra resume)
+      cacheRun(documentId, run);
 
-    // Persist workflow run to Convex (auth set — uses identity for ownership)
-    const workflowRunId = await convex.mutation(api.workflowRuns.create, {
-      documentId: documentId as Id<"documents">,
-      workflowType: mode as "draft_guided" | "draft_handsoff",
-      currentStep: "start",
-    });
-
-    // Track workflow start (no PHI — only metadata, never topic content)
-    trackServerEvent(clerkUserId, "draft_started", { mode, topicLength: topic.length });
-
-    // Start the workflow
-    const result = await run.start({
-      inputData: { topic },
-    });
-
-    const response = buildResponse(result);
-
-    // Update workflow status based on result
-    const token = await getToken({ template: "convex" });
-    if (token) convex.setAuth(token);
-
-    if (result.status === "success") {
-      removeCachedRun(documentId);
-      await convex.mutation(api.workflowRuns.update, {
-        workflowRunId,
-        status: "completed",
+      // Persist workflow run to Convex (auth set — uses identity for ownership)
+      workflowRunId = await convex.mutation(api.workflowRuns.create, {
+        documentId: documentId as Id<"documents">,
+        workflowType: mode as "draft_guided" | "draft_handsoff",
+        currentStep: "start",
       });
-    } else if (result.status === "suspended") {
-      await convex.mutation(api.workflowRuns.update, {
-        workflowRunId,
-        status: "suspended",
-        currentStep: result.suspended?.[0]?.[0] ?? result.suspended?.[0] ?? "unknown",
+
+      // Track workflow start (no PHI — only metadata, never topic content)
+      trackServerEvent(clerkUserId, "draft_started", { mode, topicLength: topic.length });
+
+      // Start the workflow
+      const result = await run.start({
+        inputData: { topic },
       });
-    } else if (result.status === "failed") {
-      await convex.mutation(api.workflowRuns.update, {
-        workflowRunId,
-        status: "failed",
-        error: result.error?.message ?? "Workflow failed",
-      });
+
+      const response = buildResponse(result);
+
+      // Update workflow status based on result
+      const token = await getToken({ template: "convex" });
+      if (token) convex.setAuth(token);
+
+      if (result.status === "success") {
+        removeCachedRun(documentId);
+        await convex.mutation(api.workflowRuns.update, {
+          workflowRunId,
+          status: "completed",
+        });
+      } else if (result.status === "suspended") {
+        await convex.mutation(api.workflowRuns.update, {
+          workflowRunId,
+          status: "suspended",
+          currentStep: result.suspended?.[0]?.[0] ?? result.suspended?.[0] ?? "unknown",
+        });
+      } else if (result.status === "failed") {
+        await convex.mutation(api.workflowRuns.update, {
+          workflowRunId,
+          status: "failed",
+          error: result.error?.message ?? "Workflow failed",
+        });
+      }
+
+      return NextResponse.json(response);
+    } catch (workflowError) {
+      // Workflow failed to start — refund tokens
+      try {
+        const refundToken = await getToken({ template: "convex" });
+        if (refundToken) convex.setAuth(refundToken);
+        await convex.mutation(api.usageTokens.refundTokens, {
+          cost: TOKEN_COSTS.DRAFT_SECTION,
+        });
+      } catch {
+        // Best effort — don't mask the original error
+      }
+      throw workflowError;
     }
-
-    return NextResponse.json(response);
   } catch (error) {
     captureApiError(error, "/api/draft/start");
     console.error("Draft workflow start error:", error);

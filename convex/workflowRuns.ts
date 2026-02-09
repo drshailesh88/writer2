@@ -35,6 +35,15 @@ export const create = mutation({
       throw new ConvexError("Document not found or access denied");
     }
 
+    // Size guard: reject excessively large opaque JSON payloads (> 2MB serialized)
+    const MAX_JSON_SIZE = 2 * 1024 * 1024;
+    for (const field of ["stepData", "runObject"] as const) {
+      const val = args[field];
+      if (val !== undefined && JSON.stringify(val).length > MAX_JSON_SIZE) {
+        throw new ConvexError(`${field} exceeds maximum allowed size`);
+      }
+    }
+
     const now = Date.now();
     const WORKFLOW_TTL_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -89,6 +98,15 @@ export const update = mutation({
       throw new ConvexError("Access denied");
     }
 
+    // Size guard: reject excessively large opaque JSON payloads (> 2MB serialized)
+    const MAX_SIZE = 2 * 1024 * 1024;
+    for (const field of ["stepData", "runObject"] as const) {
+      const val = args[field];
+      if (val !== undefined && JSON.stringify(val).length > MAX_SIZE) {
+        throw new ConvexError(`${field} exceeds maximum allowed size`);
+      }
+    }
+
     const updates: Record<string, unknown> = { updatedAt: Date.now() };
     if (args.status !== undefined) updates.status = args.status;
     if (args.currentStep !== undefined) updates.currentStep = args.currentStep;
@@ -116,15 +134,14 @@ export const getByDocument = query({
 
     const runs = await ctx.db
       .query("workflowRuns")
-      .filter((q) => q.eq(q.field("documentId"), args.documentId))
+      .withIndex("by_user_and_document", (q) =>
+        q.eq("userId", user._id).eq("documentId", args.documentId)
+      )
       .order("desc")
       .collect();
 
-    // Only return runs owned by this user
-    const userRuns = runs.filter((r) => r.userId === user._id);
-
     return (
-      userRuns.find(
+      runs.find(
         (r) => r.status === "running" || r.status === "suspended"
       ) ?? null
     );
@@ -181,7 +198,7 @@ export const internalGetByDocument = internalQuery({
   handler: async (ctx, args) => {
     const runs = await ctx.db
       .query("workflowRuns")
-      .filter((q) => q.eq(q.field("documentId"), args.documentId))
+      .withIndex("by_document_id", (q) => q.eq("documentId", args.documentId))
       .order("desc")
       .collect();
 

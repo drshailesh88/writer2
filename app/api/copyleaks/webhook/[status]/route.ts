@@ -4,6 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { parsePlagiarismResult } from "@/lib/copyleaks";
 import { requireConvexActionSecret } from "@/lib/convex-action-secret";
 import crypto from "crypto";
+import { captureApiError } from "@/lib/sentry-helpers";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -11,7 +12,7 @@ function verifyCopyleaksSignature(
   rawBody: string,
   signature: string | null
 ): boolean {
-  const secret = process.env.COPYLEAKS_WEBHOOK_SECRET || process.env.COPYLEAKS_API_KEY;
+  const secret = process.env.COPYLEAKS_WEBHOOK_SECRET;
   if (!secret || !signature) return false;
 
   try {
@@ -37,19 +38,25 @@ export async function POST(
     // Read raw body for signature verification
     const rawBody = await req.text();
 
-    // Verify webhook signature if secret is configured
-    const webhookSecret = process.env.COPYLEAKS_WEBHOOK_SECRET || process.env.COPYLEAKS_API_KEY;
-    if (webhookSecret) {
-      const signature = req.headers.get("x-copyleaks-signature")
-        || req.headers.get("authorization");
+    // Verify webhook signature — always required
+    const webhookSecret = process.env.COPYLEAKS_WEBHOOK_SECRET;
+    if (!webhookSecret) {
+      console.error("Copyleaks webhook: COPYLEAKS_WEBHOOK_SECRET not configured");
+      return NextResponse.json(
+        { error: "Server misconfigured: webhook secret not set" },
+        { status: 500 }
+      );
+    }
 
-      if (!verifyCopyleaksSignature(rawBody, signature)) {
-        console.error("Copyleaks webhook: Invalid or missing signature");
-        return NextResponse.json(
-          { error: "Unauthorized: Invalid webhook signature" },
-          { status: 401 }
-        );
-      }
+    const signature = req.headers.get("x-copyleaks-signature")
+      || req.headers.get("authorization");
+
+    if (!verifyCopyleaksSignature(rawBody, signature)) {
+      console.error("Copyleaks webhook: Invalid or missing signature");
+      return NextResponse.json(
+        { error: "Unauthorized: Invalid webhook signature" },
+        { status: 401 }
+      );
     }
 
     const actionSecret = requireConvexActionSecret();
@@ -110,6 +117,7 @@ export async function POST(
     // Always respond 200 to Copyleaks
     return NextResponse.json({ received: true });
   } catch (error) {
+    captureApiError(error, "/api/copyleaks/webhook");
     console.error("Copyleaks webhook error:", error);
     if (error instanceof Error && error.message.includes("CONVEX_ACTION_SECRET")) {
       return NextResponse.json(

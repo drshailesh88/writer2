@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { captureApiError } from "@/lib/sentry-helpers";
 import { normalizePubMedArticle } from "@/lib/search/normalize";
 import type {
   PubMedESearchResult,
@@ -19,7 +20,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const result = await searchPubMed(body);
     return NextResponse.json(result);
-  } catch {
+  } catch (error) {
+    captureApiError(error, "/api/search/pubmed");
+    console.error("PubMed search error:", error);
     return NextResponse.json(
       { success: false, results: [], total: 0, error: "PubMed unavailable" },
       { status: 200 }

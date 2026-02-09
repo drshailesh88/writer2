@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { captureApiError } from "@/lib/sentry-helpers";
 import { normalizeS2Paper } from "@/lib/search/normalize";
 import type { S2SearchResponse, SourceSearchResult } from "@/lib/search/types";
 
@@ -16,7 +17,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const result = await searchSemanticScholar(body);
     return NextResponse.json(result);
-  } catch {
+  } catch (error) {
+    captureApiError(error, "/api/search/semantic-scholar");
+    console.error("Semantic Scholar search error:", error);
     return NextResponse.json(
       {
         success: false,

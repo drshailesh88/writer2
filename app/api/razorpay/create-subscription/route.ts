@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createSubscription, getPlanId } from "@/lib/razorpay";
+import { captureApiError } from "@/lib/sentry-helpers";
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,6 +41,7 @@ export async function POST(req: NextRequest) {
       clerkUserId: userId,
     });
   } catch (error) {
+    captureApiError(error, "/api/razorpay/create-subscription");
     console.error("Error creating subscription:", error);
     return NextResponse.json(
       { error: "Failed to create subscription" },

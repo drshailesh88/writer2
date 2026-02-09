@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { captureApiError } from "@/lib/sentry-helpers";
 import { normalizeS2Paper } from "@/lib/search/normalize";
 import type { S2Paper } from "@/lib/search/types";
 
@@ -60,7 +61,9 @@ export async function POST(req: NextRequest) {
     } finally {
       clearTimeout(timeout);
     }
-  } catch {
+  } catch (error) {
+    captureApiError(error, "/api/search/related");
+    console.error("Related papers search error:", error);
     return NextResponse.json(
       { error: "Related papers temporarily unavailable" },
       { status: 500 }

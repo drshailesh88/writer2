@@ -6,6 +6,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { mastra } from "@/lib/mastra";
 import { cacheRun } from "@/lib/workflow-cache";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { captureApiError } from "@/lib/sentry-helpers";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -100,6 +101,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
+    captureApiError(error, "/api/learn/start");
     console.error("Learn mode workflow start error:", error);
     return NextResponse.json(
       {

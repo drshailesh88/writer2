@@ -7,6 +7,7 @@ import { validateFeedbackResponse } from "@/lib/mastra/learn-mode-guard";
 import { FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/lib/mastra/types";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
+import { captureApiError } from "@/lib/sentry-helpers";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -110,6 +111,7 @@ Return ONLY valid JSON in this format:
       },
     });
   } catch (error) {
+    captureApiError(error, "/api/learn/feedback");
     console.error("Learn mode feedback error:", error);
     return NextResponse.json(
       {

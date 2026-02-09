@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { cancelSubscription } from "@/lib/razorpay";
+import { captureApiError } from "@/lib/sentry-helpers";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest) {
       effectiveDate: new Date(subscription.currentPeriodEnd).toISOString(),
     });
   } catch (error) {
+    captureApiError(error, "/api/razorpay/cancel-subscription");
     console.error("Error cancelling subscription:", error);
     return NextResponse.json(
       { error: "Failed to cancel subscription" },

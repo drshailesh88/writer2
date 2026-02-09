@@ -111,8 +111,38 @@ export const update = mutation({
         v.literal("feedback")
       )
     ),
-    conversationHistory: v.optional(v.any()),
-    feedbackGiven: v.optional(v.any()),
+    conversationHistory: v.optional(
+      v.array(
+        v.object({
+          role: v.union(v.literal("coach"), v.literal("student")),
+          content: v.string(),
+          stage: v.union(
+            v.literal("understand"),
+            v.literal("literature"),
+            v.literal("outline"),
+            v.literal("drafting"),
+            v.literal("feedback")
+          ),
+          timestamp: v.number(),
+        })
+      )
+    ),
+    feedbackGiven: v.optional(
+      v.array(
+        v.object({
+          category: v.union(
+            v.literal("thesis_focus"),
+            v.literal("evidence_reasoning"),
+            v.literal("methodology_rigor"),
+            v.literal("structure_organization"),
+            v.literal("language_tone")
+          ),
+          suggestion: v.string(),
+          example: v.optional(v.string()),
+          addressed: v.boolean(),
+        })
+      )
+    ),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();

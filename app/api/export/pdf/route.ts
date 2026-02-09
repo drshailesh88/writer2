@@ -7,6 +7,7 @@ import { buildPdfBuffer } from "@/lib/export/pdf-server";
 import { tiptapToBlocks } from "@/lib/export/tiptap-to-blocks";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
+import { captureApiError } from "@/lib/sentry-helpers";
 
 export const runtime = "nodejs";
 
@@ -120,6 +121,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
+    captureApiError(error, "/api/export/pdf");
     console.error("PDF export API error:", error);
     return NextResponse.json(
       { error: "Export failed" },

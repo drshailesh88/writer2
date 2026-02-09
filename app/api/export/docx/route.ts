@@ -7,6 +7,7 @@ import { buildDocxBuffer } from "@/lib/export/docx-server";
 import { tiptapToBlocks } from "@/lib/export/tiptap-to-blocks";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
+import { captureApiError } from "@/lib/sentry-helpers";
 
 export const runtime = "nodejs";
 
@@ -121,6 +122,7 @@ export async function POST(req: NextRequest) {
       },
     });
   } catch (error) {
+    captureApiError(error, "/api/export/docx");
     console.error("DOCX export API error:", error);
     return NextResponse.json(
       { error: "Export failed" },
