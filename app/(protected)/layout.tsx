@@ -2,9 +2,11 @@
 
 import { useMutation, useConvexAuth } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { NavShell } from "@/components/nav-shell";
 import { Footer } from "@/components/footer";
+
+const SESSION_HEARTBEAT_MS = 60_000; // 60 seconds
 
 export default function ProtectedLayout({
   children,
@@ -13,12 +15,50 @@ export default function ProtectedLayout({
 }) {
   const { isLoading, isAuthenticated } = useConvexAuth();
   const getOrCreateUser = useMutation(api.users.getOrCreate);
+  const heartbeat = useMutation(api.sessionPresence.heartbeat);
+  const removeSession = useMutation(api.sessionPresence.removeSession);
+  const sessionIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (isAuthenticated) {
       getOrCreateUser().catch(console.error);
     }
   }, [isAuthenticated, getOrCreateUser]);
+
+  // Session presence heartbeat
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    // Generate a stable session ID for this tab
+    if (!sessionIdRef.current) {
+      sessionIdRef.current = crypto.randomUUID();
+    }
+    const sessionId = sessionIdRef.current;
+
+    // Initial heartbeat
+    heartbeat({ sessionId }).catch((err) => {
+      console.warn("Session heartbeat failed:", err);
+    });
+
+    // Periodic heartbeat
+    const interval = setInterval(() => {
+      heartbeat({ sessionId }).catch((err) => {
+        console.warn("Session heartbeat failed:", err);
+      });
+    }, SESSION_HEARTBEAT_MS);
+
+    // Cleanup on unmount or tab close
+    const handleUnload = () => {
+      removeSession({ sessionId }).catch(() => {});
+    };
+    window.addEventListener("beforeunload", handleUnload);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("beforeunload", handleUnload);
+      removeSession({ sessionId }).catch(() => {});
+    };
+  }, [isAuthenticated, heartbeat, removeSession]);
 
   if (isLoading) {
     return (
