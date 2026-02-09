@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Rate limit: 10/min per user
-    const rateLimitResponse = enforceRateLimit(req, "draftMode", clerkUserId);
+    const rateLimitResponse = await enforceRateLimit(req, "draftMode", clerkUserId);
     if (rateLimitResponse) return rateLimitResponse;
 
     const { topic, mode, documentId } = await req.json();

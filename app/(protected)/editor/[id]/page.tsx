@@ -12,7 +12,6 @@ import { DraftModePanel } from "@/components/editor/draft-mode-panel";
 import { usePlagiarismCheck, usePlagiarismUsage } from "@/lib/hooks/use-plagiarism-check";
 import { useAiDetection } from "@/lib/hooks/use-ai-detection";
 import type { PaperData } from "@/lib/bibliography";
-import { TOKEN_COSTS } from "@/convex/usageTokens";
 
 // Lazy-load heavy modals and panels (only needed on user action)
 const CitationModal = lazy(() => import("@/components/editor/citation-modal").then(m => ({ default: m.CitationModal })));
@@ -57,13 +56,12 @@ export default function EditorPage() {
   const aiDetection = useAiDetection();
   const usage = usePlagiarismUsage();
 
-  const document = useQuery(api.documents.get, {
+  const currentDoc = useQuery(api.documents.get, {
     documentId: documentId as Id<"documents">,
   });
   const updateDocument = useMutation(api.documents.update);
   const insertCitationMutation = useMutation(api.citations.insert);
   const removeCitationMutation = useMutation(api.citations.remove);
-  const deductTokens = useMutation(api.usageTokens.deductTokens);
 
   const papers = useQuery(api.papers.list, {});
   const citations = useQuery(api.citations.listByDocument, {
@@ -98,7 +96,7 @@ export default function EditorPage() {
 
   const handleCitationSelect = useCallback(
     async (paperId: string) => {
-      if (!editorRef.current || !document) return;
+      if (!editorRef.current || !currentDoc) return;
 
       const paper = papers?.find((p) => p._id === paperId);
       if (!paper) return;
@@ -119,11 +117,11 @@ export default function EditorPage() {
 
       setCitationModalOpen(false);
     },
-    [document, papers, citations, documentId, insertCitationMutation]
+    [currentDoc, papers, citations, documentId, insertCitationMutation]
   );
 
   // Loading state
-  if (document === undefined) {
+  if (currentDoc === undefined) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-muted-foreground">Loading document...</div>
@@ -132,7 +130,7 @@ export default function EditorPage() {
   }
 
   // Not found
-  if (document === null) {
+  if (currentDoc === null) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4 text-center">
         <div className="rounded-full bg-muted p-4">
@@ -151,9 +149,9 @@ export default function EditorPage() {
     );
   }
 
-  const isLearnMode = document.mode === "learn";
+  const isLearnMode = currentDoc.mode === "learn";
   const isDraftMode =
-    document.mode === "draft_guided" || document.mode === "draft_handsoff";
+    currentDoc.mode === "draft_guided" || currentDoc.mode === "draft_handsoff";
 
   const handleDraftComplete = useCallback(
     (draft: string) => {
@@ -243,6 +241,15 @@ export default function EditorPage() {
     aiDetection.reset();
   }, [aiDetection]);
 
+  const buildExportFilename = useCallback((rawTitle: string | undefined, ext: string) => {
+    const cleaned = (rawTitle ?? "document")
+      .replace(/[^a-z0-9 _-]+/gi, "")
+      .trim()
+      .replace(/\s+/g, " ");
+    const base = cleaned.length > 0 ? cleaned : "document";
+    return `${base}.${ext}`;
+  }, []);
+
   const handleExportDocx = useCallback(async () => {
     // Check subscription tier — free/none users cannot export
     const tier = usage?.tier ?? "free";
@@ -252,7 +259,7 @@ export default function EditorPage() {
     }
 
     // Check for content
-    const content = document?.content as Record<string, unknown> | undefined;
+    const content = currentDoc?.content as Record<string, unknown> | undefined;
     if (!content) {
       setExportToast("Nothing to export");
       setTimeout(() => setExportToast(null), 3000);
@@ -268,24 +275,9 @@ export default function EditorPage() {
 
     setIsExportLoading(true);
     try {
-      // Deduct export tokens
-      try {
-        await deductTokens({ cost: TOKEN_COSTS.EXPORT });
-      } catch {
-        setIsExportLoading(false);
-        setUpgradeModal({ feature: "export", open: true });
-        return;
-      }
-
-      // Dynamic imports — docx/bibliography are heavy, load on demand
-      const [{ tiptapToBlocks }, { exportAsDocx }, { generateBibliography }] = await Promise.all([
-        import("@/lib/export/tiptap-to-blocks"),
-        import("@/lib/export/docx-exporter"),
-        import("@/lib/bibliography"),
-      ]);
-
-      const blocks = tiptapToBlocks(content);
-      const citationStyle = document?.citationStyle ?? "vancouver";
+      // Dynamic import — bibliography is heavy, load on demand
+      const { generateBibliography } = await import("@/lib/bibliography");
+      const citationStyle = currentDoc?.citationStyle ?? "vancouver";
 
       // Build bibliography from cited papers
       const citedPaperIds = new Set(
@@ -304,14 +296,52 @@ export default function EditorPage() {
           metadata: p.metadata as PaperData["metadata"],
         }));
 
-      const bibliography = generateBibliography(citedPapers, citationStyle as "vancouver" | "apa" | "ama" | "chicago");
+      const bibliography = generateBibliography(
+        citedPapers,
+        citationStyle as "vancouver" | "apa" | "ama" | "chicago"
+      );
 
-      await exportAsDocx({
-        title: document?.title ?? "Untitled",
-        blocks,
-        bibliography,
-        citationStyle: citationStyle as "vancouver" | "apa" | "ama" | "chicago",
+      const response = await fetch("/api/export/docx", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          documentId,
+          content,
+          bibliography,
+          citationStyle,
+          title: currentDoc?.title ?? "Untitled",
+        }),
       });
+
+      if (!response.ok) {
+        let message = "Export failed. Please try again.";
+        try {
+          const data = await response.json();
+          message = data?.error || message;
+        } catch {
+          // Ignore JSON parse errors
+        }
+        if (response.status === 402 || response.status === 403) {
+          setUpgradeModal({ feature: "export", open: true });
+          return;
+        }
+        if (response.status === 401) {
+          message = "Please sign in again to export.";
+        }
+        setExportToast(message);
+        setTimeout(() => setExportToast(null), 4000);
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = buildExportFilename(currentDoc?.title, "docx");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error("DOCX export failed:", err);
       setExportToast("Export failed. Please try again.");
@@ -319,7 +349,7 @@ export default function EditorPage() {
     } finally {
       setIsExportLoading(false);
     }
-  }, [document, citations, papers, usage, deductTokens]);
+  }, [currentDoc, citations, papers, usage, documentId, buildExportFilename]);
 
   const handleExportPdf = useCallback(async () => {
     // Check subscription tier — free/none users cannot export
@@ -330,7 +360,7 @@ export default function EditorPage() {
     }
 
     // Check for content
-    const content = document?.content as Record<string, unknown> | undefined;
+    const content = currentDoc?.content as Record<string, unknown> | undefined;
     if (!content) {
       setExportToast("Nothing to export");
       setTimeout(() => setExportToast(null), 3000);
@@ -346,24 +376,9 @@ export default function EditorPage() {
 
     setIsExportLoading(true);
     try {
-      // Deduct export tokens
-      try {
-        await deductTokens({ cost: TOKEN_COSTS.EXPORT });
-      } catch {
-        setIsExportLoading(false);
-        setUpgradeModal({ feature: "export", open: true });
-        return;
-      }
-
-      // Dynamic imports — jspdf/bibliography are heavy, load on demand
-      const [{ tiptapToBlocks }, { exportAsPdf }, { generateBibliography }] = await Promise.all([
-        import("@/lib/export/tiptap-to-blocks"),
-        import("@/lib/export/pdf-exporter"),
-        import("@/lib/bibliography"),
-      ]);
-
-      const blocks = tiptapToBlocks(content);
-      const citationStyle = document?.citationStyle ?? "vancouver";
+      // Dynamic import — bibliography is heavy, load on demand
+      const { generateBibliography } = await import("@/lib/bibliography");
+      const citationStyle = currentDoc?.citationStyle ?? "vancouver";
 
       // Build bibliography from cited papers
       const citedPaperIds = new Set(
@@ -382,14 +397,52 @@ export default function EditorPage() {
           metadata: p.metadata as PaperData["metadata"],
         }));
 
-      const bibliography = generateBibliography(citedPapers, citationStyle as "vancouver" | "apa" | "ama" | "chicago");
+      const bibliography = generateBibliography(
+        citedPapers,
+        citationStyle as "vancouver" | "apa" | "ama" | "chicago"
+      );
 
-      await exportAsPdf({
-        title: document?.title ?? "Untitled",
-        blocks,
-        bibliography,
-        citationStyle: citationStyle as "vancouver" | "apa" | "ama" | "chicago",
+      const response = await fetch("/api/export/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          documentId,
+          content,
+          bibliography,
+          citationStyle,
+          title: currentDoc?.title ?? "Untitled",
+        }),
       });
+
+      if (!response.ok) {
+        let message = "Export failed. Please try again.";
+        try {
+          const data = await response.json();
+          message = data?.error || message;
+        } catch {
+          // Ignore JSON parse errors
+        }
+        if (response.status === 402 || response.status === 403) {
+          setUpgradeModal({ feature: "export", open: true });
+          return;
+        }
+        if (response.status === 401) {
+          message = "Please sign in again to export.";
+        }
+        setExportToast(message);
+        setTimeout(() => setExportToast(null), 4000);
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = buildExportFilename(currentDoc?.title, "pdf");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (err) {
       console.error("PDF export failed:", err);
       setExportToast("Export failed. Please try again.");
@@ -397,13 +450,13 @@ export default function EditorPage() {
     } finally {
       setIsExportLoading(false);
     }
-  }, [document, citations, papers, usage, deductTokens]);
+  }, [currentDoc, citations, papers, usage, documentId, buildExportFilename]);
 
   const sidebarContent = isLearnMode ? (
     <LearnModePanel
       documentId={documentId}
-      topic={document.title || ""}
-      currentStage={document.currentStage || "understand"}
+      topic={currentDoc.title || ""}
+      currentStage={currentDoc.currentStage || "understand"}
       editorContent={getEditorText()}
       tier={usage?.tier ?? "free"}
       learnModeUsed={usage?.learnModeUsed ?? 0}
@@ -411,7 +464,7 @@ export default function EditorPage() {
     />
   ) : isDraftMode ? (
     <DraftModePanel
-      mode={document.mode as "draft_guided" | "draft_handsoff"}
+      mode={currentDoc.mode as "draft_guided" | "draft_handsoff"}
       documentId={documentId}
       onDraftComplete={handleDraftComplete}
     />
@@ -443,10 +496,10 @@ export default function EditorPage() {
         <TiptapEditor
           ref={editorRef}
           documentId={documentId}
-          initialContent={document.content as Record<string, unknown> | undefined}
-          initialTitle={document.title}
-          mode={document.mode}
-          citationStyle={document.citationStyle}
+          initialContent={currentDoc.content as Record<string, unknown> | undefined}
+          initialTitle={currentDoc.title}
+          mode={currentDoc.mode}
+          citationStyle={currentDoc.citationStyle}
           onSave={handleSave}
           onInsertCitation={() => setCitationModalOpen(true)}
           onStyleChange={handleStyleChange}

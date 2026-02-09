@@ -1,6 +1,7 @@
 import { mutation, query, internalMutation, internalQuery, action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
+import { requireActionSecret } from "./lib/actionSecret";
 
 export const getOrCreate = mutation({
   args: {},
@@ -217,8 +218,11 @@ export const getByClerkIdInternal = internalQuery({
 
 // Action wrapper — callable from API routes (e.g., webhooks without Clerk auth)
 export const getByClerkId = action({
-  args: { clerkId: v.string() },
+  args: { clerkId: v.string(), actionSecret: v.string() },
   handler: async (ctx, args): Promise<unknown> => {
-    return await ctx.runQuery(internal.users.getByClerkIdInternal, args);
+    requireActionSecret(args.actionSecret);
+    return await ctx.runQuery(internal.users.getByClerkIdInternal, {
+      clerkId: args.clerkId,
+    });
   },
 });

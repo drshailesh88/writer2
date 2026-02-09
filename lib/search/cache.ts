@@ -1,6 +1,8 @@
+import "server-only";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import type { SearchResponse } from "./types";
+import { requireConvexActionSecret } from "@/lib/convex-action-secret";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -21,8 +23,10 @@ export async function getCachedResponse(
   key: string
 ): Promise<SearchResponse | null> {
   try {
+    const actionSecret = requireConvexActionSecret();
     const entry = await convex.action(api.searchCache.getCachedSearch, {
       queryHash: key,
+      actionSecret,
     });
     if (!entry) return null;
 
@@ -54,11 +58,13 @@ export async function setCachedResponse(
   data: SearchResponse
 ): Promise<void> {
   try {
+    const actionSecret = requireConvexActionSecret();
     await convex.action(api.searchCache.setCachedSearch, {
       queryHash: key,
       results: data.results,
       totalResults: data.totalResults,
       sourceStatus: data.sources,
+      actionSecret,
     });
   } catch (error) {
     console.error("Search cache write error:", error);

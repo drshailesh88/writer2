@@ -2,6 +2,7 @@ import { mutation, query, internalMutation, action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
 import { checkUsageLimit } from "./lib/subscriptionLimits";
+import { requireActionSecret } from "./lib/actionSecret";
 
 export const create = mutation({
   args: {
@@ -96,9 +97,16 @@ export const updateResult = action({
       v.literal("completed"),
       v.literal("failed")
     ),
+    actionSecret: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.runMutation(internal.deepResearchReports.updateResultInternal, args);
+    requireActionSecret(args.actionSecret);
+    await ctx.runMutation(internal.deepResearchReports.updateResultInternal, {
+      reportId: args.reportId,
+      report: args.report,
+      citedPapers: args.citedPapers,
+      status: args.status,
+    });
   },
 });
 

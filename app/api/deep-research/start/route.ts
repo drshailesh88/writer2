@@ -6,6 +6,7 @@ import { mastra } from "@/lib/mastra";
 import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { trackServerEvent } from "@/lib/analytics";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
+import { requireConvexActionSecret } from "@/lib/convex-action-secret";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -31,10 +32,19 @@ export async function POST(req: NextRequest) {
     }
 
     // Rate limit: 3/min per user
-    const rateLimitResponse = enforceRateLimit(req, "deepResearch", clerkUserId);
+    const rateLimitResponse = await enforceRateLimit(req, "deepResearch", clerkUserId);
     if (rateLimitResponse) return rateLimitResponse;
 
     convex.setAuth(token);
+    let actionSecret: string;
+    try {
+      actionSecret = requireConvexActionSecret();
+    } catch {
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
 
     // Deduct tokens before starting research
     try {
@@ -71,7 +81,7 @@ export async function POST(req: NextRequest) {
     trackServerEvent(clerkUserId, "deep_research_started", { topicLength: topic.trim().length });
 
     // Fire workflow asynchronously — don't await
-    runWorkflowAsync(reportId, topic.trim(), token);
+    runWorkflowAsync(reportId, topic.trim(), actionSecret);
 
     return NextResponse.json({ reportId });
   } catch (error) {
@@ -89,10 +99,9 @@ export async function POST(req: NextRequest) {
 async function runWorkflowAsync(
   reportId: string,
   topic: string,
-  _token: string
+  actionSecret: string
 ) {
-  // Use a client WITHOUT auth for status updates — updateResult mutation
-  // doesn't check auth and long-running workflows outlive Clerk token TTL
+  // Use a client WITHOUT auth for status updates.
   const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
   try {
@@ -100,6 +109,7 @@ async function runWorkflowAsync(
     await client.action(api.deepResearchReports.updateResult, {
       reportId: reportId as never,
       status: "in_progress",
+      actionSecret,
     });
 
     // Run the workflow
@@ -113,11 +123,13 @@ async function runWorkflowAsync(
         report: result.result?.report ?? "Report generation completed but no content was produced.",
         citedPapers: result.result?.citedPapers ?? [],
         status: "completed",
+        actionSecret,
       });
     } else {
       await client.action(api.deepResearchReports.updateResult, {
         reportId: reportId as never,
         status: "failed",
+        actionSecret,
       });
     }
   } catch (error) {
@@ -126,6 +138,7 @@ async function runWorkflowAsync(
       await client.action(api.deepResearchReports.updateResult, {
         reportId: reportId as never,
         status: "failed",
+        actionSecret,
       });
     } catch {
       // Best effort — report already exists

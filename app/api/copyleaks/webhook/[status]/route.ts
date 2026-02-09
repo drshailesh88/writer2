@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { parsePlagiarismResult } from "@/lib/copyleaks";
+import { requireConvexActionSecret } from "@/lib/convex-action-secret";
 import crypto from "crypto";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -51,6 +52,7 @@ export async function POST(
       }
     }
 
+    const actionSecret = requireConvexActionSecret();
     const { status } = await params;
     const payload = JSON.parse(rawBody);
     const scanId =
@@ -86,6 +88,7 @@ export async function POST(
           sources: result.sources,
           copyleaksScanId: scanId,
           status: "completed",
+          actionSecret,
         });
       }
       // AI detection uses synchronous API, so webhooks are only for plagiarism
@@ -98,6 +101,7 @@ export async function POST(
             sources: [],
             copyleaksScanId: scanId,
             status: "failed",
+            actionSecret,
           });
         }
       }
@@ -107,6 +111,12 @@ export async function POST(
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("Copyleaks webhook error:", error);
+    if (error instanceof Error && error.message.includes("CONVEX_ACTION_SECRET")) {
+      return NextResponse.json(
+        { error: "Server misconfigured" },
+        { status: 500 }
+      );
+    }
     // Still respond 200 to prevent infinite retries
     return NextResponse.json({ received: true });
   }

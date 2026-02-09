@@ -1,6 +1,7 @@
 import { mutation, query, internalMutation, internalQuery, action } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
+import { requireActionSecret } from "./lib/actionSecret";
 
 export const create = mutation({
   args: {
@@ -225,11 +226,12 @@ export const updateFromWebhookInternal = internalMutation({
 // ─── Action wrappers (callable from API routes via ConvexHttpClient) ───
 
 export const getByRazorpayId = action({
-  args: { razorpaySubscriptionId: v.string() },
+  args: { razorpaySubscriptionId: v.string(), actionSecret: v.string() },
   handler: async (ctx, args): Promise<unknown> => {
+    requireActionSecret(args.actionSecret);
     return await ctx.runQuery(
       internal.subscriptions.getByRazorpayIdInternal,
-      args
+      { razorpaySubscriptionId: args.razorpaySubscriptionId }
     );
   },
 });
@@ -241,11 +243,19 @@ export const activateFromWebhook = action({
     planType: v.union(v.literal("basic"), v.literal("pro")),
     currentPeriodStart: v.number(),
     currentPeriodEnd: v.number(),
+    actionSecret: v.string(),
   },
   handler: async (ctx, args): Promise<unknown> => {
+    requireActionSecret(args.actionSecret);
     return await ctx.runMutation(
       internal.subscriptions.activateFromWebhookInternal,
-      args
+      {
+        userId: args.userId,
+        razorpaySubscriptionId: args.razorpaySubscriptionId,
+        planType: args.planType,
+        currentPeriodStart: args.currentPeriodStart,
+        currentPeriodEnd: args.currentPeriodEnd,
+      }
     );
   },
 });
@@ -261,11 +271,18 @@ export const updateFromWebhook = action({
     ),
     currentPeriodStart: v.optional(v.number()),
     currentPeriodEnd: v.optional(v.number()),
+    actionSecret: v.string(),
   },
   handler: async (ctx, args) => {
+    requireActionSecret(args.actionSecret);
     await ctx.runMutation(
       internal.subscriptions.updateFromWebhookInternal,
-      args
+      {
+        razorpaySubscriptionId: args.razorpaySubscriptionId,
+        status: args.status,
+        currentPeriodStart: args.currentPeriodStart,
+        currentPeriodEnd: args.currentPeriodEnd,
+      }
     );
   },
 });

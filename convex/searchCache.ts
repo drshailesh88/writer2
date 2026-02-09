@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internalQuery, internalMutation, action } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { requireActionSecret } from "./lib/actionSecret";
 
 const CACHE_TTL_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -68,9 +69,12 @@ export const setCachedSearchInternal = internalMutation({
 // ─── Action wrappers (callable from API routes/lib via ConvexHttpClient) ───
 
 export const getCachedSearch = action({
-  args: { queryHash: v.string() },
+  args: { queryHash: v.string(), actionSecret: v.string() },
   handler: async (ctx, args): Promise<{ results: unknown; totalResults: number; sourceStatus: unknown } | null> => {
-    return await ctx.runQuery(internal.searchCache.getCachedSearchInternal, args);
+    requireActionSecret(args.actionSecret);
+    return await ctx.runQuery(internal.searchCache.getCachedSearchInternal, {
+      queryHash: args.queryHash,
+    });
   },
 });
 
@@ -80,9 +84,16 @@ export const setCachedSearch = action({
     results: v.any(),
     totalResults: v.number(),
     sourceStatus: v.optional(v.any()),
+    actionSecret: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.runMutation(internal.searchCache.setCachedSearchInternal, args);
+    requireActionSecret(args.actionSecret);
+    await ctx.runMutation(internal.searchCache.setCachedSearchInternal, {
+      queryHash: args.queryHash,
+      results: args.results,
+      totalResults: args.totalResults,
+      sourceStatus: args.sourceStatus,
+    });
   },
 });
 

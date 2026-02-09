@@ -16,6 +16,7 @@ import type * as deepResearchReports from "../deepResearchReports.js";
 import type * as documents from "../documents.js";
 import type * as files from "../files.js";
 import type * as learnModeSessions from "../learnModeSessions.js";
+import type * as lib_actionSecret from "../lib/actionSecret.js";
 import type * as lib_subscriptionLimits from "../lib/subscriptionLimits.js";
 import type * as papers from "../papers.js";
 import type * as plagiarismChecks from "../plagiarismChecks.js";
@@ -41,6 +42,7 @@ declare const fullApi: ApiFromModules<{
   documents: typeof documents;
   files: typeof files;
   learnModeSessions: typeof learnModeSessions;
+  "lib/actionSecret": typeof lib_actionSecret;
   "lib/subscriptionLimits": typeof lib_subscriptionLimits;
   papers: typeof papers;
   plagiarismChecks: typeof plagiarismChecks;

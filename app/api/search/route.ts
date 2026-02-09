@@ -18,7 +18,7 @@ import type {
 const PAGE_SIZE = 20;
 
 export async function POST(req: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(req, "search");
+  const rateLimitResponse = await enforceRateLimit(req, "search");
   if (rateLimitResponse) return rateLimitResponse;
 
   try {

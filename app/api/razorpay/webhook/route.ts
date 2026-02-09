@@ -3,6 +3,7 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 import { verifyWebhookSignature } from "@/lib/razorpay";
+import { requireConvexActionSecret } from "@/lib/convex-action-secret";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -42,6 +43,8 @@ export async function POST(req: NextRequest) {
     const clerkUserId = notes.clerkUserId as string | undefined;
     const planType = (notes.planType || "basic") as "basic" | "pro";
 
+    const actionSecret = requireConvexActionSecret();
+
     switch (event) {
       case "subscription.activated": {
         if (!clerkUserId) {
@@ -52,6 +55,7 @@ export async function POST(req: NextRequest) {
         // Look up user by Clerk ID (action returns unknown, cast to typed result)
         const user = await convex.action(api.users.getByClerkId, {
           clerkId: clerkUserId,
+          actionSecret,
         }) as { _id: Id<"users"> } | null;
 
         if (!user) {
@@ -72,6 +76,7 @@ export async function POST(req: NextRequest) {
           planType,
           currentPeriodStart: startAt,
           currentPeriodEnd: endAt,
+          actionSecret,
         });
         break;
       }
@@ -90,6 +95,7 @@ export async function POST(req: NextRequest) {
           status: "active",
           currentPeriodStart: startAt,
           currentPeriodEnd: endAt,
+          actionSecret,
         });
         break;
       }
@@ -98,6 +104,7 @@ export async function POST(req: NextRequest) {
         await convex.action(api.subscriptions.updateFromWebhook, {
           razorpaySubscriptionId,
           status: "cancelled",
+          actionSecret,
         });
         break;
       }
@@ -107,6 +114,7 @@ export async function POST(req: NextRequest) {
         await convex.action(api.subscriptions.updateFromWebhook, {
           razorpaySubscriptionId,
           status: "paused",
+          actionSecret,
         });
         break;
       }

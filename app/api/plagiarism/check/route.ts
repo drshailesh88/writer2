@@ -7,6 +7,7 @@ import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { captureApiError } from "@/lib/sentry-helpers";
 import { trackServerEvent } from "@/lib/analytics";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
+import { requireConvexActionSecret } from "@/lib/convex-action-secret";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -27,10 +28,12 @@ export async function POST(req: NextRequest) {
     const { getToken, userId: clerkUserId } = await auth();
 
     // Rate limit: 5/min, keyed by userId or IP for anonymous
-    const rateLimitResponse = enforceRateLimit(req, "plagiarism", clerkUserId);
+    const rateLimitResponse = await enforceRateLimit(req, "plagiarism", clerkUserId);
     if (rateLimitResponse) return rateLimitResponse;
 
     if (!clerkUserId) {
+      const freeLimitResponse = await enforceRateLimit(req, "plagiarismFree");
+      if (freeLimitResponse) return freeLimitResponse;
       // Anonymous flow — enforce 1000 word limit
       if (wordCount > 1000) {
         return NextResponse.json(
@@ -95,6 +98,15 @@ export async function POST(req: NextRequest) {
     const webhookBaseUrl =
       process.env.COPYLEAKS_WEBHOOK_BASE_URL || "http://localhost:3000";
     const webhookUrl = `${webhookBaseUrl}/api/copyleaks/webhook`;
+    let actionSecret: string;
+    try {
+      actionSecret = requireConvexActionSecret();
+    } catch {
+      return NextResponse.json(
+        { error: "Server configuration error" },
+        { status: 500 }
+      );
+    }
 
     try {
       await submitPlagiarismScan(text, scanId, webhookUrl);
@@ -103,6 +115,7 @@ export async function POST(req: NextRequest) {
       await convex.action(api.plagiarismChecks.setScanId, {
         checkId: checkId as never,
         copyleaksScanId: scanId,
+        actionSecret,
       });
     } catch (copyleaksError) {
       // Copyleaks submission failed — reverse usage counter

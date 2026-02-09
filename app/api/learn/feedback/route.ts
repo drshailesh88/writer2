@@ -1,16 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
 import { feedbackAgent } from "@/lib/mastra/agents";
 import { validateFeedbackResponse } from "@/lib/mastra/learn-mode-guard";
 import { FEEDBACK_CATEGORIES, type FeedbackCategory } from "@/lib/mastra/types";
+import { enforceRateLimit } from "@/lib/middleware/rate-limit";
+import { TOKEN_COSTS } from "@/convex/usageTokens";
+
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function POST(req: NextRequest) {
   try {
     // Authenticate
-    const { getToken } = await auth();
-    if (!(await getToken())) {
+    const { getToken, userId: clerkUserId } = await auth();
+    const token = await getToken({ template: "convex" });
+    if (!token || !clerkUserId) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
+
+    // Rate limit: 10/min per user
+    const rateLimitResponse = await enforceRateLimit(req, "learnMode", clerkUserId);
+    if (rateLimitResponse) return rateLimitResponse;
+
+    convex.setAuth(token);
 
     const { category, draftText, topic } = await req.json();
 
@@ -32,6 +45,18 @@ export async function POST(req: NextRequest) {
     }
 
     const agent = feedbackAgent;
+
+    try {
+      await convex.mutation(api.usageTokens.deductTokens, {
+        cost: TOKEN_COSTS.LEARN_MESSAGE,
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Insufficient tokens";
+      return NextResponse.json(
+        { error: message, upgradeRequired: true },
+        { status: 402 }
+      );
+    }
 
     const prompt = `Analyze the following student draft in the category: ${categoryInfo.label} (${categoryInfo.description}).
 

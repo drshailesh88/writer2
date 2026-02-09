@@ -7,6 +7,7 @@ import { enforceRateLimit } from "@/lib/middleware/rate-limit";
 import { captureApiError } from "@/lib/sentry-helpers";
 import { trackServerEvent } from "@/lib/analytics";
 import { TOKEN_COSTS } from "@/convex/usageTokens";
+import { requireConvexActionSecret } from "@/lib/convex-action-secret";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Rate limit: 5/min per user
-    const rateLimitResponse = enforceRateLimit(req, "aiDetection", clerkUserId);
+    const rateLimitResponse = await enforceRateLimit(req, "aiDetection", clerkUserId);
     if (rateLimitResponse) return rateLimitResponse;
 
     const token = await getToken({ template: "convex" });
@@ -81,12 +82,14 @@ export async function POST(req: NextRequest) {
       const result = await submitAiDetection(text, scanId);
 
       // Store results in Convex
+      const actionSecret = requireConvexActionSecret();
       await convex.action(api.aiDetectionChecks.updateResult, {
         checkId: checkId as never,
         overallAiScore: result.summary.aiContent,
         sentenceResults: result.sections,
         copyleaksScanId: scanId,
         status: "completed",
+        actionSecret,
       });
 
       // Track AI detection check
@@ -114,12 +117,14 @@ export async function POST(req: NextRequest) {
 
       // Mark check as failed
       try {
+        const actionSecret = requireConvexActionSecret();
         await convex.action(api.aiDetectionChecks.updateResult, {
           checkId: checkId as never,
           overallAiScore: 0,
           sentenceResults: [],
           copyleaksScanId: scanId,
           status: "failed",
+          actionSecret,
         });
       } catch {
         // Best effort

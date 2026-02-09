@@ -9,7 +9,7 @@ const FIELDS =
   "paperId,title,authors,year,abstract,citationCount,isOpenAccess,externalIds,journal,url";
 
 export async function POST(req: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(req, "search");
+  const rateLimitResponse = await enforceRateLimit(req, "search");
   if (rateLimitResponse) return rateLimitResponse;
 
   try {

@@ -14,6 +14,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/search",
   "/api/search/(.*)",
   "/api/health",
+  "/api/ping",
   "/api/razorpay/webhook",
   "/api/copyleaks/webhook(.*)",
 ]);

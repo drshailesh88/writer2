@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useQuery } from "convex/react";
+import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import type { PlagiarismSource } from "@/lib/copyleaks";
 
@@ -88,12 +89,16 @@ export function usePlagiarismCheck(): UsePlagiarismCheckReturn {
               overallSimilarity: data.result.overallSimilarity,
               sources: data.result.sources || [],
             });
+            toast.success("Plagiarism check complete", {
+              description: `Similarity: ${data.result.overallSimilarity}%`,
+            });
           } else if (data.status === "failed") {
             stopPolling();
             setStatus("failed");
             setError(
               "Plagiarism check failed. Please try again."
             );
+            toast.error("Plagiarism check failed. Please try again.");
           }
         } catch {
           // Continue polling on transient errors

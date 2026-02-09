@@ -7,7 +7,7 @@ const OA_BASE = "https://api.openalex.org";
 const TIMEOUT_MS = 10_000;
 
 export async function POST(req: NextRequest) {
-  const rateLimitResponse = enforceRateLimit(req, "search");
+  const rateLimitResponse = await enforceRateLimit(req, "search");
   if (rateLimitResponse) return rateLimitResponse;
 
   try {

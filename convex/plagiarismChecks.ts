@@ -2,6 +2,7 @@ import { action, mutation, query, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { ConvexError, v } from "convex/values";
 import { checkUsageLimit } from "./lib/subscriptionLimits";
+import { requireActionSecret } from "./lib/actionSecret";
 
 export const create = mutation({
   args: {
@@ -103,9 +104,17 @@ export const updateResult = action({
     sources: v.any(),
     copyleaksScanId: v.string(),
     status: v.union(v.literal("completed"), v.literal("failed")),
+    actionSecret: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.runMutation(internal.plagiarismChecks.updateResultInternal, args);
+    requireActionSecret(args.actionSecret);
+    await ctx.runMutation(internal.plagiarismChecks.updateResultInternal, {
+      checkId: args.checkId,
+      overallSimilarity: args.overallSimilarity,
+      sources: args.sources,
+      copyleaksScanId: args.copyleaksScanId,
+      status: args.status,
+    });
   },
 });
 
@@ -135,9 +144,14 @@ export const setScanId = action({
   args: {
     checkId: v.id("plagiarismChecks"),
     copyleaksScanId: v.string(),
+    actionSecret: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.runMutation(internal.plagiarismChecks.setScanIdInternal, args);
+    requireActionSecret(args.actionSecret);
+    await ctx.runMutation(internal.plagiarismChecks.setScanIdInternal, {
+      checkId: args.checkId,
+      copyleaksScanId: args.copyleaksScanId,
+    });
   },
 });
 

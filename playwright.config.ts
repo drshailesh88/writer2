@@ -25,7 +25,7 @@ export default defineConfig({
   ],
   webServer: {
     command: `npm run dev -- --port ${PORT}`,
-    url: baseURL,
+    url: `${baseURL}/api/ping`,
     reuseExistingServer: !process.env.CI,
     timeout: 60000,
   },
