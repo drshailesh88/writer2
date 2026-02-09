@@ -67,8 +67,8 @@ export async function POST(req: NextRequest) {
       throw error;
     }
 
-    // Track deep research start
-    trackServerEvent(clerkUserId, "deep_research_started", { topic: topic.trim().slice(0, 100) });
+    // Track deep research start (no PHI — only metadata, never topic content)
+    trackServerEvent(clerkUserId, "deep_research_started", { topicLength: topic.trim().length });
 
     // Fire workflow asynchronously — don't await
     runWorkflowAsync(reportId, topic.trim(), token);

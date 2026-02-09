@@ -87,8 +87,8 @@ export async function POST(req: NextRequest) {
       currentStep: "start",
     });
 
-    // Track workflow start
-    trackServerEvent(clerkUserId, "draft_started", { mode, topic: topic.slice(0, 100) });
+    // Track workflow start (no PHI — only metadata, never topic content)
+    trackServerEvent(clerkUserId, "draft_started", { mode, topicLength: topic.length });
 
     // Start the workflow
     const result = await run.start({
