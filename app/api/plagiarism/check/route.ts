@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
       await submitPlagiarismScan(text, scanId, webhookUrl);
 
       // Store scanId mapping for webhook processing
-      await convex.mutation(api.plagiarismChecks.setScanId, {
+      await convex.action(api.plagiarismChecks.setScanId, {
         checkId: checkId as never,
         copyleaksScanId: scanId,
       });

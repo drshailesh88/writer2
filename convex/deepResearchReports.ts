@@ -65,6 +65,18 @@ export const updateResultInternal = internalMutation({
       throw new ConvexError("Report not found");
     }
 
+    // State-transition guard: only allow valid forward transitions
+    const VALID_TRANSITIONS: Record<string, string[]> = {
+      pending: ["in_progress"],
+      in_progress: ["completed", "failed"],
+    };
+    const allowed = VALID_TRANSITIONS[existing.status] ?? [];
+    if (!allowed.includes(args.status)) {
+      throw new ConvexError(
+        `Invalid transition: ${existing.status} → ${args.status}`
+      );
+    }
+
     const updates: Record<string, unknown> = { status: args.status };
     if (args.report !== undefined) updates.report = args.report;
     if (args.citedPapers !== undefined) updates.citedPapers = args.citedPapers;

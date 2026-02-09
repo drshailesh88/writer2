@@ -66,6 +66,17 @@ export const updateResultInternal = internalMutation({
       throw new ConvexError("Check not found");
     }
 
+    // State-transition guard: only allow pending → completed/failed
+    const VALID_TRANSITIONS: Record<string, string[]> = {
+      pending: ["completed", "failed"],
+    };
+    const allowed = VALID_TRANSITIONS[check.status] ?? [];
+    if (!allowed.includes(args.status)) {
+      throw new ConvexError(
+        `Invalid transition: ${check.status} → ${args.status}`
+      );
+    }
+
     await ctx.db.patch(args.checkId, {
       overallAiScore: args.overallAiScore,
       sentenceResults: args.sentenceResults,

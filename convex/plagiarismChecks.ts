@@ -75,6 +75,17 @@ export const updateResultInternal = internalMutation({
       throw new ConvexError("Check not found");
     }
 
+    // State-transition guard: only allow pending → completed/failed
+    const VALID_TRANSITIONS: Record<string, string[]> = {
+      pending: ["completed", "failed"],
+    };
+    const allowed = VALID_TRANSITIONS[check.status] ?? [];
+    if (!allowed.includes(args.status)) {
+      throw new ConvexError(
+        `Invalid transition: ${check.status} → ${args.status}`
+      );
+    }
+
     await ctx.db.patch(args.checkId, {
       overallSimilarity: args.overallSimilarity,
       sources: args.sources,
@@ -98,8 +109,8 @@ export const updateResult = action({
   },
 });
 
-// Set the Copyleaks scanId on a pending check (called after submission)
-export const setScanId = mutation({
+// Internal mutation — only callable from server-side actions
+export const setScanIdInternal = internalMutation({
   args: {
     checkId: v.id("plagiarismChecks"),
     copyleaksScanId: v.string(),
@@ -109,9 +120,24 @@ export const setScanId = mutation({
     if (!check) {
       throw new ConvexError("Check not found");
     }
+    // Only allow setting scanId on pending checks
+    if (check.status !== "pending") {
+      throw new ConvexError("Can only set scanId on pending checks");
+    }
     await ctx.db.patch(args.checkId, {
       copyleaksScanId: args.copyleaksScanId,
     });
+  },
+});
+
+// Action wrapper for API route calls
+export const setScanId = action({
+  args: {
+    checkId: v.id("plagiarismChecks"),
+    copyleaksScanId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.runMutation(internal.plagiarismChecks.setScanIdInternal, args);
   },
 });
 
