@@ -205,6 +205,40 @@ export const resetAllUsageCounters = internalMutation({
   },
 });
 
+// Dev/admin: set any user's subscription tier (internal only — not exposed to client)
+export const devSetTier = internalMutation({
+  args: {
+    clerkId: v.optional(v.string()),
+    tier: v.union(v.literal("free"), v.literal("basic"), v.literal("pro")),
+  },
+  handler: async (ctx, args) => {
+    if (args.clerkId) {
+      const clerkId = args.clerkId;
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_clerk_id", (q) => q.eq("clerkId", clerkId))
+        .unique();
+      if (!user) throw new ConvexError("User not found");
+      await ctx.db.patch(user._id, {
+        subscriptionTier: args.tier,
+        tokensLimit: TOKEN_LIMITS_BY_TIER[args.tier],
+        updatedAt: Date.now(),
+      });
+      return { updated: 1, tier: args.tier };
+    }
+    // No clerkId provided — upgrade ALL users (dev convenience)
+    const users = await ctx.db.query("users").collect();
+    for (const user of users) {
+      await ctx.db.patch(user._id, {
+        subscriptionTier: args.tier,
+        tokensLimit: TOKEN_LIMITS_BY_TIER[args.tier],
+        updatedAt: Date.now(),
+      });
+    }
+    return { updated: users.length, tier: args.tier };
+  },
+});
+
 // Internal query — only callable from within Convex
 export const getByClerkIdInternal = internalQuery({
   args: { clerkId: v.string() },

@@ -36,9 +36,20 @@ export default function ProtectedLayout({
   useEffect(() => {
     if (!isAuthenticated || sessionBlocked) return;
 
-    // Generate a stable session ID for this tab
+    // Stable session ID for this tab — persists across HMR and page refreshes
     if (!sessionIdRef.current) {
-      sessionIdRef.current = crypto.randomUUID();
+      const stored = typeof sessionStorage !== "undefined"
+        ? sessionStorage.getItem("v1d_session_id")
+        : null;
+      if (stored) {
+        sessionIdRef.current = stored;
+      } else {
+        const id = crypto.randomUUID();
+        sessionIdRef.current = id;
+        if (typeof sessionStorage !== "undefined") {
+          sessionStorage.setItem("v1d_session_id", id);
+        }
+      }
     }
     const sessionId = sessionIdRef.current;
 

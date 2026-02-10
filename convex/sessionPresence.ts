@@ -1,7 +1,7 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, internalMutation } from "./_generated/server";
 
-const MAX_CONCURRENT_SESSIONS = 2;
+const MAX_CONCURRENT_SESSIONS = 5;
 const SESSION_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes — sessions expire after inactivity
 
 /** Register or refresh a session heartbeat. Returns error if session limit exceeded. */
